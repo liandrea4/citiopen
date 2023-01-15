@@ -1,0 +1,211 @@
+from django.db.models import Value, Avg
+from django.db.models.functions import Concat, Extract
+from rest_framework import generics, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from api.serializers import *
+from api.permissions import *
+from api.utils import *
+from api.models.ballkid import *
+from datetime import datetime
+from pprint import pprint
+
+
+def save_calibration_parameters(cp):
+    improvements = cp.improvement_rates()
+    scales = cp.reviewer_scales()
+    offsets = cp.reviewer_offsets()
+    keys = set().union(improvements, scales)
+
+    for name in keys:
+        improvement = improvements.get(name)
+        scale = scales.get(name)
+        offset = offsets.get(name)
+
+        ballkid = Ballkid.objects.get(
+            first_name=name.split(" ")[0], last_name=name.split(" ")[1]
+        )
+
+        cp, created = CalibrationParams.objects.update_or_create(
+            ballkid=ballkid,
+            defaults={
+                "improvement": improvement,
+                "reviewer_scale": scale,
+                "reviewer_offset": offset,
+            },
+        )
+        cp.save()
+
+
+class AllRatings(generics.ListAPIView):
+    serializer_class = RatingSerializer
+    permission_classes = [IsChairperson]
+
+    def get_queryset(self):
+        return Rating.objects.order_by(
+            "ratee__last_name",
+            "ratee__first_name",
+            "-date",
+            "rater__last_name",
+            "rater__first_name",
+            "comments",
+        ).annotate(
+            ratee_name=Concat("ratee__first_name", Value(" "), "ratee__last_name"),
+            rater_name=Concat("rater__first_name", Value(" "), "rater__last_name"),
+            year=Extract("date", "year"),
+            month=Extract("date", "month"),
+            day=Extract("date", "day"),
+        )
+
+
+class MyRatings(generics.ListAPIView):
+    serializer_class = RatingSerializer
+    permission_classes = [IsChairpersonOrCaptain]
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        return (
+            Rating.objects.filter(rater_id=pk)
+            .order_by("ratee__last_name", "ratee__first_name", "-date")
+            .annotate(
+                ratee_name=Concat("ratee__first_name", Value(" "), "ratee__last_name"),
+                rater_name=Concat("rater__first_name", Value(" "), "rater__last_name"),
+                year=Extract("date", "year"),
+                month=Extract("date", "month"),
+                day=Extract("date", "day"),
+            )
+        )
+
+
+class CreateRating(APIView):
+    serializer_class = RatingSerializer
+    permission_classes = [IsChairpersonOrCaptain]
+
+    def post(self, request, format=None):
+        data = {key: val for key, val in request.data.items() if key not in ["date"]}
+        date = datetime.strptime(request.data["date"], "%m/%d/%Y")
+        data["date"] = datetime.strftime(date, "%Y-%m-%d")
+
+        serializer = self.serializer_class(data=data)
+
+        if serializer.is_valid():
+            rating = Rating.objects.create(
+                rater=Ballkid.objects.get(id=serializer.data["rater"]),
+                ratee=Ballkid.objects.get(id=serializer.data["ratee"]),
+                date=serializer.data["date"],
+                rating=serializer.data["rating"],
+                speed_rating=serializer.data["speed_rating"],
+                decision_rating=serializer.data["decision_rating"],
+                comments=serializer.data["comments"],
+            )
+
+            # Update calibration parameters
+            cp = calibrate(Rating.objects.all())
+            save_calibration_parameters(cp)
+
+            return Response(RatingSerializer(rating).data)
+
+        return Response(
+            {"Invalid serializer": f"Errors: {serializer.errors}"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class CalibratedRatings(APIView):
+    permission_classes = [IsChairperson]
+
+    def get(self, request):
+        MIN_RATING = 0.5
+        MAX_RATING = 5
+
+        ratings = Rating.objects.all()
+        overall_cp = calibrate(
+            ratings, "overall", min_rating=MIN_RATING, max_rating=MAX_RATING
+        )
+        speed_cp = calibrate(
+            ratings, "speed", min_rating=MIN_RATING, max_rating=MAX_RATING
+        )
+        decision_cp = calibrate(
+            ratings, "decision", min_rating=MIN_RATING, max_rating=MAX_RATING
+        )
+
+        # Save calibration parameters for overall ratings only
+        save_calibration_parameters(overall_cp)
+
+        # Calibrate each rating to put together a list of calibrated ratings
+        # to return
+        postprocessed = [
+            {
+                "id": rating.id,
+                "rater": rating.rater,
+                "ratee": rating.ratee,
+                "date": rating.date,
+                "rating": overall_cp.calibrate_rating(
+                    rating.rater.get_name(),
+                    float(rating.rating),
+                    clip_endpoints=(MIN_RATING, MAX_RATING),
+                ),
+                "speed_rating": speed_cp.calibrate_rating(
+                    rating.rater.get_name(),
+                    float(rating.speed_rating),
+                    clip_endpoints=(MIN_RATING, MAX_RATING),
+                )
+                if rating.speed_rating is not None
+                else None,
+                "decision_rating": decision_cp.calibrate_rating(
+                    rating.rater.get_name(),
+                    float(rating.decision_rating),
+                    clip_endpoints=(MIN_RATING, MAX_RATING),
+                )
+                if rating.decision_rating is not None
+                else None,
+                "comments": rating.comments,
+                # Annotated values
+                "rater_name": rating.rater.get_name(),
+                "ratee_name": rating.ratee.get_name(),
+                "year": rating.date.year,
+                "month": rating.date.month,
+                "day": rating.date.day,
+            }
+            for rating in ratings
+        ]
+
+        # Chain multiple sorts to allow for one of them to be reversed but not the rest.
+        # When chaining multiple sorts, first sort is the least priority sort and last
+        # sort is the highest priority sort.
+        postprocessed = sorted(
+            postprocessed,
+            key=lambda k: (
+                k["rater_name"].split(" ")[1],
+                k["rater_name"].split(" ")[0],
+                k["comments"],
+            ),
+        )
+        postprocessed = sorted(postprocessed, key=lambda k: k["date"], reverse=True)
+        postprocessed = sorted(
+            postprocessed,
+            key=lambda k: (
+                k["ratee_name"].split(" ")[1],
+                k["ratee_name"].split(" ")[0],
+            ),
+        )
+
+        return Response(RatingSerializer(postprocessed, many=True).data)
+
+
+class GetCalibrationParams(generics.RetrieveAPIView):
+    permission_classes = [IsChairperson]
+    serializer_class = CalibrationParamsSerializer
+
+    def get_object(self):
+        return CalibrationParams.objects.get(ballkid_id=self.kwargs["pk"])
+
+
+class GetAverageCalibrationParams(APIView):
+    permission_classes = [IsChairperson]
+
+    def get(self, request):
+        avg_offset = CalibrationParams.objects.aggregate(
+            Avg("reviewer_offset"), Avg("reviewer_scale")
+        )
+        return Response(avg_offset)

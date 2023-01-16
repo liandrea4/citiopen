@@ -81,7 +81,7 @@ class Ballkid(models.Model):
                 duration += history.checkout - history.checkin
 
         analytic, created = CheckinAnalytics.objects.get_or_create(ballkid_id=self.id)
-        analytic.duration = str(duration)
+        analytic.duration = duration
         analytic.save()
 
     def recalc_captain_analytics(self):
@@ -126,7 +126,7 @@ class Ballkid(models.Model):
                     analytic, _ = CaptainAnalytics.objects.get_or_create(
                         ballkid=self, captain_id=other_id
                     )
-                analytic.duration = str(duration)
+                analytic.duration = duration
                 analytic.count = counts[other_id]
                 analytic.save()
 

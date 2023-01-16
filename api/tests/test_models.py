@@ -1,0 +1,983 @@
+from django.test import TestCase
+from api.models.ballkid import *
+from datetime import datetime, timedelta
+
+
+class TestBallkidModel(TestCase):
+    def setUp(self):
+        self.ballkid = Ballkid.objects.create(
+            first_name="Lacy",
+            last_name="Iosue",
+            is_checked_in=True,
+            current_team=3,
+            preferred_position=Position.NB,
+            position=Position.N,
+        )
+
+    def test_get_name(self):
+        self.assertEqual(self.ballkid.get_name(), "Lacy Iosue")
+
+    def test_set_field_checkin(self):
+        self.ballkid.is_checked_in = False
+
+        self.ballkid.set_field("is_checked_in", True)
+        self.assertTrue(self.ballkid.is_checked_in)
+
+    def test_set_field_position(self):
+        self.ballkid.position = Position.B
+
+        self.ballkid.set_field("position", Position.N)
+        self.assertEqual(Position.N, self.ballkid.position)
+
+    def test_set_field_preferred_position(self):
+        self.ballkid.preferred_position = Position.NB
+
+        self.ballkid.set_field("preferred_position", Position.B)
+        self.assertEqual(Position.B, self.ballkid.preferred_position)
+
+    def test_set_field_team(self):
+        self.ballkid.current_team = 3
+
+        self.ballkid.set_field("current_team", 2)
+        self.assertEqual(2, self.ballkid.current_team)
+
+    def test_get_preferred_position_switch(self):
+        self.assertEqual(Position.N, self.ballkid.get_preferred_position())
+
+    def test_get_preferred_position_nonswitch(self):
+        self.ballkid.preferred_position = Position.N
+
+        self.assertEqual(Position.N, self.ballkid.get_preferred_position())
+
+    def test_get_preferred_position_bn(self):
+        self.ballkid.preferred_position = Position.BN
+
+        self.assertEqual(Position.B, self.ballkid.get_preferred_position())
+
+    def test_validate_no_change(self):
+        self.ballkid.validate()
+
+        self.ballkid.refresh_from_db()
+        self.assertTrue(self.ballkid.is_checked_in)
+        self.assertEqual(3, self.ballkid.current_team)
+        self.assertEqual(Position.N, self.ballkid.position)
+        self.assertEqual(Position.NB, self.ballkid.preferred_position)
+
+    def test_validate_unassign(self):
+        self.ballkid.position = Position.B
+        self.ballkid.current_team = 0
+        self.assertEqual(Position.B, self.ballkid.position)
+
+        self.ballkid.validate()
+        self.ballkid.refresh_from_db()
+        self.assertTrue(self.ballkid.is_checked_in)
+        self.assertEqual(0, self.ballkid.current_team)
+        self.assertEqual(Position.N, self.ballkid.position)
+        self.assertEqual(Position.NB, self.ballkid.preferred_position)
+
+    def test_validate_checkout(self):
+        self.ballkid.position = Position.B
+        self.ballkid.is_checked_in = False
+        self.assertEqual(3, self.ballkid.current_team)
+        self.assertEqual(Position.B, self.ballkid.position)
+
+        self.ballkid.validate()
+        self.ballkid.refresh_from_db()
+        self.assertFalse(self.ballkid.is_checked_in)
+        self.assertEqual(0, self.ballkid.current_team)
+        self.assertEqual(Position.N, self.ballkid.position)
+        self.assertEqual(Position.NB, self.ballkid.preferred_position)
+
+
+class TestBallkidModelAnalytics(TestCase):
+    def setUp(self):
+        self.ballkid = Ballkid.objects.create(first_name="Lacy", last_name="Iosue")
+        self.ballkid2 = Ballkid.objects.create(first_name="Joe", last_name="Iosue")
+        self.captain = Ballkid.objects.create(
+            first_name="Andrea", last_name="Iosue", is_captain=True
+        )
+        self.captain2 = Ballkid.objects.create(
+            first_name="Bird", last_name="Iosue", is_captain=True
+        )
+
+    def test_handle_checkin_history_new_row_checking_in(self):
+        self.assertEqual(0, len(CheckinHistory.objects.all()))
+
+        self.ballkid.handle_checkin_history(True)
+        self.ballkid.is_checked_in = True
+        self.assertEqual(1, len(CheckinHistory.objects.all()))
+        self.assertEqual(1, len(CheckinHistory.objects.filter(ballkid=self.ballkid)))
+
+    def test_handle_checkin_history_no_existing_row_check_out(self):
+        self.assertEqual(0, len(CheckinHistory.objects.all()))
+
+        self.ballkid.handle_checkin_history(False)
+        self.ballkid.is_checked_in = False
+        self.assertEqual(0, len(CheckinHistory.objects.all()))
+
+    def test_handle_checkin_history_existing_row_check_out(self):
+        self.assertEqual(0, len(CheckinHistory.objects.all()))
+
+        self.ballkid.handle_checkin_history(True, time=datetime(2022, 1, 1, 10, 30))
+        self.ballkid.is_checked_in = True
+
+        self.ballkid.handle_checkin_history(False, time=datetime(2022, 1, 1, 11, 30))
+        self.ballkid.is_checked_in = False
+        self.assertEqual(1, len(CheckinHistory.objects.filter(ballkid=self.ballkid)))
+
+        history = CheckinHistory.objects.all()[0]
+        self.assertEqual(timedelta(hours=1), history.duration)
+
+    def test_handle_checkin_history_many_hours_check_out(self):
+        self.assertEqual(0, len(CheckinHistory.objects.all()))
+
+        self.ballkid.handle_checkin_history(True, time=datetime(2022, 1, 1, 10, 30))
+        self.ballkid.is_checked_in = True
+
+        self.ballkid.handle_checkin_history(False, time=datetime(2022, 1, 1, 18, 45))
+        self.ballkid.is_checked_in = False
+
+        self.assertEqual(1, len(CheckinHistory.objects.filter(ballkid=self.ballkid)))
+
+        history = CheckinHistory.objects.all()[0]
+        self.assertEqual(timedelta(hours=8, minutes=15), history.duration)
+
+    def test_handle_checkin_history_mult_histories(self):
+        self.assertEqual(0, len(CheckinHistory.objects.all()))
+
+        self.ballkid.handle_checkin_history(True, time=datetime(2022, 1, 1, 10, 30))
+        self.ballkid.is_checked_in = True
+        self.ballkid.handle_checkin_history(False, time=datetime(2022, 1, 1, 18, 45))
+        self.ballkid.is_checked_in = False
+        self.assertEqual(1, len(CheckinHistory.objects.filter(ballkid=self.ballkid)))
+
+        self.ballkid.handle_checkin_history(True, time=datetime(2022, 1, 2, 15, 30))
+        self.ballkid.is_checked_in = True
+        self.ballkid.handle_checkin_history(False, time=datetime(2022, 1, 2, 18, 31))
+        self.ballkid.is_checked_in = False
+        self.assertEqual(2, len(CheckinHistory.objects.filter(ballkid=self.ballkid)))
+
+        histories = CheckinHistory.objects.all().order_by("checkin")
+        self.assertEqual(2, len(histories))
+        history1 = histories[0]
+        history2 = histories[1]
+        self.assertEqual(timedelta(hours=8, minutes=15), history1.duration)
+        self.assertEqual(timedelta(hours=3, minutes=1), history2.duration)
+
+    def test_handle_checkin_history_checkout_before_checkin(self):
+        self.ballkid.handle_checkin_history(True, time=datetime(2022, 1, 1, 10, 30))
+        self.ballkid.is_checked_in = True
+        with self.assertRaises(Exception):
+            self.ballkid.handle_checkin_history(False, time=datetime(2022, 1, 1, 8, 45)),
+            self.ballkid.is_checked_in = False
+
+    def test_handle_checkin_history_mult_ballkids(self):
+        self.assertEqual(0, len(CheckinHistory.objects.all()))
+
+        self.ballkid.handle_checkin_history(True, time=datetime(2022, 1, 1, 10, 30))
+        self.ballkid.is_checked_in = True
+        self.ballkid.handle_checkin_history(False, time=datetime(2022, 1, 1, 18, 45))
+        self.ballkid.is_checked_in = False
+        self.assertEqual(1, len(CheckinHistory.objects.filter(ballkid=self.ballkid)))
+
+        self.ballkid2.handle_checkin_history(True, time=datetime(2022, 1, 2, 15, 30))
+        self.ballkid.is_checked_in = True
+        self.ballkid2.handle_checkin_history(False, time=datetime(2022, 1, 2, 18, 31))
+        self.ballkid.is_checked_in = False
+        self.assertEqual(1, len(CheckinHistory.objects.filter(ballkid=self.ballkid)))
+
+    def test_handle_checkin_history_same_value(self):
+        self.ballkid.is_checked_in = True
+        self.ballkid.handle_checkin_history(True, time=datetime(2022, 1, 1, 10, 30))
+        self.ballkid.is_checked_in = True
+        self.assertEqual(0, len(CheckinHistory.objects.filter(ballkid=self.ballkid)))
+
+    def test_handle_team_history_unassigned_to_team(self):
+        start = datetime(2022, 1, 1, 10, 30)
+        self.ballkid.handle_team_history(3, time=start)
+        self.ballkid.current_team = 3
+        self.assertEqual(1, len(TeamHistory.objects.filter(ballkid=self.ballkid)))
+
+        history = TeamHistory.objects.all()[0]
+        self.assertEqual(start, history.start)
+        self.assertIsNone(history.end)
+        self.assertEqual(timedelta(), history.duration)
+
+    def test_handle_team_history_team_to_team(self):
+        time1 = datetime(2022, 1, 1, 10, 30)
+        time2 = datetime(2022, 1, 1, 11, 30)
+        self.ballkid.handle_team_history(3, time=time1)
+        self.ballkid.current_team = 3
+
+        self.ballkid.handle_team_history(5, time=time2)
+        self.ballkid.current_team = 5
+        self.assertEqual(2, len(TeamHistory.objects.filter(ballkid=self.ballkid)))
+
+        histories = TeamHistory.objects.all().order_by("team")
+        history1 = histories[0]
+        history2 = histories[1]
+        self.assertEqual(time1, history1.start)
+        self.assertEqual(time2, history1.end)
+        self.assertEqual(timedelta(hours=1), history1.duration)
+
+        self.assertEqual(time2, history2.start)
+        self.assertIsNone(history2.end)
+        self.assertEqual(timedelta(), history2.duration)
+
+    def test_handle_team_history_team_to_unassigned(self):
+        time1 = datetime(2022, 1, 1, 10, 30)
+        time2 = datetime(2022, 1, 1, 11, 30)
+        self.ballkid.handle_team_history(3, time=time1)
+        self.ballkid.current_team = 3
+
+        self.ballkid.handle_team_history(0, time=time2)
+        self.ballkid.current_team = 0
+        self.assertEqual(1, len(TeamHistory.objects.filter(ballkid=self.ballkid)))
+
+        history = TeamHistory.objects.all()[0]
+        self.assertEqual(time1, history.start)
+        self.assertEqual(time2, history.end)
+        self.assertEqual(timedelta(hours=1), history.duration)
+
+    def test_handle_team_history_end_after_start(self):
+        time1 = datetime(2022, 1, 1, 10, 30)
+        time2 = datetime(2022, 1, 1, 8, 30)
+        self.ballkid.handle_team_history(3, time=time1)
+        self.ballkid.current_team = 3
+
+        with self.assertRaises(Exception):
+            self.ballkid.handle_team_history(0, time=time2)
+            self.ballkid.current_team = 0
+
+        histories = TeamHistory.objects.filter(ballkid=self.ballkid)
+        self.assertEqual(1, len(histories))
+        history = histories[0]
+        self.assertEqual(time1, history.start)
+        self.assertIsNone(history.end)
+        self.assertEqual(timedelta(), history.duration)
+
+    def test_handle_team_history_same_value(self):
+        time1 = datetime(2022, 1, 1, 10, 30)
+        time2 = datetime(2022, 1, 1, 12, 30)
+        self.ballkid.handle_team_history(3, time=time1)
+        self.ballkid.current_team = 3
+
+        self.ballkid.handle_team_history(3, time=time2)
+        self.ballkid.current_team = 3
+
+        histories = TeamHistory.objects.filter(ballkid=self.ballkid)
+        self.assertEqual(1, len(histories))
+
+        history = histories[0]
+        self.assertEqual(time1, history.start)
+        self.assertIsNone(history.end)
+        self.assertEqual(timedelta(), history.duration)
+
+    def test_handle_captain_history_same_value(self):
+        self.ballkid.current_team = 2
+        self.ballkid.handle_captain_history(2, time=datetime(2023, 1, 1, 10, 30))
+        self.assertEqual(0, len(CaptainHistory.objects.all()))
+
+    def test_handle_captain_history_assign_ballkid_no_captains(self):
+        self.ballkid.handle_captain_history(2, time=datetime(2023, 1, 1, 10, 30))
+        self.assertEqual(0, len(CaptainHistory.objects.filter(ballkid=self.ballkid)))
+
+    def test_handle_captain_history_assign_ballkid_nonzero_captains(self):
+        start = datetime(2023, 1, 1, 10, 30, 10)
+        self.ballkid.current_team = 0
+        self.captain.current_team = 1
+        self.captain2.current_team = 1
+        self.captain.save()
+        self.captain2.save()
+
+        self.ballkid.handle_captain_history(1, time=start)
+        self.assertEqual(2, len(CaptainHistory.objects.all()))
+
+        history1 = CaptainHistory.objects.get(ballkid=self.ballkid, captain=self.captain)
+        history2 = CaptainHistory.objects.get(ballkid=self.ballkid, captain=self.captain2)
+
+        self.assertEqual(start, history1.start)
+        self.assertEqual(start, history2.start)
+        self.assertIsNone(history1.end)
+        self.assertIsNone(history2.end)
+
+    def test_handle_captain_history_assign_captain_no_ballkids(self):
+        start = datetime(2023, 1, 1, 10, 30, 10)
+        self.captain.handle_captain_history(1, time=start)
+        self.assertEqual(0, len(CaptainHistory.objects.all()))
+
+    def test_handle_captain_history_assign_captain_nonzero_ballkids(self):
+        start = datetime(2023, 1, 1, 10, 30, 10)
+        self.captain.current_team = 0
+        self.ballkid.current_team = 1
+        self.ballkid2.current_team = 1
+        self.ballkid.save()
+        self.ballkid2.save()
+
+        self.captain.handle_captain_history(1, time=start)
+        self.assertEqual(2, len(CaptainHistory.objects.all()))
+
+        history1 = CaptainHistory.objects.get(ballkid=self.ballkid, captain=self.captain)
+        history2 = CaptainHistory.objects.get(ballkid=self.ballkid2, captain=self.captain)
+
+        self.assertEqual(start, history1.start)
+        self.assertEqual(start, history2.start)
+        self.assertIsNone(history1.end)
+        self.assertIsNone(history2.end)
+
+    def test_handle_captain_history_reassign_ballkid(self):
+        pass
+
+    def test_handle_captain_history_reassign_captain(self):
+        pass
+
+    def test_handle_captain_history_unassign_ballkid(self):
+        pass
+
+    def test_handle_captain_history_unassign_captain(self):
+        pass
+
+    def test_handle_captain_history_promote_to_captain(self):
+        pass
+
+    def test_recalc_checkin_analytics_doesnt_exist(self):
+        self.assertEqual(0, len(CheckinAnalytics.objects.all()))
+
+        history1 = CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            checkin=datetime(2022, 1, 1, 10, 30),
+            checkout=datetime(2022, 1, 1, 14, 29),
+        )
+        self.ballkid.recalc_checkin_analytics()
+
+        analytics = CheckinAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        self.assertEqual(timedelta(hours=3, minutes=59), analytics[0].duration)
+
+    def test_recalc_checkin_analytics_exists(self):
+        self.assertEqual(0, len(CheckinAnalytics.objects.all()))
+
+        history1 = CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            checkin=datetime(2022, 1, 1, 10, 30),
+            checkout=datetime(2022, 1, 1, 14, 29),
+        )
+        CheckinAnalytics.objects.create(ballkid=self.ballkid, duration=timedelta())
+        self.ballkid.recalc_checkin_analytics()
+
+        analytics = CheckinAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        self.assertEqual(timedelta(hours=3, minutes=59), analytics[0].duration)
+
+    def test_recalc_checkin_analytics_one_history(self):
+        history1 = CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            checkin=datetime(2022, 1, 1, 16, 30),
+            checkout=datetime(2022, 1, 2, 0, 30),
+        )
+        self.ballkid.recalc_checkin_analytics()
+
+        analytics = CheckinAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        self.assertEqual(timedelta(hours=8), analytics[0].duration)
+
+    def test_recalc_checkin_analytics_mult_histories(self):
+        history1 = CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            checkin=datetime(2022, 1, 1, 16, 30),
+            checkout=datetime(2022, 1, 2, 0, 30),
+        )
+        history2 = CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            checkin=datetime(2022, 1, 2, 8, 15),
+            checkout=datetime(2022, 1, 2, 18, 30),
+        )
+        self.ballkid.recalc_checkin_analytics()
+
+        analytics = CheckinAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        self.assertEqual(timedelta(hours=18, minutes=15), analytics[0].duration)
+
+    def test_recalc_checkin_analytics_mult_ballkids(self):
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            checkin=datetime(2022, 1, 1, 16, 30),
+            checkout=datetime(2022, 1, 2, 0, 30),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            checkin=datetime(2022, 1, 2, 8, 15),
+            checkout=datetime(2022, 1, 2, 18, 30),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid2,
+            checkin=datetime(2022, 1, 2, 8, 15),
+            checkout=datetime(2022, 1, 2, 18, 30),
+        )
+        self.ballkid.recalc_checkin_analytics()
+        self.ballkid2.recalc_checkin_analytics()
+
+        analytics = CheckinAnalytics.objects.all()
+        self.assertEqual(2, len(analytics))
+        analytic = analytics.filter(ballkid=self.ballkid)[0]
+        self.assertEqual(timedelta(hours=18, minutes=15), analytic.duration)
+
+    def test_recalc_checkin_analytics_milliseconds(self):
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            checkin=datetime(2022, 1, 1, 16, 30, 2, 10),
+            checkout=datetime(2022, 1, 2, 0, 30, 3, 11),
+        )
+        self.ballkid.recalc_checkin_analytics()
+
+        analytics = CheckinAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        analytic = analytics[0]
+        self.assertEqual(timedelta(hours=8, seconds=1, microseconds=1), analytic.duration)
+
+    # def test_recalc_captain_analytics_milliseconds(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29, 1, 10),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29, 1, 10),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(1, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic.ballkid)
+    #     self.assertEqual(self.captain, analytic.captain)
+    #     self.assertEqual(1, analytic.count)
+    #     self.assertEqual(
+    #         timedelta(hours=3, minutes=59, seconds=1, microseconds=10), analytic.duration
+    #     )
+
+    # def test_recalc_captain_analytics_doesnt_exist(self):
+    #     self.assertEqual(0, len(CaptainAnalytics.objects.all()))
+
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(1, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic.ballkid)
+    #     self.assertEqual(self.captain, analytic.captain)
+    #     self.assertEqual(1, analytic.count)
+    #     self.assertEqual(timedelta(hours=3, minutes=59), analytic.duration)
+
+    # def test_recalc_captain_analytics_no_captains(self):
+    #     self.assertEqual(0, len(CaptainAnalytics.objects.all()))
+
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid2,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+    #     self.ballkid2.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(0, len(analytics))
+
+    # def test_recalc_captain_analytics_no_ballkids(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain2,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     self.captain.recalc_captain_analytics()
+    #     self.captain2.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all().order_by("ballkid_id")
+    #     self.assertEqual(2, len(analytics))
+    #     analytic1 = analytics[0]
+    #     self.assertEqual(self.captain, analytic1.ballkid)
+    #     self.assertEqual(self.captain2, analytic1.captain)
+    #     self.assertEqual(1, analytic1.count)
+    #     self.assertEqual(timedelta(hours=3, minutes=59), analytic1.duration)
+
+    #     analytic2 = analytics[1]
+    #     self.assertEqual(self.captain2, analytic2.ballkid)
+    #     self.assertEqual(self.captain, analytic2.captain)
+    #     self.assertEqual(1, analytic2.count)
+    #     self.assertEqual(timedelta(hours=3, minutes=59), analytic2.duration)
+
+    # def test_recalc_captain_analytics_self_not_included(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain2,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     self.captain.recalc_captain_analytics()
+    #     self.captain2.recalc_captain_analytics()
+
+    #     self.assertFalse(
+    #         CaptainAnalytics.objects.all().filter(
+    #             ballkid_id=self.captain.id, captain_id=self.captain.id
+    #         )
+    #     )
+    #     self.assertFalse(
+    #         CaptainAnalytics.objects.all().filter(
+    #             ballkid_id=self.captain2.id, captain_id=self.captain2.id
+    #         )
+    #     )
+    #     self.assertTrue(
+    #         CaptainAnalytics.objects.all().filter(
+    #             ballkid_id=self.captain.id, captain_id=self.captain2.id
+    #         )
+    #     )
+    #     self.assertTrue(
+    #         CaptainAnalytics.objects.all().filter(
+    #             ballkid_id=self.captain2.id, captain_id=self.captain.id
+    #         )
+    #     )
+
+    # def test_recalc_captain_analytics_ballkid_exists(self):
+    #     analytic = CaptainAnalytics.objects.create(
+    #         ballkid=self.ballkid, captain=self.captain
+    #     )
+    #     self.assertEqual(1, len(CaptainAnalytics.objects.all()))
+
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(1, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic.ballkid)
+    #     self.assertEqual(self.captain, analytic.captain)
+    #     self.assertEqual(1, analytic.count)
+    #     self.assertEqual(timedelta(hours=3, minutes=59), analytic.duration)
+
+    # def test_recalc_captain_analytics_captain_exists(self):
+    #     CaptainAnalytics.objects.create(ballkid=self.captain, captain=self.captain2)
+    #     CaptainAnalytics.objects.create(ballkid=self.captain2, captain=self.captain)
+    #     self.assertEqual(2, len(CaptainAnalytics.objects.all()))
+
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain2,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     self.captain.recalc_captain_analytics()
+    #     self.captain2.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all().order_by("ballkid_id")
+    #     self.assertEqual(2, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.captain, analytic.ballkid)
+    #     self.assertEqual(self.captain2, analytic.captain)
+    #     self.assertEqual(1, analytic.count)
+    #     self.assertEqual(timedelta(hours=3, minutes=59), analytic.duration)
+
+    # def test_recalc_captain_analytics_one_history_one_captain(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(1, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic.ballkid)
+    #     self.assertEqual(self.captain, analytic.captain)
+    #     self.assertEqual(1, analytic.count)
+    #     self.assertEqual(timedelta(hours=3, minutes=59), analytic.duration)
+
+    # def test_recalc_captain_analytics_mult_histories_one_captain(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 12, 30),
+    #         end=datetime(2022, 1, 2, 14, 45),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 13, 00),
+    #         end=datetime(2022, 1, 2, 15, 29),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(1, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic.ballkid)
+    #     self.assertEqual(self.captain, analytic.captain)
+    #     self.assertEqual(2, analytic.count)
+    #     self.assertEqual(timedelta(hours=5, minutes=44), analytic.duration)
+
+    # def test_recalc_captain_analytics_one_history_mult_captains(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 12, 30),
+    #         end=datetime(2022, 1, 2, 14, 45),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain2,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 13, 00),
+    #         end=datetime(2022, 1, 2, 15, 29),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all().order_by("captain_id")
+    #     self.assertEqual(2, len(analytics))
+    #     analytic1 = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic1.ballkid)
+    #     self.assertEqual(self.captain, analytic1.captain)
+    #     self.assertEqual(1, analytic1.count)
+    #     self.assertEqual(timedelta(hours=3, minutes=59), analytic1.duration)
+
+    #     analytic2 = analytics[1]
+    #     self.assertEqual(self.ballkid, analytic2.ballkid)
+    #     self.assertEqual(self.captain2, analytic2.captain)
+    #     self.assertEqual(1, analytic2.count)
+    #     self.assertEqual(timedelta(hours=1, minutes=45), analytic2.duration)
+
+    # def test_recalc_captain_analytics_mult_histories_mult_captains(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 10, 30),
+    #         end=datetime(2022, 1, 1, 14, 29),
+    #     )  # overlapping time is 3:59
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 12, 30),
+    #         end=datetime(2022, 1, 2, 14, 45),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 13, 00),
+    #         end=datetime(2022, 1, 2, 15, 29),
+    #     )  # overlapping time is 01:45
+
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=2,
+    #         start=datetime(2022, 1, 3, 15, 30),
+    #         end=datetime(2022, 1, 3, 15, 45),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain2,
+    #         team=2,
+    #         start=datetime(2022, 1, 3, 13, 00),
+    #         end=datetime(2022, 1, 3, 15, 39),
+    #     )  # overlapping time is 00:09
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=1,
+    #         start=datetime(2022, 1, 4, 18, 30),
+    #         end=datetime(2022, 1, 4, 20, 45),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain2,
+    #         team=1,
+    #         start=datetime(2022, 1, 4, 14, 00),
+    #         end=datetime(2022, 1, 4, 19, 00),
+    #     )  # overlapping time is 00:30
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all().order_by("captain_id")
+    #     self.assertEqual(2, len(analytics))
+    #     analytic1 = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic1.ballkid)
+    #     self.assertEqual(self.captain, analytic1.captain)
+    #     self.assertEqual(2, analytic1.count)
+    #     self.assertEqual(timedelta(hours=5, minutes=44), analytic1.duration)
+
+    #     analytic2 = analytics[1]
+    #     self.assertEqual(self.ballkid, analytic2.ballkid)
+    #     self.assertEqual(self.captain2, analytic2.captain)
+    #     self.assertEqual(2, analytic2.count)
+    #     self.assertEqual(timedelta(minutes=39), analytic2.duration)
+
+    # def test_recalc_captain_analytics_many_hours(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 5, 30),
+    #         end=datetime(2022, 1, 1, 23, 30),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 4, 30),
+    #         end=datetime(2022, 1, 1, 23, 30),
+    #     )  # overlapping time is 18:00
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 7, 30),
+    #         end=datetime(2022, 1, 2, 18, 45),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 8, 00),
+    #         end=datetime(2022, 1, 2, 18, 30),
+    #     )  # overlapping time is 10:30
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(1, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic.ballkid)
+    #     self.assertEqual(self.captain, analytic.captain)
+    #     self.assertEqual(2, analytic.count)
+    #     self.assertEqual(timedelta(hours=28, minutes=30), analytic.duration)
+
+    # def test_recalc_captain_analytics_diff_teams(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 5, 30),
+    #         end=datetime(2022, 1, 1, 23, 30),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=4,
+    #         start=datetime(2022, 1, 1, 4, 30),
+    #         end=datetime(2022, 1, 1, 23, 30),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(0, len(analytics))
+
+    # def test_recalc_captain_analytics_diff_days(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 5, 30),
+    #         end=datetime(2022, 1, 1, 23, 30),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 2, 4, 30),
+    #         end=datetime(2022, 1, 2, 23, 30),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(0, len(analytics))
+
+    # def test_recalc_captain_analytics_past_midnight(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 15, 30),
+    #         end=datetime(2022, 1, 2, 3, 30),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 2, 2, 30),
+    #         end=datetime(2022, 1, 2, 5, 30),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(1, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic.ballkid)
+    #     self.assertEqual(self.captain, analytic.captain)
+    #     self.assertEqual(1, analytic.count)
+    #     self.assertEqual(timedelta(hours=1), analytic.duration)
+
+    # def test_recalc_captain_analytics_reciprocal_ballkid_captain(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 15, 30),
+    #         end=datetime(2022, 1, 2, 3, 30),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 2, 2, 30),
+    #         end=datetime(2022, 1, 2, 5, 30),
+    #     )
+    #     self.captain.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(1, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic.ballkid)
+    #     self.assertEqual(self.captain, analytic.captain)
+    #     self.assertEqual(1, analytic.count)
+    #     self.assertEqual(timedelta(hours=1), analytic.duration)
+
+    # def test_recalc_captain_analytics_reciprocal_two_captains(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 15, 30),
+    #         end=datetime(2022, 1, 2, 3, 30),
+    #     )
+    #     self.captain.recalc_captain_analytics()
+
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain2,
+    #         team=3,
+    #         start=datetime(2022, 1, 2, 2, 30),
+    #         end=datetime(2022, 1, 2, 5, 30),
+    #     )
+    #     self.captain2.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all().order_by("ballkid_id")
+    #     self.assertEqual(2, len(analytics))
+
+    #     analytic1 = analytics[0]
+    #     self.assertEqual(self.captain, analytic1.ballkid)
+    #     self.assertEqual(self.captain2, analytic1.captain)
+    #     self.assertEqual(1, analytic1.count)
+    #     self.assertEqual(timedelta(hours=1), analytic1.duration)
+
+    #     analytic2 = analytics[1]
+    #     self.assertEqual(self.captain2, analytic2.ballkid)
+    #     self.assertEqual(self.captain, analytic2.captain)
+    #     self.assertEqual(1, analytic2.count)
+    #     self.assertEqual(timedelta(hours=1), analytic2.duration)
+
+    # def test_recalc_captain_analytics_reciprocal_ballkid_captain_mult_histories(self):
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=3,
+    #         start=datetime(2022, 1, 1, 15, 30),
+    #         end=datetime(2022, 1, 2, 3, 30),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=3,
+    #         start=datetime(2022, 1, 2, 2, 30),
+    #         end=datetime(2022, 1, 2, 5, 30),
+    #     )
+    #     TeamHistory.objects.create(
+    #         ballkid=self.ballkid,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 12, 30),
+    #         end=datetime(2022, 1, 2, 18, 30),
+    #     )
+    #     self.ballkid.recalc_captain_analytics()
+
+    #     TeamHistory.objects.create(
+    #         ballkid=self.captain,
+    #         team=4,
+    #         start=datetime(2022, 1, 2, 12, 30),
+    #         end=datetime(2022, 1, 2, 18, 30),
+    #     )
+    #     self.captain.recalc_captain_analytics()
+
+    #     analytics = CaptainAnalytics.objects.all()
+    #     self.assertEqual(1, len(analytics))
+    #     analytic = analytics[0]
+    #     self.assertEqual(self.ballkid, analytic.ballkid)
+    #     self.assertEqual(self.captain, analytic.captain)
+    #     self.assertEqual(2, analytic.count)
+    #     self.assertEqual(timedelta(hours=7), analytic.duration)

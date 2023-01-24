@@ -23,7 +23,7 @@ def save_calibration_parameters(cp):
         offset = offsets.get(name)
 
         ballkid = Ballkid.objects.get(
-            first_name=name.split(" ")[0], last_name=name.split(" ")[1]
+            first_name=get_first_name(name), last_name=get_last_name(name)
         )
 
         cp, created = CalibrationParams.objects.update_or_create(
@@ -82,7 +82,7 @@ class CreateRating(APIView):
     permission_classes = [IsChairpersonOrCaptain]
 
     def post(self, request, format=None):
-        data = {key: val for key, val in request.data.items() if key not in ["date"]}
+        data = {key: val for key, val in request.data.items() if key != "date"}
         date = datetime.strptime(request.data["date"], "%m/%d/%Y")
         data["date"] = datetime.strftime(date, "%Y-%m-%d")
 
@@ -202,6 +202,7 @@ class GetCalibrationParams(generics.RetrieveAPIView):
             return CalibrationParams.objects.get(ballkid_id=self.kwargs["pk"])
         except CalibrationParams.DoesNotExist:
             pass
+
 
 class GetAverageCalibrationParams(APIView):
     permission_classes = [IsChairperson]

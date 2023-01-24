@@ -2,6 +2,14 @@ from datetime import datetime, timedelta
 from rcal import calibrate_parameters
 
 
+def get_first_name(full_name):
+    return " ".join(full_name.split(" ")[:-1])
+
+
+def get_last_name(full_name):
+    return full_name.split(" ")[-1]
+
+
 def calc_overlapping_time(start1, end1, start2, end2):
     """
     Calculate overlapping time between 2 time ranges (defined by start and end datetimes).

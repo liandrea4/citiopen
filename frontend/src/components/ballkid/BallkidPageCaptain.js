@@ -31,11 +31,11 @@ export default function BallkidPageCaptain(props) {
             size="small"
             variant="outlined"
             component={Link}
-            href={`/ratings?rater=${ballkid.id}`}
+            href={`/my-ratings?rater=${ballkid.id}`}
             endIcon={<Shortcut />}
             sx={{ my: 1 }}
           >
-            View my ratings submitted for this ballkid
+            View my ratings for this ballkid
           </Button>
         </div>
       </div>

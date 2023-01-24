@@ -299,7 +299,7 @@ function RatingSection({ ballkid }) {
             endIcon={<Shortcut />}
             sx={{ my: 1 }}
           >
-            View ratings submitted by this captain
+            View ratings by this captain
           </Button>
 
           {params.reviewer_scale == null ? (
@@ -334,7 +334,7 @@ function RatingSection({ ballkid }) {
           endIcon={<Shortcut />}
           sx={{ my: 1 }}
         >
-          View ratings received by this ballkid
+          View ratings for this ballkid
         </Button>
         {params.improvement == null ? (
           ""
@@ -343,6 +343,19 @@ function RatingSection({ ballkid }) {
             Improvement: {Number(params.improvement).toFixed(3)}
           </Typography>
         )}
+      </Grid>
+
+      <Grid item xs={12} md={4.5} lg={5.5} sx={{ mx: 1 }}>
+        <Button
+          size="small"
+          variant="outlined"
+          component={Link}
+          href={`/my-ratings?ratee=${ballkid.id}`}
+          endIcon={<Shortcut />}
+          sx={{ my: 1 }}
+        >
+          View my ratings for this ballkid
+        </Button>
       </Grid>
     </Grid>
   );

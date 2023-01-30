@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { getTimeFloat, getTimeStr, getAuthHeader } from "../Utils";
+import { getTimeFloat, getTimeStr, getAuthHeader, getDays } from "../Utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
 
@@ -49,19 +49,6 @@ function getCheckinDuration(history, date) {
     }
   }
   return 0.1;
-}
-
-function getDays() {
-  // Note that these dates are 0-indexed!!
-  const startDate = new Date(2023, 0, 15);
-  const endDate = new Date(2023, 0, 30);
-  const days = [];
-  var date = startDate;
-  while (date <= endDate) {
-    days.push(new Date(date));
-    date.setDate(date.getDate() + 1);
-  }
-  return days;
 }
 
 export function CheckinHistoryChart(props) {

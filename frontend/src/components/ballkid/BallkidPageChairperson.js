@@ -36,6 +36,7 @@ import { CheckinHistoryChart } from "./CheckinHistoryChart";
 import { CaptainHistoryChart } from "./CaptainHistoryChart";
 import { CourtHistoryChart } from "./CourtHistoryChart";
 import { RaterParamsChart } from "./RaterParamsChart";
+import { BallkidParamsChart } from "./BallkidParamsChart";
 
 function renderHeader(ballkid, setUpdated) {
   return (
@@ -286,7 +287,6 @@ function RatingSection({ ballkid }) {
       <Grid item xs={12}>
         <Typography variant="h6">Ratings:</Typography>
       </Grid>
-
       {!ballkid.is_captain ? (
         ""
       ) : (
@@ -332,18 +332,10 @@ function RatingSection({ ballkid }) {
           component={Link}
           href={`/ratings?ratee=${ballkid.id}`}
           endIcon={<Shortcut />}
-          sx={{ my: 1 }}
+          sx={{ my: 1, mr: 1 }}
         >
           View ratings for this ballkid
         </Button>
-        {params.improvement == null ? (
-          <Typography></Typography>
-        ) : (
-          <Typography variant="body1">
-            Improvement: {Number(params.improvement).toFixed(3)}
-          </Typography>
-        )}
-
         <Button
           size="small"
           variant="outlined"
@@ -354,6 +346,26 @@ function RatingSection({ ballkid }) {
         >
           View my ratings for this ballkid
         </Button>
+
+        {params.ballkid_improvement == null ? (
+          ""
+        ) : (
+          <div>
+            <Typography variant="body1">
+              Ballkid improvement:{" "}
+              {Number(params.ballkid_improvement).toFixed(3)}
+            </Typography>
+            <Typography variant="body1">
+              Ballkid offset: {Number(params.ballkid_offset).toFixed(3)}
+            </Typography>
+
+            <BallkidParamsChart
+              offset={params.ballkid_offset}
+              improvement={params.ballkid_improvement}
+              sx={{ mb: 2 }}
+            />
+          </div>
+        )}
       </Grid>
     </Grid>
   );
@@ -676,7 +688,6 @@ export default function BallkidPageChairperson(props) {
       <br />
 
       <RatingSection ballkid={ballkid} />
-      <Grid container>{renderPreviousFinals(finals)}</Grid>
 
       {!ballkid.is_active ? (
         ""
@@ -701,6 +712,8 @@ export default function BallkidPageChairperson(props) {
           {/* <MatchHistoryChart histories={matches} /> */}
         </Grid>
       )}
+
+      <Grid container>{renderPreviousFinals(finals)}</Grid>
     </div>
   );
 }

@@ -248,10 +248,11 @@ class GetCutHistory(APIView):
     pass
 
 
-class GetCaptainHistory(APIView):
+class GetPastTeams(APIView):
     permission_classes = [IsChairpersonOrCaptain]
 
     def get(self, request, pk):
+        # Get all the histories where this ballkid was a captain
         histories = (
             CaptainHistory.objects.filter(captain_id=pk)
             .annotate(date=TruncDay("start"))
@@ -259,13 +260,19 @@ class GetCaptainHistory(APIView):
             .order_by("-date", "ballkid__last_name", "ballkid__first_name")
         )
 
+        # Map from date_str to list of ballkids that were on the captain's team
+        # on that date
         date_to_ballkids = {}
         for history in histories:
             date = history["date"]
             ballkid_id = history["ballkid_id"]
             date_str = datetime.strftime(date, "%a, %b %-d")
+
+            # If date_str is not in map yet, create an empty list of ballkids for that day
             if date_str not in date_to_ballkids:
                 date_to_ballkids[date_str] = []
+
+            # If the ballkid is not in the list of ballkids on that day yet, add them
             if ballkid_id not in date_to_ballkids[date_str]:
                 date_to_ballkids[date_str].append(ballkid_id)
 
@@ -302,7 +309,7 @@ class GetCaptainAnalytics(APIView):
         return Response(CaptainAnalyticsSerializer(analytics, many=True).data)
 
 
-class GetCourtAnalyticsView(APIView):
+class GetCourtAnalytics(APIView):
     permission_classes = [IsChairperson]
 
     def get(self, request, pk):
@@ -359,6 +366,7 @@ class CreateTeamHistory(APIView):
             )
 
         ballkid.recalc_court_analytics()
+        ballkid.recalc_captain_analytics()
 
         return Response(TeamHistorySerializer(history).data)
 

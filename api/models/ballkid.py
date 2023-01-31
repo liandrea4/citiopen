@@ -117,7 +117,7 @@ class Ballkid(models.Model):
                     durations[other_id] += history.end - history.start
                     counts[other_id] += 1
 
-            for other_id, duration in durations.items():
+            for other_id in durations.keys():
                 if updateAsCaptain:
                     analytic, _ = CaptainAnalytics.objects.get_or_create(
                         ballkid_id=other_id, captain=self
@@ -126,83 +126,9 @@ class Ballkid(models.Model):
                     analytic, _ = CaptainAnalytics.objects.get_or_create(
                         ballkid=self, captain_id=other_id
                     )
-                analytic.duration = duration
+                analytic.duration = durations[other_id]
                 analytic.count = counts[other_id]
                 analytic.save()
-
-    # def recalc_captain_analytics_unidirectional(self, update_self=True):
-    #     """
-    #     Recalculates captain counts and durations in a single direction. This means that
-    #     CaptainAnalytics is ONLY updated for all the captains for a given ballkid OR all
-    #     the ballkids for a given captain (if self is a captain).
-
-    #     Arguments:
-    #     - update_self(bool): Boolean to indicate direction for which CaptainAnalytics is
-    #     updated. If True, then we treat self as the ballkid and update all captains
-    #     associated with the ballkid. If False (only if self is a captain), then we treat
-    #     self as the captain and update all other ballkids (captain or non-captain) associated
-    #     with self.
-    #     """
-
-    #     # TODO: make this more efficient by caching the result and only
-    #     # updating based on the most recent history
-
-    #     counts = {}
-    #     times = {}
-
-    #     # Get all team histories for this ballkid
-    #     self_histories = TeamHistory.objects.all().filter(ballkid_id=self.id)
-
-    #     for self_history in self_histories:
-    #         # TODO: make this more efficient by filtering on the day of the shift
-    #         # while being flexible enough for times after midnight
-
-    #         # Filter to all the team histories of others on the same team, excluding
-    #         # self. If we are updating captains associated with self (i.e. if update_self
-    #         # is True), then we filter to only captains
-    #         histories = (
-    #             TeamHistory.objects.all()
-    #             .filter(team=self_history.team)
-    #             .exclude(ballkid_id=self.id)
-    #         )
-    #         if update_self:
-    #             histories = histories.filter(ballkid__is_captain=True)
-
-    #         for history in histories:
-    #             id = history.ballkid_id
-    #             overlapping = calc_overlapping_time(
-    #                 self_history.start,
-    #                 self_history.end,
-    #                 history.start,
-    #                 history.end,
-    #             )
-
-    #             # ONLY if there is non-zero overlapping time, then log the captain to the
-    #             # ballkid's CaptainAnalytics (counts and durations)
-    #             if overlapping:
-    #                 if id not in counts:
-    #                     counts[id] = 0
-    #                 if id not in times:
-    #                     times[id] = timedelta()
-
-    #                 counts[id] += 1
-    #                 times[id] += overlapping
-
-    #     # Create or update the row in CaptainAnalytics for the (ballkid, captain) pair
-    #     for id in counts:
-    #         # If updating self, then we treat self as the ballkid
-    #         if update_self:
-    #             analytic, created = CaptainAnalytics.objects.get_or_create(
-    #                 ballkid_id=self.id, captain_id=id
-    #             )
-    #         # If not updating self, then we treat self as the captain
-    #         else:
-    #             analytic, created = CaptainAnalytics.objects.get_or_create(
-    #                 ballkid_id=id, captain_id=self.id
-    #             )
-    #         analytic.count = counts[id]
-    #         analytic.duration = times[id]
-    #         analytic.save()
 
     def recalc_court_analytics(self):
         counts = {}
@@ -348,17 +274,17 @@ class Ballkid(models.Model):
         # unassigned, skip.
         histories = CaptainHistory.objects.filter(ballkid=self)
         if self.current_team != 0 and len(histories) > 0:
-            # get all captains on previous team
+            # Get all captains on previous team
             prev_captains = Ballkid.objects.filter(
                 is_captain=True, current_team=self.current_team
             ).exclude(id=self.id)
 
-            # for each captain, find the most recent CaptainHistory entry for (ballkid, captain)
+            # For each captain, find the most recent CaptainHistory entry for (ballkid, captain)
             for captain in prev_captains:
                 captain_histories = histories.filter(captain=captain)
                 history = captain_histories.order_by("-start")[0]
 
-                # if this most recent entry has empty end, then update end and duration
+                # If this most recent entry has empty end, then update end and duration
                 if history.end is None:
                     history.end = time
 
@@ -382,7 +308,7 @@ class Ballkid(models.Model):
         # If the ballkid is also a captain, then need to update all other ballkids when leaving
         # Team A and joining Team B
 
-        # If ballkid is a captain, get all non-captains on the previous team
+        # If ballkid is a captain, get and update everybody on the previous team
         if self.is_captain:
             histories = CaptainHistory.objects.filter(captain=self)
             if self.current_team != 0 and len(histories) > 0:
@@ -390,12 +316,12 @@ class Ballkid(models.Model):
                     id=self.id
                 )
 
-                # for each ballkid, find the most recent CaptainHistory entry
+                # For each ballkid, find the most recent CaptainHistory entry
                 for ballkid in ballkids:
                     ballkid_histories = histories.filter(ballkid=ballkid)
                     history = ballkid_histories.order_by("-start")[0]
 
-                    # if this most recent entry has empty end, then log end and duration
+                    # If this most recent entry has empty end, then log end and duration
                     if history.end is None:
                         history.end = time
 
@@ -408,7 +334,7 @@ class Ballkid(models.Model):
                         history.save()
 
             # If the ballkid is assigned to a new team (not unassigned), then create
-            # new rows in CaptainHistory to track time with the captain for each captain
+            # new rows in CaptainHistory to track time with the captain for each person
             # on the new team
             if value:
                 new_ballkids = Ballkid.objects.filter(current_team=value)

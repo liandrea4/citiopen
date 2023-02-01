@@ -107,15 +107,15 @@ class Ballkid(models.Model):
 
             for history in histories:
                 other_id = history.ballkid_id if updateAsCaptain else history.captain_id
+                end_time = history.end if history.end else datetime.now()
 
-                if history.end:
-                    if other_id not in durations:
-                        durations[other_id] = timedelta()
-                    if other_id not in counts:
-                        counts[other_id] = 0
+                if other_id not in durations:
+                    durations[other_id] = timedelta()
+                if other_id not in counts:
+                    counts[other_id] = 0
 
-                    durations[other_id] += history.end - history.start
-                    counts[other_id] += 1
+                durations[other_id] += end_time - history.start
+                counts[other_id] += 1
 
             for other_id in durations.keys():
                 if updateAsCaptain:
@@ -436,7 +436,6 @@ class Ballkid(models.Model):
 
     def __str__(self):
         return self.get_name()
-        # return f"{self.first_name} {self.last_name} - Captain: {self.is_captain}; Checkin status: {self.is_checked_in}; Preferred position: {self.preferred_position}; Current team: {self.current_team}"
 
 
 class FinalsHistory(models.Model):

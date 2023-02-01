@@ -13,6 +13,13 @@ class TestBallkidModel(TestCase):
             preferred_position=Position.NB,
             position=Position.N,
         )
+        self.ballkid2 = Ballkid.objects.create(
+            first_name="Joe",
+            last_name="Iosue",
+            is_checked_in=True,
+            preferred_position=Position.NB,
+            position=Position.N,
+        )
 
     def test_get_name(self):
         self.assertEqual(self.ballkid.get_name(), "Lacy Iosue")
@@ -40,6 +47,32 @@ class TestBallkidModel(TestCase):
 
         self.ballkid.set_field("current_team", 2)
         self.assertEqual(2, self.ballkid.current_team)
+
+    def test_set_field_promote_to_captain_unassigned(self):
+        self.ballkid2.set_field("current_team", 3)
+        self.assertEqual(0, len(CaptainHistory.objects.all()))
+        self.assertEqual(0, len(CaptainAnalytics.objects.all()))
+
+        self.ballkid2.set_field("current_team", 0)
+        self.ballkid2.set_field("is_captain", True)
+        self.ballkid2.set_field("current_team", 3)
+        self.assertEqual(1, len(CaptainHistory.objects.all()))
+        self.assertEqual(1, len(CaptainAnalytics.objects.all()))
+
+    # def test_set_field_promote_to_captain_assigned(self):
+    #     self.ballkid2.set_field("current_team", 3)
+    #     self.assertEqual(0, len(CaptainHistory.objects.all()))
+    #     self.assertEqual(0, len(CaptainAnalytics.objects.all()))
+
+    #     self.ballkid2.set_field("is_captain", True)
+    #     self.assertEqual(1, len(CaptainHistory.objects.all()))
+    #     self.assertEqual(1, len(CaptainAnalytics.objects.all()))
+
+    def test_set_field_demote_from_captain_unassigned(self):
+        pass
+
+    def test_set_field_demote_from_captain_assigned(self):
+        pass
 
     def test_get_preferred_position_switch(self):
         self.assertEqual(Position.N, self.ballkid.get_preferred_position())

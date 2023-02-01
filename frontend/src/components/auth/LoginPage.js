@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Button, Grid, Typography, TextField } from "@mui/material";
+import { Button, Grid, Typography, TextField, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Alerts, handleChange, setSessionStorage } from "./Utils";
+import { Alerts, handleChange, setSessionStorage } from "../Utils";
 
 function submitPassword(state, setSuccessMsg, setErrorMsg, setToken, navigate) {
-  fetch("/accounts/get-token/", {
+  fetch("/accounts/get-token", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -15,7 +15,9 @@ function submitPassword(state, setSuccessMsg, setErrorMsg, setToken, navigate) {
     .then((response) => {
       if (response.ok) {
         setSuccessMsg("Logged in");
-        navigate("/");
+        if (window.location.pathname === "/login") {
+          navigate("/");
+        }
       } else {
         setErrorMsg("Incorrect password.");
         throw new Error("Incorrect password");
@@ -24,10 +26,10 @@ function submitPassword(state, setSuccessMsg, setErrorMsg, setToken, navigate) {
     })
     .then((data) => {
       setToken(data?.token ?? "");
-      setSessionStorage("group", data?.group ?? "");
-      console.log(data);
       setSessionStorage("username", state?.username ?? "");
       setSessionStorage("ballkid_id", data?.ballkid_id ?? "");
+      setSessionStorage("group", data?.group ?? "");
+      console.log(data);
     })
     .catch((error) => {});
 }
@@ -116,7 +118,13 @@ export default function LoginPage(props) {
             </Button>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="body1">Forgot password?</Typography>
+            <Typography
+              variant="body1"
+              component={Link}
+              href="/forgot-password"
+            >
+              Forgot password?
+            </Typography>
           </Grid>
         </Grid>
       </div>

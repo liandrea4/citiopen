@@ -180,7 +180,8 @@ export default function Navbar(props) {
       tabs = chairpersonTabs;
       break;
     default:
-      console.log("Unrecognized group: " + group);
+      break;
+    // console.log("Unrecognized group: " + group);
   }
 
   return (

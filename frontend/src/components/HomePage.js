@@ -10,7 +10,8 @@ import CheckinPage from "./lists/CheckinPage";
 import ArchivedBallkidList from "./lists/ArchivedBallkidList";
 import SchedulePage from "./schedule/SchedulePage";
 import DebugPage from "./DebugPage";
-import LoginPage from "./LoginPage";
+import LoginPage from "./auth/LoginPage";
+import ForgotPasswordPage from "./auth/ForgotPasswordPage";
 import BallkidPageChairperson from "./ballkid/BallkidPageChairperson";
 import FinalsTeamsPageChairperson from "./teams/FinalsTeamsPageChairperson";
 import FinalsTeamsPage from "./teams/FinalsTeamsPage";
@@ -43,6 +44,7 @@ function chairpersonRoutes(setToken) {
       <Route path="/teams" element={<TeamsPageChairperson />} />
       <Route path="/finals-teams" element={<FinalsTeamsPageChairperson />} />
       <Route path="/login" element={<LoginPage setToken={setToken} />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="*" element={<RouteNotFound />} />
     </Routes>
   );
@@ -61,6 +63,7 @@ function captainRoutes(setToken) {
       <Route path="/teams" element={<TeamsPage />} />
       <Route path="/finals-teams" element={<FinalsTeamsPage />} />
       <Route path="/login" element={<LoginPage setToken={setToken} />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="*" element={<RouteNotFound />} />
     </Routes>
   );
@@ -75,10 +78,21 @@ function ballkidRoutes(setToken) {
       <Route path="/teams" element={<TeamsPage />} />
       <Route path="/finals-teams" element={<FinalsTeamsPage />} />
       <Route path="/login" element={<LoginPage setToken={setToken} />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="*" element={<RouteNotFound />} />
     </Routes>
   );
 }
+
+function loggedOutRoutes(setToken) {
+  return (
+    <Routes>
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="*" element={<LoginPage setToken={setToken} />} />
+    </Routes>
+  );
+}
+
 export default function HomePage(props) {
   const { token, setToken } = useToken();
   const group = getSessionStorage("group");
@@ -86,7 +100,7 @@ export default function HomePage(props) {
   return !token ? (
     <Router>
       <Navbar isLoggedIn={false} setToken={setToken} />
-      <LoginPage setToken={setToken} />
+      {loggedOutRoutes(setToken)}
     </Router>
   ) : (
     <Router>

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Button, Grid, Typography, TextField } from "@mui/material";
+import { Grid, Typography, TextField, Button } from "@mui/material";
 
-export default function ForgotPasswordPage(props) {
-  const [email, setEmail] = useState("");
+export default function ResetPassword(props) {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   return (
     <div className="page">
@@ -16,25 +17,28 @@ export default function ForgotPasswordPage(props) {
         >
           <Grid item xs={12}>
             <Typography component="h4" variant="h4">
-              Forgot Password?
+              Reset Password
             </Typography>
           </Grid>
-          <Grid item xs={12}>
-            <Typography component="body1" variant="body1">
-              Enter your email address below, and we'll email instructions for
-              setting a new one.
-            </Typography>
-          </Grid>
-
           <Grid item xs={12}>
             <TextField
-              label="Email"
-              name="email"
+              label="New Password"
+              name="newPassword"
               variant="standard"
               required={true}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Confirm New Password"
+              name="confirmPassword"
+              variant="standard"
+              required={true}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </Grid>
+
           <Grid item xs={12}>
             <Button
               color="primary"
@@ -44,7 +48,8 @@ export default function ForgotPasswordPage(props) {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
-                    email: email,
+                    password: password,
+                    confirmPassword: confirmPassword,
                   }),
                 })
                   .then((response) => response.json())

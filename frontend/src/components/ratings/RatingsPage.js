@@ -73,7 +73,7 @@ export default function RatingsPage(props) {
         For more information on how calibration is done, see{" "}
         <Link
           target="_blank"
-          href="https://github.com/jtiosue/rcal/blob/main/report/review_calibration.pdf"
+          href="https://github.com/jtiosue/rcal/blob/master/report/review_calibration.pdf"
         >
           here
         </Link>

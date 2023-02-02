@@ -12,6 +12,9 @@ import SchedulePage from "./schedule/SchedulePage";
 import DebugPage from "./DebugPage";
 import LoginPage from "./auth/LoginPage";
 import ForgotPasswordPage from "./auth/ForgotPasswordPage";
+import ResetPasswordComplete from "./auth/ResetPasswordComplete";
+import ResetPassword from "./auth/ResetPassword";
+import ResetEmailSent from "./auth/ResetEmailSent";
 import BallkidPageChairperson from "./ballkid/BallkidPageChairperson";
 import FinalsTeamsPageChairperson from "./teams/FinalsTeamsPageChairperson";
 import FinalsTeamsPage from "./teams/FinalsTeamsPage";
@@ -45,6 +48,12 @@ function chairpersonRoutes(setToken) {
       <Route path="/finals-teams" element={<FinalsTeamsPageChairperson />} />
       <Route path="/login" element={<LoginPage setToken={setToken} />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-email-sent" element={<ResetEmailSent />} />
+      <Route
+        path="/reset-password-complete"
+        element={<ResetPasswordComplete />}
+      />
       <Route path="*" element={<RouteNotFound />} />
     </Routes>
   );
@@ -64,6 +73,12 @@ function captainRoutes(setToken) {
       <Route path="/finals-teams" element={<FinalsTeamsPage />} />
       <Route path="/login" element={<LoginPage setToken={setToken} />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-email-sent" element={<ResetEmailSent />} />
+      <Route
+        path="/reset-password-complete"
+        element={<ResetPasswordComplete />}
+      />
       <Route path="*" element={<RouteNotFound />} />
     </Routes>
   );
@@ -79,6 +94,12 @@ function ballkidRoutes(setToken) {
       <Route path="/finals-teams" element={<FinalsTeamsPage />} />
       <Route path="/login" element={<LoginPage setToken={setToken} />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-email-sent" element={<ResetEmailSent />} />
+      <Route
+        path="/reset-password-complete"
+        element={<ResetPasswordComplete />}
+      />
       <Route path="*" element={<RouteNotFound />} />
     </Routes>
   );
@@ -88,6 +109,12 @@ function loggedOutRoutes(setToken) {
   return (
     <Routes>
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-email-sent" element={<ResetEmailSent />} />
+      <Route
+        path="/reset-password-complete"
+        element={<ResetPasswordComplete />}
+      />
       <Route path="*" element={<LoginPage setToken={setToken} />} />
     </Routes>
   );

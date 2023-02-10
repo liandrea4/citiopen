@@ -1,5 +1,6 @@
 from django.test import TestCase
 from api.models.ballkid import *
+from api.models.schedule import *
 from datetime import datetime, timedelta
 
 
@@ -478,6 +479,17 @@ class TestBallkidModelAnalytics(TestCase):
         analytic = analytics[0]
         self.assertEqual(timedelta(hours=8, seconds=1, microseconds=1), analytic.duration)
 
+    def test_recalc_checkin_analytics_empty_end(self):
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid, checkin=datetime(2022, 1, 1, 16, 30, 2)
+        )
+        self.ballkid.recalc_checkin_analytics(now=datetime(2022, 1, 2, 0, 30, 3))
+
+        analytics = CheckinAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        analytic = analytics[0]
+        self.assertEqual(timedelta(hours=8, seconds=1), analytic.duration)
+
     def test_recalc_captain_analytics_milliseconds(self):
         CaptainHistory.objects.create(
             ballkid=self.ballkid,
@@ -824,5 +836,153 @@ class TestBallkidModelAnalytics(TestCase):
         self.assertEqual(2, analytic.count)
         self.assertEqual(timedelta(hours=5), analytic.duration)
 
-    def test_recalc_court_analytics(self):
-        pass
+    def test_recalc_court_analytics_one_team_one_shift(self):
+        TeamHistory.objects.create(
+            ballkid=self.ballkid,
+            team=1,
+            start=datetime(2022, 1, 1, 10, 30),
+            end=datetime(2022, 1, 1, 14, 29),
+        )
+        Schedule.objects.create(
+            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+        )
+        self.ballkid.recalc_court_analytics()
+
+        analytics = CourtAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        analytic = analytics[0]
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(Court.STADIUM, analytic.court)
+        self.assertEqual(timedelta(minutes=30), analytic.duration)
+
+    def test_recalc_court_analytics_one_team_one_shift_empty_end(self):
+        TeamHistory.objects.create(
+            ballkid=self.ballkid,
+            team=1,
+            start=datetime(2022, 1, 1, 10, 30),
+        )
+        Schedule.objects.create(
+            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+        )
+        self.ballkid.recalc_court_analytics(now=datetime(2022, 1, 1, 15, 00))
+
+        analytics = CourtAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        analytic = analytics[0]
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(Court.STADIUM, analytic.court)
+        self.assertEqual(timedelta(minutes=30), analytic.duration)
+
+    def test_recalc_court_analytics_one_team_mult_shifts(self):
+        TeamHistory.objects.create(
+            ballkid=self.ballkid,
+            team=1,
+            start=datetime(2022, 1, 1, 10, 30),
+            end=datetime(2022, 1, 1, 15, 30),
+        )
+        Schedule.objects.create(
+            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+        )
+        Schedule.objects.create(
+            team=1, court=Court.HARRIS, day_hour=datetime(2022, 1, 1, 12, 00)
+        )
+        Schedule.objects.create(
+            team=2, court=Court.GRANDSTAND, day_hour=datetime(2022, 1, 1, 11, 00)
+        )
+        self.ballkid.recalc_court_analytics()
+
+        analytics = CourtAnalytics.objects.all()
+        self.assertEqual(2, len(analytics))
+        analytic, created = analytics.get_or_create(court=Court.STADIUM)
+        self.assertFalse(created)
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(minutes=30), analytic.duration)
+
+        analytic, created = analytics.get_or_create(court=Court.HARRIS)
+        self.assertFalse(created)
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(minutes=60), analytic.duration)
+
+    def test_recalc_court_analytics_one_team_mult_count(self):
+        TeamHistory.objects.create(
+            ballkid=self.ballkid,
+            team=1,
+            start=datetime(2022, 1, 1, 10, 30),
+            end=datetime(2022, 1, 1, 15, 30),
+        )
+        Schedule.objects.create(
+            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+        )
+        Schedule.objects.create(
+            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 15, 00)
+        )
+        self.ballkid.recalc_court_analytics()
+
+        analytics = CourtAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        analytic, created = analytics.get_or_create(court=Court.STADIUM)
+        self.assertFalse(created)
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(2, analytic.count)
+        self.assertEqual(timedelta(hours=1), analytic.duration)
+
+    def test_recalc_court_analytics_mult_team_mult_courts(self):
+        TeamHistory.objects.create(
+            ballkid=self.ballkid,
+            team=1,
+            start=datetime(2022, 1, 1, 10, 30),
+            end=datetime(2022, 1, 1, 15, 30),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid,
+            team=2,
+            start=datetime(2022, 1, 1, 15, 30),
+            end=datetime(2022, 1, 1, 20, 00),
+        )
+        Schedule.objects.create(
+            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+        )
+        Schedule.objects.create(
+            team=1, court=Court.HARRIS, day_hour=datetime(2022, 1, 1, 15, 00)
+        )
+        Schedule.objects.create(
+            team=1, court=Court.GRANDSTAND, day_hour=datetime(2022, 1, 1, 18, 00)
+        )
+        Schedule.objects.create(
+            team=2, court=Court.FOUR, day_hour=datetime(2022, 1, 1, 15, 00)
+        )
+        Schedule.objects.create(
+            team=2, court=Court.FIVE, day_hour=datetime(2022, 1, 1, 19, 00)
+        )
+        self.ballkid.recalc_court_analytics()
+
+        analytics = CourtAnalytics.objects.all()
+        self.assertEqual(4, len(analytics))
+
+        analytic, created = analytics.get_or_create(court=Court.STADIUM)
+        self.assertFalse(created)
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(minutes=30), analytic.duration)
+
+        analytic, created = analytics.get_or_create(court=Court.HARRIS)
+        self.assertFalse(created)
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(minutes=30), analytic.duration)
+
+        analytic, created = analytics.get_or_create(court=Court.FOUR)
+        self.assertFalse(created)
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(minutes=30), analytic.duration)
+
+        analytic, created = analytics.get_or_create(court=Court.FIVE)
+        self.assertFalse(created)
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(hours=1), analytic.duration)

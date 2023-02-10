@@ -65,11 +65,14 @@ class Ballkid(models.Model):
     )
     comments = models.TextField(default="", blank=True)
 
-    def recalc_checkin_analytics(self):
+    def recalc_checkin_analytics(self, now=None):
         """
         Recalculates total checkin duration for the ballkid and saves to the
         CheckinAnalytics table
         """
+
+        if now is None:
+            now = datetime.now()
 
         # TODO: make this more efficient by caching the result and only
         # updating based on the most recent history
@@ -79,12 +82,14 @@ class Ballkid(models.Model):
         for history in histories:
             if history.checkout:
                 duration += history.checkout - history.checkin
+            else:
+                duration += now - history.checkin
 
         analytic, created = CheckinAnalytics.objects.get_or_create(ballkid_id=self.id)
         analytic.duration = duration
         analytic.save()
 
-    def recalc_captain_analytics(self):
+    def recalc_captain_analytics(self, now=None):
         """
         Recalculates captain counts and durations BIDIRECTIONALLY. This means that
         - for a ballkid, CaptainAnalytics is updated to account for all captains that
@@ -93,6 +98,9 @@ class Ballkid(models.Model):
         and non-captain) that have had this ballkid as captain
         )
         """
+        if now is None: 
+            now = datetime.now()
+
         for updateAsCaptain in [True, False]:
             if updateAsCaptain and not self.is_captain:
                 continue
@@ -107,7 +115,7 @@ class Ballkid(models.Model):
 
             for history in histories:
                 other_id = history.ballkid_id if updateAsCaptain else history.captain_id
-                end_time = history.end if history.end else datetime.now()
+                end_time = history.end if history.end else now
 
                 if other_id not in durations:
                     durations[other_id] = timedelta()
@@ -130,9 +138,12 @@ class Ballkid(models.Model):
                 analytic.count = counts[other_id]
                 analytic.save()
 
-    def recalc_court_analytics(self):
+    def recalc_court_analytics(self, now=None):
         counts = {}
         times = {}
+
+        if now is None:
+            now = datetime.now()
 
         # Get all team histories for this ballkid
         histories = TeamHistory.objects.all().filter(ballkid_id=self.id)
@@ -141,22 +152,20 @@ class Ballkid(models.Model):
             # TODO: make this more efficient by filtering on the day of the shift
             # while being flexible enough for times after midnight
 
-            # Filter to all the team histories of others on the same team, excluding
-            # self. If we are updating captains associated with self (i.e. if update_self
-            # is True), then we filter to only captains
+            # Find all associated shifts of the ballkid's team
             shifts = Schedule.objects.all().filter(team=history.team)
 
             for shift in shifts:
                 court = shift.court
                 overlapping = calc_overlapping_time(
                     history.start,
-                    history.end,
+                    history.end if history.end else now,
                     shift.day_hour,
                     shift.day_hour + timedelta(hours=1),
                 )
 
-                # ONLY if there is non-zero overlapping time, then log the captain to the
-                # ballkid's CaptainAnalytics (counts and durations)
+                # ONLY if there is non-zero overlapping time, then log the court to the
+                # ballkid's CourtAnalytics (counts and durations)
                 if overlapping:
                     if court not in counts:
                         counts[court] = 0
@@ -166,7 +175,7 @@ class Ballkid(models.Model):
                     counts[court] += 1
                     times[court] += overlapping
 
-        # Create or update the row in CaptainAnalytics for the (ballkid, captain) pair
+        # Create or update the row in CourtAnalytics for the (ballkid, court) pair
         for court in counts:
             analytic, created = CourtAnalytics.objects.get_or_create(
                 ballkid_id=self.id, court=court

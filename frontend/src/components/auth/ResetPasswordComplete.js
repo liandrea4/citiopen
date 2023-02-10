@@ -13,12 +13,10 @@ export default function ForgotPasswordComplete(props) {
           justifyContent="center"
         >
           <Grid item xs={12}>
-            <Typography component="h4" variant="h4">
-              Password reset complete!
-            </Typography>
+            <Typography variant="h4">Password reset complete!</Typography>
           </Grid>
           <Grid item xs={12}>
-            <Typography component="body1" variant="body1">
+            <Typography variant="body1">
               Your password has been reset. You can log in now with your new
               password.
             </Typography>

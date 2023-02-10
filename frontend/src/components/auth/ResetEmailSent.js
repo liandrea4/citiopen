@@ -13,12 +13,10 @@ export default function ResetEmailSent(props) {
           justifyContent="center"
         >
           <Grid item xs={12}>
-            <Typography component="h4" variant="h4">
-              Password reset email sent!
-            </Typography>
+            <Typography variant="h4">Password reset email sent!</Typography>
           </Grid>
           <Grid item xs={12}>
-            <Typography component="body1" variant="body1">
+            <Typography variant="body1">
               Please check your email for further instructions to reset your
               password.
             </Typography>

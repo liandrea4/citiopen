@@ -88,7 +88,7 @@ function loggedOutRoutes(setToken) {
   return (
     <Routes>
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
       <Route path="/reset-email-sent" element={<ResetEmailSent />} />
       <Route
         path="/reset-password-complete"

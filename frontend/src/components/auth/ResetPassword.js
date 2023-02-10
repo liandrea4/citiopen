@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { Grid, Typography, TextField, Button } from "@mui/material";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function ResetPassword(props) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const { uid, token } = useParams();
+  const navigate = useNavigate();
 
   return (
     <div className="page">
@@ -25,6 +29,7 @@ export default function ResetPassword(props) {
               label="New Password"
               name="newPassword"
               variant="standard"
+              type="password"
               required={true}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -34,6 +39,7 @@ export default function ResetPassword(props) {
               label="Confirm New Password"
               name="confirmPassword"
               variant="standard"
+              type="password"
               required={true}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -44,17 +50,16 @@ export default function ResetPassword(props) {
               color="primary"
               variant="contained"
               onClick={(e) =>
-                fetch("/accounts/get-token", {
+                fetch("/accounts/users/reset_password_confirm/", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
-                    password: password,
-                    confirmPassword: confirmPassword,
+                    uid: uid,
+                    token: token,
+                    new_password: password,
+                    re_new_password: confirmPassword,
                   }),
-                })
-                  .then((response) => response.json())
-                  .then((data) => console.log(data))
-                  .catch((error) => {})
+                }).then((response) => navigate("/reset-password-complete"))
               }
             >
               Submit

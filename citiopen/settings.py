@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "django_rest_passwordreset",
+    "djoser",
     # Local apps
     "api.apps.ApiConfig",
     "accounts.apps.AccountsConfig",
@@ -123,13 +124,32 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
+    # {
+    #     "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    # },
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+DJOSER = {
+    "USER_ID_FIELD": "username",
+    "LOGIN_FIELD": "email",
+    "SEND_ACTIVATION_EMAIL": True,
+    "ACTIVATION_URL": "activate/{uid}/{token}",
+    "PASSWORD_RESET_CONFIRM_URL": "reset-password/{uid}/{token}",  # React route reset link
+    "SET_PASSWORD_RETYPE": True,
+    "SERIALIZERS": {
+        "token_create": "accounts.serializers.CustomTokenCreateSerializer",
+    },
+}
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "citiopenballkids@gmail.com"
+EMAIL_HOST_PASSWORD = "taxwgqziuyiqgzhy"
+EMAIL_USE_TLS = True
 
 
 # Internationalization
@@ -154,5 +174,3 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "frontend/build/static")]
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

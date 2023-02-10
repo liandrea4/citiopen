@@ -42,16 +42,12 @@ export default function ForgotPasswordPage(props) {
             <Button
               color="primary"
               variant="contained"
-              onClick={
-                (e) =>
-                  fetch("/accounts/reset-password", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      email: email,
-                    }),
-                  }).then((response) => response.json())
-                // .then((data) => navigate("reset-email-sent"))
+              onClick={(e) =>
+                fetch("/accounts/users/reset_password/", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email }),
+                }).then((response) => navigate("/reset-email-sent"))
               }
             >
               Submit

@@ -9,9 +9,5 @@ urlpatterns = [
     path("get-token", GetTokenView.as_view(), name="get-token"),
     path("register", RegisterUserView.as_view(), name="register"),
     path("change-password", ChangePasswordView.as_view(), name="change-password"),
-    path(
-        "reset-password/",
-        include("django_rest_passwordreset.urls", namespace="reset-password"),
-    ),
     path("", include("djoser.urls")),
 ]

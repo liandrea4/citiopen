@@ -54,6 +54,12 @@ class CaptainHistorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class FinalsHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FinalsHistory
+        fields = "__all__"
+
+
 class RatingSerializer(serializers.ModelSerializer):
     ratee_name = serializers.CharField(max_length=60, required=False)
     rater_name = serializers.CharField(max_length=60, required=False)
@@ -69,10 +75,4 @@ class RatingSerializer(serializers.ModelSerializer):
 class CalibrationParamsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CalibrationParams
-        fields = "__all__"
-
-
-class FinalsHistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FinalsHistory
         fields = "__all__"

@@ -397,3 +397,31 @@ class CreateCaptainHistory(APIView):
         captain.recalc_captain_analytics()
 
         return Response(CaptainHistorySerializer(history).data)
+
+
+class CreateFinalsHistory(APIView):
+    permission_classes = [IsChairperson]
+
+    def post(self, request, format=None):
+        ballkid = Ballkid.objects.get(id=request.data["ballkid_id"])
+        history = FinalsHistory.objects.create(
+            ballkid=ballkid,
+            year=request.data["year"],
+            match_type=request.data["match_type"],
+        )
+
+        return Response(FinalsHistorySerializer(history).data)
+
+
+# class CreateCutHistory(APIView):
+#     permission_classes = [IsChairperson]
+
+#     def post(self, request, format=None):
+#         ballkid = Ballkid.objects.get(id=request.data["ballkid_id"])
+#         history = CutHistory.objects.create(
+#             ballkid=ballkid,
+#             year=request.data["year"],
+#             match_type=request.data["match_type"],
+#         )
+
+#         return Response(CutHistorySerializer(history).data)

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from api.utils import calc_overlapping_time
 from api.models.schedule import Schedule, Court
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 
 
 class Position(models.TextChoices):
@@ -38,6 +39,7 @@ class Ballkid(models.Model):
         max_length=100, default="api/static/img/none.jpg", blank=True
     )
     num_years_experience = models.IntegerField(default=0)
+    # years_worked = ArrayField(ArrayField(models.IntegerField(default=0)))
     is_captain = models.BooleanField(default=False)
     is_chairperson = models.BooleanField(default=False)
     preferred_position = models.CharField(
@@ -482,7 +484,7 @@ class FinalsHistory(models.Model):
     num_years_experience = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.ballkid.get_name()} worked {self.finals} for finals in {self.year}"
+        return f"{self.ballkid.get_name()} worked {self.match_type} for finals in {self.year}"
 
 
 class CutHistory(models.Model):

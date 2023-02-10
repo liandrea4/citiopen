@@ -84,6 +84,11 @@ debug_urls = [
         CreateCaptainHistory.as_view(),
         name="create-captain-history",
     ),
+    path(
+        "create-finals-history",
+        CreateFinalsHistory.as_view(),
+        name="create-finals-history",
+    ),
 ]
 
 urlpatterns = (

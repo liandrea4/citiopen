@@ -718,6 +718,125 @@ function CreateRating({ ballkidsList, captainsList }) {
   );
 }
 
+function CreateFinalsHistory({ ballkidsList }) {
+  const [ballkid, setBallkid] = useState(null);
+  const [year, setYear] = useState(null);
+  const [matchType, setMatchType] = useState(null);
+
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  return (
+    <Grid
+      container
+      sx={{ mt: 7 }}
+      spacing={2}
+      alignItems="center"
+      direction="column"
+      justifyContent="center"
+    >
+      <Grid item xs={12}>
+        <Alerts
+          successMsg={successMsg}
+          errorMsg={errorMsg}
+          setSuccessMsg={setSuccessMsg}
+          setErrorMsg={setErrorMsg}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Typography component="h4" variant="h4">
+          Add Finals History
+        </Typography>
+      </Grid>
+
+      <Grid item xs={12} className="sxs">
+        <Autocomplete
+          disablePortal
+          openOnFocus
+          sx={{ width: 300, mx: 2 }}
+          options={ballkidsList}
+          value={ballkid}
+          onChange={(e, newVal) => {
+            setBallkid(newVal);
+          }}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="standard"
+              label="Ballkid"
+              required
+            />
+          )}
+        />
+      </Grid>
+
+      <Grid item xs={12} className="sxs">
+        <TextField
+          sx={{ mx: 2 }}
+          variant="standard"
+          required={true}
+          label="Year"
+          onChange={(e) => setYear(e.target.value)}
+        />
+
+        <Autocomplete
+          disablePortal
+          openOnFocus
+          sx={{ width: 300, mx: 2 }}
+          options={[
+            "Men's Singles",
+            "Men's Doubles",
+            "Women's Singles",
+            "Women's Doubles",
+          ]}
+          value={matchType}
+          onChange={(e, newVal) => {
+            setMatchType(newVal);
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="standard"
+              label="Match Type"
+              required
+            />
+          )}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={(e) => {
+            fetch("/api/create-finals-history", {
+              method: "POST",
+              headers: getAuthHeader(),
+              body: JSON.stringify({
+                ballkid_id: ballkid.id,
+                year: year,
+                match_type: matchType,
+              }),
+            }).then((response) => {
+              if (response.ok) {
+                setSuccessMsg("Rating submitted!");
+                setBallkid(null);
+                setYear(null);
+                setMatchType(null);
+              } else {
+                setErrorMsg("Error submitting rating.");
+              }
+            });
+          }}
+        >
+          Create Finals History
+        </Button>
+      </Grid>
+    </Grid>
+  );
+}
+
 export default function DebugPage(props) {
   const [ballkids, setBallkids] = useState([]);
   const [captains, setCaptains] = useState([]);
@@ -756,6 +875,7 @@ export default function DebugPage(props) {
           ballkidsList={ballkidsList}
           captainsList={captainsList}
         />
+        <CreateFinalsHistory ballkidsList={ballkidsList} />
         <CreateRating ballkidsList={ballkidsList} captainsList={captainsList} />
       </div>
     </div>

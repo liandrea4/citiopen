@@ -89,6 +89,11 @@ debug_urls = [
         CreateFinalsHistory.as_view(),
         name="create-finals-history",
     ),
+    path(
+        "create-cut-history",
+        CreateCutHistory.as_view(),
+        name="create-cut-history",
+    ),
 ]
 
 urlpatterns = (

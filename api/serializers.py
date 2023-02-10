@@ -60,6 +60,12 @@ class FinalsHistorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class CutHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CutHistory
+        fields = "__all__"
+
+
 class RatingSerializer(serializers.ModelSerializer):
     ratee_name = serializers.CharField(max_length=60, required=False)
     rater_name = serializers.CharField(max_length=60, required=False)

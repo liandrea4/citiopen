@@ -720,8 +720,8 @@ function CreateRating({ ballkidsList, captainsList }) {
 
 function CreateFinalsHistory({ ballkidsList }) {
   const [ballkid, setBallkid] = useState(null);
-  const [year, setYear] = useState(null);
-  const [matchType, setMatchType] = useState(null);
+  const [year, setYear] = useState("");
+  const [matchType, setMatchType] = useState("");
 
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -775,34 +775,31 @@ function CreateFinalsHistory({ ballkidsList }) {
         <TextField
           sx={{ mx: 2 }}
           variant="standard"
+          value={year}
           required={true}
           label="Year"
           onChange={(e) => setYear(e.target.value)}
         />
 
-        <Autocomplete
-          disablePortal
-          openOnFocus
-          sx={{ width: 300, mx: 2 }}
-          options={[
-            "Men's Singles",
-            "Men's Doubles",
-            "Women's Singles",
-            "Women's Doubles",
-          ]}
-          value={matchType}
-          onChange={(e, newVal) => {
-            setMatchType(newVal);
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="standard"
-              label="Match Type"
-              required
-            />
-          )}
-        />
+        <FormControl
+          component="fieldset"
+          style={{ minWidth: 200 }}
+          required={true}
+        >
+          <InputLabel>Match Type</InputLabel>
+          <Select
+            label="Match Type"
+            variant="standard"
+            value={matchType}
+            sx={{ mx: 2 }}
+            onChange={(e) => setMatchType(e.target.value)}
+          >
+            <MenuItem value={"Men's Singles"}>Men's Singles</MenuItem>
+            <MenuItem value={"Men's Doubles"}>Men's Doubles</MenuItem>
+            <MenuItem value={"Women's Singles"}>Women's Singles</MenuItem>
+            <MenuItem value={"Women's Doubles"}>Women's Doubles</MenuItem>
+          </Select>
+        </FormControl>
       </Grid>
 
       <Grid item xs={12}>
@@ -822,8 +819,8 @@ function CreateFinalsHistory({ ballkidsList }) {
               if (response.ok) {
                 setSuccessMsg("Rating submitted!");
                 setBallkid(null);
-                setYear(null);
-                setMatchType(null);
+                setYear("");
+                setMatchType("");
               } else {
                 setErrorMsg("Error submitting rating.");
               }
@@ -831,6 +828,136 @@ function CreateFinalsHistory({ ballkidsList }) {
           }}
         >
           Create Finals History
+        </Button>
+      </Grid>
+    </Grid>
+  );
+}
+
+function CreateCutHistory({ ballkidsList }) {
+  const [ballkid, setBallkid] = useState(null);
+  const [year, setYear] = useState("");
+  const [furthestDay, setFurthestDay] = useState(null);
+  const [selfCut, setSelfCut] = useState(false);
+
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  return (
+    <Grid
+      container
+      sx={{ mt: 7 }}
+      spacing={2}
+      alignItems="center"
+      direction="column"
+      justifyContent="center"
+    >
+      <Grid item xs={12}>
+        <Alerts
+          successMsg={successMsg}
+          errorMsg={errorMsg}
+          setSuccessMsg={setSuccessMsg}
+          setErrorMsg={setErrorMsg}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Typography component="h4" variant="h4">
+          Add Cut History
+        </Typography>
+      </Grid>
+
+      <Grid item xs={12} className="sxs">
+        <Autocomplete
+          disablePortal
+          openOnFocus
+          sx={{ width: 300, mx: 2 }}
+          options={ballkidsList}
+          value={ballkid}
+          onChange={(e, newVal) => {
+            setBallkid(newVal);
+          }}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="standard"
+              label="Ballkid"
+              required
+            />
+          )}
+        />
+
+        <FormControl component="fieldset" style={{ minWidth: 200 }} required>
+          <InputLabel>Self-cut?</InputLabel>
+          <Select
+            label="Self-Cut"
+            value={selfCut}
+            variant="standard"
+            sx={{ mx: 2 }}
+            onChange={(e) => setSelfCut(e.target.value)}
+          >
+            <MenuItem value={true}>Yes</MenuItem>
+            <MenuItem value={false}>No</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
+
+      <Grid item xs={12} className="sxs">
+        <TextField
+          sx={{ mx: 2 }}
+          variant="standard"
+          required={true}
+          value={year}
+          label="Year"
+          onChange={(e) => setYear(e.target.value)}
+        />
+
+        <LocalizationProvider dateAdapter={AdapterLuxon}>
+          <DatePicker
+            renderInput={(props) => (
+              <TextField
+                sx={{ mx: 2 }}
+                variant="standard"
+                required={true}
+                {...props}
+              />
+            )}
+            label="Furthest Day"
+            value={furthestDay}
+            mask={"__/__/____"}
+            onChange={(newValue) => setFurthestDay(newValue.toLocaleString())}
+          />
+        </LocalizationProvider>
+      </Grid>
+
+      <Grid item xs={12}>
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={(e) => {
+            fetch("/api/create-cut-history", {
+              method: "POST",
+              headers: getAuthHeader(),
+              body: JSON.stringify({
+                ballkid_id: ballkid.id,
+                year: year,
+                furthest_day: furthestDay,
+                self_cut: selfCut,
+              }),
+            }).then((response) => {
+              if (response.ok) {
+                setSuccessMsg("Rating submitted!");
+                setBallkid(null);
+                setYear("");
+                setFurthestDay(null);
+                setSelfCut(false);
+              } else {
+                setErrorMsg("Error submitting rating.");
+              }
+            });
+          }}
+        >
+          Create Cut History
         </Button>
       </Grid>
     </Grid>
@@ -876,6 +1003,7 @@ export default function DebugPage(props) {
           captainsList={captainsList}
         />
         <CreateFinalsHistory ballkidsList={ballkidsList} />
+        <CreateCutHistory ballkidsList={ballkidsList} />
         <CreateRating ballkidsList={ballkidsList} captainsList={captainsList} />
       </div>
     </div>

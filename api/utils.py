@@ -47,7 +47,7 @@ def timedelta_to_str(delta):
     return f"{int(hours)} hrs {int(minutes)} mins"
 
 
-def input_str_to_datetime(input_str, format_str="%Y-%m-%d %H:%M:%S"):
+def datetime_str_to_datetime(input_str, format_str="%Y-%m-%d %H:%M:%S"):
     """
     Converts a string to a datetime object.
 

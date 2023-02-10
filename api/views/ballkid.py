@@ -324,8 +324,8 @@ class CreateCheckinHistory(APIView):
     def post(self, request, format=None):
         ballkid = Ballkid.objects.get(id=request.data["ballkid_id"])
 
-        checkin = input_str_to_datetime(request.data["checkin"])
-        checkout = input_str_to_datetime(request.data["checkout"])
+        checkin = datetime_str_to_datetime(request.data["checkin"])
+        checkout = datetime_str_to_datetime(request.data["checkout"])
 
         if checkout:
             history = CheckinHistory.objects.create(
@@ -348,8 +348,8 @@ class CreateTeamHistory(APIView):
     def post(self, request, format=None):
         ballkid = Ballkid.objects.get(id=request.data["ballkid_id"])
 
-        start = input_str_to_datetime(request.data["start"])
-        end = input_str_to_datetime(request.data["end"])
+        start = datetime_str_to_datetime(request.data["start"])
+        end = datetime_str_to_datetime(request.data["end"])
 
         if end:
             history = TeamHistory.objects.create(
@@ -377,8 +377,8 @@ class CreateCaptainHistory(APIView):
         ballkid = Ballkid.objects.get(id=request.data["ballkid_id"])
         captain = Ballkid.objects.get(id=request.data["captain_id"])
 
-        start = input_str_to_datetime(request.data["start"])
-        end = input_str_to_datetime(request.data["end"])
+        start = datetime_str_to_datetime(request.data["start"])
+        end = datetime_str_to_datetime(request.data["end"])
 
         if end:
             history = CaptainHistory.objects.create(
@@ -413,15 +413,18 @@ class CreateFinalsHistory(APIView):
         return Response(FinalsHistorySerializer(history).data)
 
 
-# class CreateCutHistory(APIView):
-#     permission_classes = [IsChairperson]
+class CreateCutHistory(APIView):
+    permission_classes = [IsChairperson]
 
-#     def post(self, request, format=None):
-#         ballkid = Ballkid.objects.get(id=request.data["ballkid_id"])
-#         history = CutHistory.objects.create(
-#             ballkid=ballkid,
-#             year=request.data["year"],
-#             match_type=request.data["match_type"],
-#         )
+    def post(self, request, format=None):
+        ballkid = Ballkid.objects.get(id=request.data["ballkid_id"])
+        furthest_day = datetime.strptime(request.data["furthest_day"], "%m/%d/%Y").date()
 
-#         return Response(CutHistorySerializer(history).data)
+        history = CutHistory.objects.create(
+            ballkid=ballkid,
+            year=request.data["year"],
+            furthest_day=furthest_day,
+            self_cut=request.data["self_cut"],
+        )
+
+        return Response(CutHistorySerializer(history).data)

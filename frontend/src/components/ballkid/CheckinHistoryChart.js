@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { Typography } from "@mui/material";
 import {
   Chart as ChartJS,
@@ -59,7 +58,7 @@ export function CheckinHistoryChart(props) {
   // TODO: modify to capture if ballkid checks in after midnight
 
   const [totalTime, setTotalTime] = useState("");
-  const { pk } = useParams();
+  const pk = props.pk ?? "";
 
   const days = getDays();
   const labels = days.map((day) => day.toDateString());

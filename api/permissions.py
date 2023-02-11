@@ -28,3 +28,12 @@ class IsChairpersonOrCaptain(BasePermission):
     def has_permission(self, request, view):
         filtered = request.user.groups.filter(Q(name="chairperson") | Q(name="captain"))
         return len(filtered) > 0
+
+
+class IsChairpersonOrSelf(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        filtered = request.user.groups.filter(name="chairperson")
+        if len(filtered) > 0:
+            return True
+
+        return obj.user == request.user

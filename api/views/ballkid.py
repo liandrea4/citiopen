@@ -236,7 +236,7 @@ class ClearFinalsTeam(APIView):
 
 class GetFinalsHistory(generics.ListAPIView):
     serializer_class = FinalsHistorySerializer
-    permission_classes = [IsChairperson]
+    permission_classes = [IsChairpersonOrSelf]
 
     def get_queryset(self):
         pk = self.kwargs.get("pk")
@@ -279,7 +279,7 @@ class GetPastTeams(APIView):
 
 
 class GetCheckinAnalytics(APIView):
-    permission_classes = [IsChairperson]
+    permission_classes = [IsChairpersonOrSelf]
 
     def get(self, request, pk):
         ballkid = get_object_or_404(Ballkid, id=pk)
@@ -289,7 +289,7 @@ class GetCheckinAnalytics(APIView):
 
 
 class GetCheckinHistory(APIView):
-    permission_classes = [IsChairperson]
+    permission_classes = [IsChairpersonOrSelf]
 
     def get(self, request, pk):
         histories = CheckinHistory.objects.filter(ballkid_id=pk).order_by("checkin")
@@ -297,7 +297,7 @@ class GetCheckinHistory(APIView):
 
 
 class GetCaptainAnalytics(APIView):
-    permission_classes = [IsChairperson]
+    permission_classes = [IsChairpersonOrSelf]
 
     def get(self, request, pk):
         ballkid = get_object_or_404(Ballkid, id=pk)
@@ -309,7 +309,7 @@ class GetCaptainAnalytics(APIView):
 
 
 class GetCourtAnalytics(APIView):
-    permission_classes = [IsChairperson]
+    permission_classes = [IsChairpersonOrSelf]
 
     def get(self, request, pk):
         ballkid = get_object_or_404(Ballkid, id=pk)

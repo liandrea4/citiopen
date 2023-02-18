@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Typography, Grid, Box } from "@mui/material";
-import { getAuthHeader } from "../Utils";
+import { Icons, getAuthHeader } from "../Utils";
 
 export default function BallkidPage(props) {
   const [ballkid, setBallkid] = useState(null);
@@ -20,9 +20,13 @@ export default function BallkidPage(props) {
     ""
   ) : (
     <div className="page">
-      <Typography variant="h4">
-        {ballkid.first_name} {ballkid.last_name}
-      </Typography>
+      <div className="sxs">
+        <Typography variant="h4">
+          {ballkid.first_name} {ballkid.last_name}
+        </Typography>
+        &ensp;
+        <Icons ballkid={ballkid} margin={0} />
+      </div>
 
       <Grid container>
         <Grid item xs={4} md={3} lg={2}>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Typography, Grid, Box, Button, Link } from "@mui/material";
 import { Shortcut } from "@mui/icons-material";
-import { getAuthHeader, RatingButton } from "../Utils";
+import { Icons, getAuthHeader, RatingButton } from "../Utils";
 
 export default function BallkidPageCaptain(props) {
   const [ballkid, setBallkid] = useState(null);
@@ -22,9 +22,13 @@ export default function BallkidPageCaptain(props) {
   ) : (
     <div className="page">
       <div className="justify">
-        <Typography variant="h4">
-          {ballkid.first_name} {ballkid.last_name}
-        </Typography>
+        <div className="sxs">
+          <Typography variant="h4">
+            {ballkid.first_name} {ballkid.last_name}
+          </Typography>
+          &ensp;
+          <Icons ballkid={ballkid} margin={0} />
+        </div>
 
         <RatingButton ballkid={ballkid} />
       </div>

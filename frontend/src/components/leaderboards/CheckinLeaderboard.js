@@ -26,7 +26,7 @@ export default function CheckinLeaderboard(props) {
       headerName: "Ballkid",
       width: 200,
       renderCell: (rowData) => (
-        <Link href={`/ballkid/${rowData.row.ballkid_id}`}>
+        <Link href={`/ballkid/${rowData.row.id}`}>
           {rowData.row.ballkid_name}
         </Link>
       ),

@@ -51,6 +51,11 @@ analytics_urls = [
         GetCheckinLeaderboard.as_view(),
         name="get-checkin-leaderboard",
     ),
+    path(
+        "get-ratings-leaderboard",
+        GetRatingsLeaderboard.as_view(),
+        name="get-ratings-leaderboard",
+    ),
 ]
 
 # Tournament URLs

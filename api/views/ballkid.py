@@ -3,7 +3,8 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Max, Value, Count, Sum
+from django.db.models import Max, Value, Count, Sum, Q, Avg, OuterRef, Subquery
+from django.db.models.aggregates import StdDev
 from django.db.models.functions import Concat, TruncDay, TruncDate
 from api.serializers import *
 from api.models.ballkid import *
@@ -327,6 +328,34 @@ class GetCheckinLeaderboard(generics.ListAPIView):
                 ),
             )
             .order_by("-total_checkin_duration")
+        )
+
+
+class GetRatingsLeaderboard(generics.ListAPIView):
+    permission_classes = [IsChairperson]
+    serializer_class = BallkidSerializer
+
+    def get_queryset(self):
+        return (
+            Ballkid.objects.filter(is_active=True)
+            .filter(Q(is_captain=True) | Q(is_chairperson=True))
+            .annotate(
+                ballkid_name=Concat("first_name", Value(" "), "last_name"),
+                num_ratings=Count("rater"),
+                avg_rating=Avg("rater__rating"),
+                stdev_rating=StdDev("rater__rating"),
+                scale=Subquery(
+                    CalibrationParams.objects.filter(ballkid_id=OuterRef("id")).values(
+                        "reviewer_scale"
+                    )
+                ),
+                offset=Subquery(
+                    CalibrationParams.objects.filter(ballkid_id=OuterRef("id")).values(
+                        "reviewer_offset"
+                    )
+                ),
+            )
+            .order_by("-num_ratings")
         )
 
 

@@ -8,6 +8,11 @@ class BallkidSerializer(serializers.ModelSerializer):
     ballkid_name = serializers.CharField(max_length=60, required=False)
     total_checkin_duration = serializers.DurationField(required=False)
     total_checkin_days = serializers.IntegerField(required=False)
+    num_ratings = serializers.IntegerField(required=False)
+    avg_rating = serializers.FloatField(required=False)
+    stdev_rating = serializers.FloatField(required=False)
+    scale = serializers.FloatField(required=False)
+    offset = serializers.FloatField(required=False)
 
     class Meta:
         model = Ballkid

@@ -13,7 +13,7 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import { Star, Circle, GridView, List } from "@mui/icons-material";
+import { Star, Circle, GridView, List, EventSeat } from "@mui/icons-material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import RatingDialog from "./ratings/RatingDialog";
 import { END_DATE, START_DATE } from "./Consts";
@@ -25,6 +25,7 @@ export function Icons({ ballkid, margin }) {
 
   return (
     <Icon sx={{ mb: margin }}>
+      {ballkid.is_chairperson ? <EventSeat sx={{ color: "purple" }} /> : ""}
       {ballkid.is_captain ? <Star sx={{ color: "orange" }} /> : ""}
       {ballkid.num_years_experience === 0 ? (
         <Circle sx={{ color: "green" }} />

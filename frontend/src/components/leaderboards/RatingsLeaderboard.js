@@ -114,12 +114,6 @@ export default function RatingsLeaderboard(props) {
         </Link>
         .
       </Typography>
-      <div className="sxs">
-        <Typography variant="body1" className="sxs" sx={{ my: 1 }}>
-          Note: The <EventSeat sx={{ color: "purple", mx: 1 }} /> icon indicates
-          a chairperson.
-        </Typography>
-      </div>
     </div>
   );
 }

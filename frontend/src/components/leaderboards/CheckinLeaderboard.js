@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Typography, Link } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
-import { getAuthHeader, getTimeStr, getTimeFloat } from "../Utils";
+import { getAuthHeader, getTimeStr, getTimeFloat, Icons } from "../Utils";
 
 export default function CheckinLeaderboard(props) {
   const [checkinTimes, setCheckinTimes] = useState([]);
@@ -26,9 +26,13 @@ export default function CheckinLeaderboard(props) {
       headerName: "Ballkid",
       width: 200,
       renderCell: (rowData) => (
-        <Link href={`/ballkid/${rowData.row.id}`}>
-          {rowData.row.ballkid_name}
-        </Link>
+        <div className="sxs">
+          <Link href={`/ballkid/${rowData.row.id}`}>
+            {rowData.row.ballkid_name}
+          </Link>
+          &thinsp;
+          <Icons ballkid={rowData.row.ballkid} margin={0} />
+        </div>
       ),
     },
     {
@@ -56,6 +60,7 @@ export default function CheckinLeaderboard(props) {
 
   const rows = checkinTimes.map((ballkid) => ({
     id: ballkid.id,
+    ballkid: ballkid,
     ballkid_name: ballkid.ballkid_name,
     days: ballkid.total_checkin_days,
     time: ballkid.total_checkin_duration,

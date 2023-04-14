@@ -24,7 +24,7 @@ class GetSchedule(generics.ListAPIView):
         end_hour = start_hour + timedelta(days=1)
 
         return Schedule.objects.filter(
-            day_hour__gte=start_hour, day_hour__lt=end_hour
+            start__gte=start_hour, start__lt=end_hour
         ).order_by("id")
 
 
@@ -46,7 +46,7 @@ class CreateSchedule(APIView):
             hour = start_hour + timedelta(hours=hour_index)
             for court in courts:
                 shift = Schedule(
-                    day_hour=hour,
+                    start=hour,
                     team=(team_index % num_teams) + 1,
                     court=court,
                 )
@@ -69,14 +69,14 @@ class AddHour(APIView):
         day = datetime.strptime(request.data["day"], "%m/%d/%Y")
         start_hour = datetime(year=day.year, month=day.month, day=day.day, hour=8)
         end_hour = start_hour + timedelta(days=1)
-        shifts = Schedule.objects.filter(day_hour__gte=start_hour, day_hour__lt=end_hour)
+        shifts = Schedule.objects.filter(start__gte=start_hour, start__lt=end_hour)
 
-        max_hour = shifts.aggregate(max=Max("day_hour"))["max"]
+        max_hour = shifts.aggregate(max=Max("start"))["max"]
         next_hour = max_hour + timedelta(hours=1)
 
         for court in Court.choices:
             shift = Schedule(
-                day_hour=next_hour,
+                start=next_hour,
                 court=court[0],
             )
             shift.save()
@@ -93,19 +93,19 @@ class UpdateSchedule(APIView):
         try:
             day = request.data["day"]
             hour = request.data["hour"]
-            day_hour = datetime.strptime(f"{day} {hour}", "%m/%d/%Y %I%p")
+            start = datetime.strptime(f"{day} {hour}", "%m/%d/%Y %I%p")
             if "am" in hour.lower():
-                day_hour += timedelta(days=1)
+                start += timedelta(days=1)
 
             court = request.data["court"]
             team = 0 if request.data["team"] == "" else int(request.data["team"])
 
-            shift = Schedule.objects.get(day_hour=day_hour, court=court)
+            shift = Schedule.objects.get(start=start, court=court)
             shift.team = team
             shift.save()
 
             return Response(
-                {"Success": f"Updated team to {team} at {day_hour} on {court}"},
+                {"Success": f"Updated team to {team} at {start} on {court}"},
                 status=status.HTTP_200_OK,
             )
 

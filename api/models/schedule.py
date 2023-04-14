@@ -12,19 +12,19 @@ class Court(models.TextChoices):
 
 
 class Schedule(models.Model):
-    day_hour = models.DateTimeField(default=datetime.now)
+    start = models.DateTimeField(default=datetime.now)
+    end = models.DateTimeField(blank=True, null=True)
     team = models.IntegerField(default=0)
     court = models.CharField(max_length=10, choices=Court.choices)
-    short_shifted = models.BooleanField(default=False)
 
     def get_day_str(self):
-        return datetime.strftime(self.day_hour, "%Y-%m-%d")
+        return datetime.strftime(self.start, "%Y-%m-%d")
 
     def get_hour_str(self):
-        return datetime.strftime(self.day_hour, "%H:%M")
+        return datetime.strftime(self.start, "%H:%M")
 
     def __str__(self):
-        return f"Team {self.team} on {self.court} at {self.day_hour}"
+        return f"Team {self.team} on {self.court} at {self.start}"
 
 
 class Tournament(models.Model):

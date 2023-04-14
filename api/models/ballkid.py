@@ -172,8 +172,8 @@ class Ballkid(models.Model):
                 overlapping = calc_overlapping_time(
                     history.start,
                     history.end if history.end else now,
-                    shift.day_hour,
-                    shift.day_hour + timedelta(hours=1),
+                    shift.start,
+                    shift.end if shift.end else shift.start + timedelta(hours=1),
                 )
 
                 # ONLY if there is non-zero overlapping time, then log the court to the

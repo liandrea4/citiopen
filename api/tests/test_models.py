@@ -1016,7 +1016,7 @@ class TestBallkidModelAnalytics(TestCase):
             end=datetime(2022, 1, 1, 14, 29),
         )
         Schedule.objects.create(
-            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+            team=1, court=Court.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
         self.ballkid.recalc_court_analytics()
 
@@ -1035,7 +1035,7 @@ class TestBallkidModelAnalytics(TestCase):
             start=datetime(2022, 1, 1, 10, 30),
         )
         Schedule.objects.create(
-            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+            team=1, court=Court.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
         self.ballkid.recalc_court_analytics(now=datetime(2022, 1, 1, 15, 00))
 
@@ -1055,13 +1055,13 @@ class TestBallkidModelAnalytics(TestCase):
             end=datetime(2022, 1, 1, 15, 30),
         )
         Schedule.objects.create(
-            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+            team=1, court=Court.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
         Schedule.objects.create(
-            team=1, court=Court.HARRIS, day_hour=datetime(2022, 1, 1, 12, 00)
+            team=1, court=Court.HARRIS, start=datetime(2022, 1, 1, 12, 00)
         )
         Schedule.objects.create(
-            team=2, court=Court.GRANDSTAND, day_hour=datetime(2022, 1, 1, 11, 00)
+            team=2, court=Court.GRANDSTAND, start=datetime(2022, 1, 1, 11, 00)
         )
         self.ballkid.recalc_court_analytics()
 
@@ -1087,10 +1087,10 @@ class TestBallkidModelAnalytics(TestCase):
             end=datetime(2022, 1, 1, 15, 30),
         )
         Schedule.objects.create(
-            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+            team=1, court=Court.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
         Schedule.objects.create(
-            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 15, 00)
+            team=1, court=Court.STADIUM, start=datetime(2022, 1, 1, 15, 00)
         )
         self.ballkid.recalc_court_analytics()
 
@@ -1116,19 +1116,19 @@ class TestBallkidModelAnalytics(TestCase):
             end=datetime(2022, 1, 1, 20, 00),
         )
         Schedule.objects.create(
-            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+            team=1, court=Court.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
         Schedule.objects.create(
-            team=1, court=Court.HARRIS, day_hour=datetime(2022, 1, 1, 15, 00)
+            team=1, court=Court.HARRIS, start=datetime(2022, 1, 1, 15, 00)
         )
         Schedule.objects.create(
-            team=1, court=Court.GRANDSTAND, day_hour=datetime(2022, 1, 1, 18, 00)
+            team=1, court=Court.GRANDSTAND, start=datetime(2022, 1, 1, 18, 00)
         )
         Schedule.objects.create(
-            team=2, court=Court.FOUR, day_hour=datetime(2022, 1, 1, 15, 00)
+            team=2, court=Court.FOUR, start=datetime(2022, 1, 1, 15, 00)
         )
         Schedule.objects.create(
-            team=2, court=Court.FIVE, day_hour=datetime(2022, 1, 1, 19, 00)
+            team=2, court=Court.FIVE, start=datetime(2022, 1, 1, 19, 00)
         )
         self.ballkid.recalc_court_analytics()
 
@@ -1167,7 +1167,7 @@ class TestBallkidModelAnalytics(TestCase):
             end=datetime(2022, 1, 1, 9, 30),
         )
         Schedule.objects.create(
-            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+            team=1, court=Court.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
         self.ballkid.recalc_court_analytics()
 
@@ -1181,9 +1181,32 @@ class TestBallkidModelAnalytics(TestCase):
             start=datetime(2022, 1, 1, 8, 30),
         )
         Schedule.objects.create(
-            team=1, court=Court.STADIUM, day_hour=datetime(2022, 1, 1, 10, 00)
+            team=1, court=Court.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
         self.ballkid.recalc_court_analytics(now=datetime(2022, 1, 1, 9, 30))
 
         analytics = CourtAnalytics.objects.all()
         self.assertEqual(0, len(analytics))
+
+    def test_recalc_court_analytics_one_team_one_shift_short_shifted(self):
+        TeamHistory.objects.create(
+            ballkid=self.ballkid,
+            team=1,
+            start=datetime(2022, 1, 1, 10, 30),
+            end=datetime(2022, 1, 1, 14, 29),
+        )
+        Schedule.objects.create(
+            team=1,
+            court=Court.STADIUM,
+            start=datetime(2022, 1, 1, 10, 00),
+            end=datetime(2022, 1, 1, 10, 45),
+        )
+        self.ballkid.recalc_court_analytics()
+
+        analytics = CourtAnalytics.objects.all()
+        self.assertEqual(1, len(analytics))
+        analytic = analytics[0]
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(Court.STADIUM, analytic.court)
+        self.assertEqual(timedelta(minutes=15), analytic.duration)

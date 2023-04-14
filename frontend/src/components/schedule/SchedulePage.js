@@ -27,11 +27,11 @@ function ScheduleTable(props) {
   const hourCourtToTeam = Object.assign(
     {},
     ...shifts.map((shift) => ({
-      [dayHourToStr(shift["day_hour"]) + "-" + shift["court"]]: shift["team"],
+      [dayHourToStr(shift["start"]) + "-" + shift["court"]]: shift["team"],
     }))
   );
   const hours = shifts
-    .map((shift) => dayHourToStr(shift["day_hour"]))
+    .map((shift) => dayHourToStr(shift["start"]))
     .filter((v, i, a) => a.indexOf(v) === i);
   const courts = shifts
     .map((shift) => shift["court"])

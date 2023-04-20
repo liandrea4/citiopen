@@ -412,12 +412,12 @@ class TestCalcNumTeamsView(APITestCase):
 
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(0, response.data["num_teams"])
+        self.assertEqual([], response.data["teams"])
 
     def test_all_checked_in(self):
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(2, response.data["num_teams"])
+        self.assertEqual([1, 2], response.data["teams"])
 
     def test_some_checked_in(self):
         self.ballkid1.is_checked_in = False
@@ -426,7 +426,7 @@ class TestCalcNumTeamsView(APITestCase):
 
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(2, response.data["num_teams"])
+        self.assertEqual([1, 2], response.data["teams"])
 
     def test_empty_maximal_team(self):
         self.ballkid2.is_checked_in = False
@@ -435,7 +435,7 @@ class TestCalcNumTeamsView(APITestCase):
 
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(1, response.data["num_teams"])
+        self.assertEqual([1], response.data["teams"])
 
     def test_empty_nonmaximal_team(self):
         self.ballkid1.is_checked_in = False
@@ -447,7 +447,7 @@ class TestCalcNumTeamsView(APITestCase):
 
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(2, response.data["num_teams"])
+        self.assertEqual([1, 2], response.data["teams"])
 
 
 class TestClearTeamView(APITestCase):

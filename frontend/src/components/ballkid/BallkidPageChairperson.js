@@ -624,13 +624,7 @@ export default function BallkidPageChairperson(props) {
 
     fetch("/api/calc-num-teams", { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) =>
-        setTeams(
-          data["num_teams"] === 0
-            ? []
-            : [...Array(data["num_teams"]).keys()].map((v) => v + 1)
-        )
-      );
+      .then((data) => setTeams(data["teams"]));
 
     fetch("/api/get-finals-history/" + pk, { headers: getAuthHeader() })
       .then((response) => response.json())

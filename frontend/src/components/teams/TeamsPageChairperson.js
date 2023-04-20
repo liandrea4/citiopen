@@ -361,13 +361,7 @@ export default function TeamsPageChairperson(props) {
 
     fetch("/api/calc-num-teams", { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => {
-        setTeams(
-          data["num_teams"] > 0
-            ? [...Array(data["num_teams"]).keys()].map((v) => v + 1)
-            : []
-        );
-      })
+      .then((data) => setTeams(data["teams"]))
       .then(() => setUpdated(false));
   }, [updated]);
 

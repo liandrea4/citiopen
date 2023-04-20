@@ -231,7 +231,16 @@ class CalibratedRatings(APIView):
             ),
         )
 
-        return Response(RatingSerializer(postprocessed, many=True).data)
+        if "overall" in all_warnings:
+            return Response(
+                RatingSerializer(postprocessed, many=True).data,
+                status=status.HTTP_206_PARTIAL_CONTENT,
+            )
+
+        return Response(
+            RatingSerializer(postprocessed, many=True).data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class GetCalibrationParams(generics.RetrieveAPIView):

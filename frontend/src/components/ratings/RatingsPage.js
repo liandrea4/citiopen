@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Switch, Link } from "@mui/material";
+import { Typography, Switch, Link, Collapse, Alert } from "@mui/material";
 import { getAuthHeader, RatingsGrid } from "../Utils";
 import { useSearchParams } from "react-router-dom";
 
 export default function RatingsPage(props) {
   const [ratings, setRatings] = useState([]);
+
   const [calibrated, setCalibrated] = useState([]);
   const [showCalibrated, setShowCalibrated] = useState(false);
+  const [calibrationWarning, setCalibrationWarning] = useState(false);
+  const [showCalibrationWarning, setShowCalibrationWarning] = useState(false);
+
   const [rateeName, setRateeName] = useState();
   const [raterName, setRaterName] = useState();
 
@@ -40,7 +44,12 @@ export default function RatingsPage(props) {
     }
 
     fetch("/api/calibrated-ratings", { headers: getAuthHeader() })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 206) {
+          setCalibrationWarning(true);
+        }
+        return response.json();
+      })
       .then((data) => setCalibrated(data));
   }, [ratee_id, rater_id]);
 
@@ -50,11 +59,23 @@ export default function RatingsPage(props) {
         View Ratings
       </Typography>
 
+      <Collapse in={showCalibrationWarning && calibrationWarning}>
+        <Alert
+          severity="warning"
+          onClose={() => setShowCalibrationWarning(false)}
+        >
+          Warning: May not be enough data for effective calibration
+        </Alert>
+      </Collapse>
+
       <div className="sxs">
         <Typography variant="body1">Raw Ratings</Typography>
         <Switch
           checked={showCalibrated}
-          onClick={(e) => setShowCalibrated(e.target.checked)}
+          onClick={(e) => {
+            setShowCalibrated(e.target.checked);
+            setShowCalibrationWarning(e.target.checked);
+          }}
         />
         <Typography variant="body1">Calibrated Ratings</Typography>
       </div>

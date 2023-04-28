@@ -390,5 +390,5 @@ class TestViewsRating(TestCase):
         )
         ratings = Rating.objects.all()
 
-        cp = calibrate(ratings)
+        cp, excluded = calibrate(ratings)
         self.assertIsInstance(cp, CalibrationParameters, f"Type: {type(cp)}")

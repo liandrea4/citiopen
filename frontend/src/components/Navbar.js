@@ -9,9 +9,117 @@ import {
   Menu,
   MenuItem,
   IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemButton,
+  Box,
+  Divider,
+  Drawer,
 } from "@mui/material";
-import { AccountCircle, SportsTennis } from "@mui/icons-material";
-import { getSessionStorage, setSessionStorage } from "./Utils";
+import { AccountCircle, SportsTennis, Close } from "@mui/icons-material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { getSessionStorage, setSessionStorage, useIsMobile } from "./Utils";
+
+const ballkidTabs = [
+  { label: "By Name", url: "/" },
+  {
+    label: "Teams",
+    url: "/teams",
+    subtabs: [
+      { label: "Teams", url: "/teams" },
+      { label: "Finals Teams", url: "/finals-teams" },
+    ],
+  },
+  { label: "Schedule", url: "/schedule" },
+];
+
+const captainTabs = [
+  { label: "By Name", url: "/" },
+  {
+    label: "Teams",
+    url: "/teams",
+    subtabs: [
+      { label: "Teams", url: "/teams" },
+      { label: "Finals Teams", url: "/finals-teams" },
+    ],
+  },
+  { label: "Schedule", url: "/schedule" },
+  {
+    label: "Ratings",
+    url: "/rate-by-name",
+    subtabs: [
+      { label: "Rate By Name", url: "/rate-by-name" },
+      { label: "Rate By Past Teams", url: "/rate-by-past-team" },
+      { label: "View My Ratings", url: "/my-ratings" },
+    ],
+  },
+];
+
+const chairpersonTabs = [
+  {
+    label: "List",
+    url: "/",
+    subtabs: [
+      { label: "By Name", url: "/" },
+      { label: "Check-In", url: "/checkin" },
+      { label: "Cut", url: "/cut" },
+      { label: "Archive", url: "/archive" },
+    ],
+  },
+  {
+    label: "Teams",
+    url: "/teams",
+    subtabs: [
+      { label: "Teams", url: "/teams" },
+      { label: "Finals Teams", url: "/finals-teams" },
+    ],
+  },
+  { label: "Schedule", url: "/schedule" },
+  {
+    label: "Ratings",
+    url: "/rate-by-name",
+    subtabs: [
+      { label: "Rate By Name", url: "/rate-by-name" },
+      { label: "Rate By Current Team", url: "/rate-by-team" },
+      { label: "Rate By Past Team", url: "/rate-by-past-team" },
+      { label: "View Ratings", url: "/ratings" },
+      { label: "View My Ratings", url: "/my-ratings" },
+    ],
+  },
+  {
+    label: "Leaderboards",
+    url: "/leaderboards",
+    subtabs: [
+      { label: "Check-in", url: "/leaderboards/checkin" },
+      { label: "Court Time", url: "/leaderboards/court" },
+      { label: "Ratings - Ballkid", url: "/leaderboards/ballkid" },
+      { label: "Ratings - Captain", url: "/leaderboards/captain" },
+    ],
+  },
+];
+
+const nonchairpersonAccountTab = {
+  icon: <AccountCircle />,
+  url: "/me",
+  subtabs: [
+    { label: "My Profile", url: "/me" },
+    { label: "Account Settings", url: "/settings" },
+    { label: "Logout", url: "/login" },
+  ],
+};
+
+const chairpersonAccountTab = {
+  icon: <AccountCircle />,
+  url: "/me",
+  subtabs: [
+    { label: "My Profile", url: "/me" },
+    { label: "Tournament Settings", url: "/tournament-settings" },
+    { label: "Account Settings", url: "/settings" },
+    { label: "Debug", url: "/debug" },
+    { label: "Logout", url: "/login" },
+  ],
+};
 
 function NavbarItem(props) {
   const tab = props?.tab;
@@ -112,111 +220,52 @@ function NavbarItem(props) {
   );
 }
 
+function MobileNavbar({ tabs, accountTab }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      <IconButton onClick={() => setOpen(true)}>
+        <MenuIcon sx={{ color: "white" }} />
+      </IconButton>
+
+      <Drawer
+        anchor="right"
+        open={open}
+        onClose={() => setOpen(false)}
+        PaperProps={{
+          sx: { width: "70%" },
+        }}
+      >
+        <Box
+          sx={{
+            p: 1,
+          }}
+          onClick={() => setOpen(false)}
+        >
+          <IconButton>
+            <Close />
+          </IconButton>
+
+          <Divider sx={{ my: 1 }} />
+
+          {tabs.map((tab) => (
+            <ListItemButton key={tab.label} component={Link} to={tab.url}>
+              <ListItemText primary={tab.label} />
+            </ListItemButton>
+          ))}
+        </Box>
+      </Drawer>
+    </div>
+  );
+}
+
 export default function Navbar(props) {
   const group = getSessionStorage("group");
-
-  const ballkidTabs = [
-    { label: "By Name", url: "/" },
-    {
-      label: "Teams",
-      url: "/teams",
-      subtabs: [
-        { label: "Teams", url: "/teams" },
-        { label: "Finals Teams", url: "/finals-teams" },
-      ],
-    },
-    { label: "Schedule", url: "/schedule" },
-  ];
-
-  const captainTabs = [
-    { label: "By Name", url: "/" },
-    {
-      label: "Teams",
-      url: "/teams",
-      subtabs: [
-        { label: "Teams", url: "/teams" },
-        { label: "Finals Teams", url: "/finals-teams" },
-      ],
-    },
-    { label: "Schedule", url: "/schedule" },
-    {
-      label: "Ratings",
-      url: "/rate-by-name",
-      subtabs: [
-        { label: "Rate By Name", url: "/rate-by-name" },
-        { label: "Rate By Past Teams", url: "/rate-by-past-team" },
-        { label: "View My Ratings", url: "/my-ratings" },
-      ],
-    },
-  ];
-
-  const chairpersonTabs = [
-    {
-      label: "List",
-      url: "/",
-      subtabs: [
-        { label: "By Name", url: "/" },
-        { label: "Check-In", url: "/checkin" },
-        { label: "Cut", url: "/cut" },
-        { label: "Archive", url: "/archive" },
-      ],
-    },
-    {
-      label: "Teams",
-      url: "/teams",
-      subtabs: [
-        { label: "Teams", url: "/teams" },
-        { label: "Finals Teams", url: "/finals-teams" },
-      ],
-    },
-    { label: "Schedule", url: "/schedule" },
-    {
-      label: "Ratings",
-      url: "/rate-by-name",
-      subtabs: [
-        { label: "Rate By Name", url: "/rate-by-name" },
-        { label: "Rate By Current Team", url: "/rate-by-team" },
-        { label: "Rate By Past Team", url: "/rate-by-past-team" },
-        { label: "View Ratings", url: "/ratings" },
-        { label: "View My Ratings", url: "/my-ratings" },
-      ],
-    },
-    {
-      label: "Leaderboards",
-      url: "/leaderboards",
-      subtabs: [
-        { label: "Check-in", url: "/leaderboards/checkin" },
-        { label: "Court Time", url: "/leaderboards/court" },
-        { label: "Ratings - Ballkid", url: "/leaderboards/ballkid" },
-        { label: "Ratings - Captain", url: "/leaderboards/captain" },
-      ],
-    },
-  ];
-
-  const nonchairpersonAccountTab = {
-    icon: <AccountCircle />,
-    url: "/me",
-    subtabs: [
-      { label: "My Profile", url: "/me" },
-      { label: "Account Settings", url: "/settings" },
-      { label: "Logout", url: "/login" },
-    ],
-  };
-  const chairpersonAccountTab = {
-    icon: <AccountCircle />,
-    url: "/me",
-    subtabs: [
-      { label: "My Profile", url: "/me" },
-      { label: "Tournament Settings", url: "/tournament-settings" },
-      { label: "Account Settings", url: "/settings" },
-      { label: "Debug", url: "/debug" },
-      { label: "Logout", url: "/login" },
-    ],
-  };
+  const isMobile = useIsMobile();
 
   var accountTab = {};
   var tabs = [];
-
   switch (group) {
     case "ballkid":
       tabs = ballkidTabs;
@@ -264,7 +313,7 @@ export default function Navbar(props) {
               </Typography>
             </div>
 
-            {!props.isLoggedIn ? (
+            {!props.isLoggedIn || isMobile ? (
               ""
             ) : (
               <div className="sxs">
@@ -279,6 +328,8 @@ export default function Navbar(props) {
             <Button color="inherit" component={Link} to="/login">
               Login
             </Button>
+          ) : isMobile ? (
+            <MobileNavbar tabs={tabs} accountTab={accountTab} />
           ) : (
             <NavbarItem
               tab={accountTab}

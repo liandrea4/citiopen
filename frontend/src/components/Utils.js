@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useMediaQuery } from "react-responsive";
 import { Icon, IconButton, Alert, Collapse, Button } from "@mui/material";
 import {
   Star,
@@ -227,4 +228,8 @@ export function useToken() {
 
 export function handleChange(e, state, setState) {
   setState({ ...state, [e.target.name]: e.target.value });
+}
+
+export function useIsMobile() {
+  return useMediaQuery({ query: "(max-width: 750px)" });
 }

@@ -23,6 +23,7 @@ export default function BallkidList(props) {
   );
 
   const isMobile = useMediaQuery({ query: "(max-width: 1000px)" });
+  console.log(isMobile);
 
   useEffect(() => {
     fetch("/api/list", { headers: getAuthHeader() })

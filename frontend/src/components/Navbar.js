@@ -9,15 +9,21 @@ import {
   Menu,
   MenuItem,
   IconButton,
+  Collapse,
   List,
-  ListItem,
   ListItemText,
   ListItemButton,
   Box,
   Divider,
   Drawer,
 } from "@mui/material";
-import { AccountCircle, SportsTennis, Close } from "@mui/icons-material";
+import {
+  AccountCircle,
+  SportsTennis,
+  Close,
+  ExpandLess,
+  ExpandMore,
+} from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { getSessionStorage, setSessionStorage, useIsMobile } from "./Utils";
 
@@ -121,7 +127,7 @@ const chairpersonAccountTab = {
   ],
 };
 
-function NavbarItem(props) {
+function DesktopNavbarItem(props) {
   const tab = props?.tab;
   const useIconButton = props?.useIconButton;
   const setToken = props?.setToken;
@@ -220,6 +226,48 @@ function NavbarItem(props) {
   );
 }
 
+function MobileSubtab({ tab, setOpen }) {
+  const [subtabOpen, setSubtabOpen] = useState(false);
+
+  return (
+    <div>
+      {!tab.subtabs ? (
+        <ListItemButton
+          component={Link}
+          to={tab.url}
+          onClick={() => setOpen(false)}
+        >
+          <ListItemText primary={tab.label} />
+        </ListItemButton>
+      ) : (
+        <ListItemButton onClick={() => setSubtabOpen(!subtabOpen)}>
+          <ListItemText primary={tab.label} />
+          {subtabOpen ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+      )}
+      {!tab.subtabs ? (
+        ""
+      ) : (
+        <Collapse in={subtabOpen}>
+          <List component="div" disablePadding>
+            {tab.subtabs.map((subtab) => (
+              <ListItemButton
+                key={subtab.label}
+                component={Link}
+                to={subtab.url}
+                sx={{ pl: 4 }}
+                onClick={() => setOpen(false)}
+              >
+                <ListItemText primary={subtab.label} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
+      )}
+    </div>
+  );
+}
+
 function MobileNavbar({ tabs, accountTab }) {
   const [open, setOpen] = useState(false);
 
@@ -237,22 +285,15 @@ function MobileNavbar({ tabs, accountTab }) {
           sx: { width: "70%" },
         }}
       >
-        <Box
-          sx={{
-            p: 1,
-          }}
-          onClick={() => setOpen(false)}
-        >
-          <IconButton>
+        <Box sx={{ p: 1 }}>
+          <IconButton onClick={() => setOpen(false)}>
             <Close />
           </IconButton>
 
           <Divider sx={{ my: 1 }} />
 
           {tabs.map((tab) => (
-            <ListItemButton key={tab.label} component={Link} to={tab.url}>
-              <ListItemText primary={tab.label} />
-            </ListItemButton>
+            <MobileSubtab key={tab.label} tab={tab} setOpen={setOpen} />
           ))}
         </Box>
       </Drawer>
@@ -318,7 +359,11 @@ export default function Navbar(props) {
             ) : (
               <div className="sxs">
                 {tabs.map((tab) => (
-                  <NavbarItem key={tab.label} tab={tab} useIconButton={false} />
+                  <DesktopNavbarItem
+                    key={tab.label}
+                    tab={tab}
+                    useIconButton={false}
+                  />
                 ))}
               </div>
             )}
@@ -331,7 +376,7 @@ export default function Navbar(props) {
           ) : isMobile ? (
             <MobileNavbar tabs={tabs} accountTab={accountTab} />
           ) : (
-            <NavbarItem
+            <DesktopNavbarItem
               tab={accountTab}
               useIconButton={true}
               setToken={props.setToken}

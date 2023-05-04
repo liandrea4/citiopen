@@ -118,7 +118,7 @@ class CreateBallkid(APIView):
                 if key != "first_name" and key != "last_name"
             }
             if "image" in data.keys() and data["image"] == "":
-                data["image"] = "api/static/img/none.jpg"
+                data["image"] = DEFAULT_IMAGE_FILE
             logger.info(f"[CreateBallkid] data: {data}")
 
             ballkid, created = Ballkid.objects.get_or_create(

@@ -168,11 +168,15 @@ class Ballkid(models.Model):
                 if not duration:
                     continue
 
+                print(self.id, durations)
+
                 if updateAsCaptain:
+                    print(other_id, self.id)
                     analytic, _ = CaptainAnalytics.objects.get_or_create(
                         ballkid_id=other_id, captain=self
                     )
                 else:
+                    print(self.id, other_id)
                     analytic, _ = CaptainAnalytics.objects.get_or_create(
                         ballkid=self, captain_id=other_id
                     )

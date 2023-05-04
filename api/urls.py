@@ -132,6 +132,11 @@ debug_urls = [
         CreateCutHistory.as_view(),
         name="create-cut-history",
     ),
+    path("bulk-create-users", BulkCreateUsers.as_view(), name="bulk-create-users"),
+    path(
+        "bulk-create-ballkids", BulkCreateBallkids.as_view(), name="bulk-create-ballkids"
+    ),
+    path("bulk-create-ratings", BulkCreateRatings.as_view(), name="bulk-create-ratings"),
 ]
 
 urlpatterns = (

@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+DEFAULT_IMAGE_FILE = "static/img/none.jpg"
+
 
 def get_first_name(full_name):
     return " ".join(full_name.split(" ")[:-1])

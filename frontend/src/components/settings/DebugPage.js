@@ -19,6 +19,8 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { Alerts, getAuthHeader, useIsMobile } from "../Utils";
 import { RatingAndLabel } from "../ratings/RatingDialog";
+import { TaskAlt, UploadFile } from "@mui/icons-material";
+import { getToken } from "../Utils";
 
 function CreateBallkid(props) {
   const [firstName, setFirstName] = useState("");
@@ -1059,6 +1061,78 @@ function UpdateShift() {
   );
 }
 
+function BulkCreateBallkids() {
+  const [file, setFile] = useState();
+
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  return (
+    <Grid container spacing={2} sx={{ mx: 3 }}>
+      <Grid item xs={12}>
+        <Alerts
+          successMsg={successMsg}
+          errorMsg={errorMsg}
+          setSuccessMsg={setSuccessMsg}
+          setErrorMsg={setErrorMsg}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Typography component="h4" variant="h4">
+          Bulk Create Ballkids
+        </Typography>
+      </Grid>
+
+      <Grid item xs={12}>
+        <div className="sxs">
+          <Button
+            variant="outlined"
+            component="label"
+            startIcon={file ? <TaskAlt /> : <UploadFile />}
+          >
+            {file ? "File Uploaded" : "Upload File"}
+            <input
+              type="file"
+              accept=".csv"
+              hidden
+              onChange={(e) => setFile(e.target.files[0])}
+            />
+          </Button>
+          &ensp;
+          <Typography variant="body1">{file?.name}</Typography>
+        </div>
+      </Grid>
+
+      <Grid item xs={12}>
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={(e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append("file", file);
+
+            fetch("/api/bulk-create-ballkids", {
+              method: "POST",
+              headers: { Authorization: "Token " + getToken() },
+              body: formData,
+            }).then((response) => {
+              if (response.ok) {
+                setSuccessMsg("Ballkids bulk created!");
+                setFile(null);
+              } else {
+                setErrorMsg("Error bulk creating ballkids.");
+              }
+            });
+          }}
+        >
+          Bulk Create Ballkids
+        </Button>
+      </Grid>
+    </Grid>
+  );
+}
+
 export default function DebugPage(props) {
   const [ballkids, setBallkids] = useState([]);
   const [captains, setCaptains] = useState([]);
@@ -1108,8 +1182,9 @@ export default function DebugPage(props) {
       <CreateRating ballkidsList={ballkidsList} captainsList={captainsList} />
     ),
     "Update Shift": <UpdateShift />,
-    "Bulk Create Ballkid": <UpdateShift />,
-    "Bulk Create Rating": <UpdateShift />,
+    "Bulk Create Users": <BulkCreateBallkids />,
+    "Bulk Create Ballkids": <BulkCreateBallkids />,
+    "Bulk Create Ratings": <BulkCreateBallkids />,
   };
 
   return (

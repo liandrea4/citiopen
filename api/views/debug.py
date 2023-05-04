@@ -7,6 +7,8 @@ from api.permissions import *
 from api.models.ballkid import *
 from api.models.rating import *
 from datetime import datetime
+import csv
+import io
 
 
 class CreateCheckinHistory(APIView):
@@ -149,3 +151,45 @@ class UpdateShift(APIView):
             {"Success": f"Updated shift to end at {end}"},
             status=status.HTTP_200_OK,
         )
+
+
+class BulkCreateUsers(APIView):
+    permission_classes = [IsChairperson]
+
+    def post(self, request):
+        pass
+
+
+class BulkCreateBallkids(APIView):
+    permission_classes = [IsChairperson]
+
+    def post(self, request):
+        file = request.FILES["file"]
+        reader = csv.DictReader(io.StringIO(file.read().decode("utf-8")))
+
+        ballkids = [
+            Ballkid(
+                first_name=line["first_name"],
+                last_name=line["last_name"],
+                age=line["age"],
+                num_years_experience=line["num_years_experience"],
+                preferred_position=line["preferred_position"],
+                is_captain=line["is_captain"] == "TRUE",
+                is_chairperson=line["is_chairperson"] == "TRUE",
+                image=line["image"] or DEFAULT_IMAGE_FILE,
+            )
+            for line in reader
+        ]
+        Ballkid.objects.bulk_create(ballkids)
+
+        return Response(
+            {"Success": f"Bulk created ballkids {ballkids}"},
+            status=status.HTTP_200_OK,
+        )
+
+
+class BulkCreateRatings(APIView):
+    permission_classes = [IsChairperson]
+
+    def post(self, request):
+        pass

@@ -183,8 +183,9 @@ class BulkCreateUsers(APIView):
             ballkid = Ballkid.objects.filter(
                 is_active=True, first_name=first_name, last_name=last_name
             ).first()
-            ballkid.user = user
-            ballkid.save()
+            if ballkid: 
+                ballkid.user = user
+                ballkid.save()
 
         return Response(
             {"Success": f"Bulk created users {users}"},

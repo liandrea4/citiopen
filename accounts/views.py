@@ -100,6 +100,13 @@ class RegisterUserView(APIView):
                     group = Group.objects.get(name=group_name)
                     user.groups.add(group)
 
+                ballkid = Ballkid.objects.filter(
+                    is_active=True, first_name=first_name, last_name=last_name
+                ).first()
+                if ballkid:
+                    ballkid.user = user
+                    ballkid.save()
+
                 token = Token.objects.create(user=user)
                 json = serializer.data
                 json["token"] = token.key

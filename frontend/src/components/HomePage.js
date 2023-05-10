@@ -4,7 +4,7 @@ import BallkidList from "./lists/BallkidList";
 import BallkidPage from "./ballkid/BallkidPage";
 import TeamsPage from "./teams/TeamsPage";
 import TeamsPageChairperson from "./teams/TeamsPageChairperson";
-import CutPageTiered from "./lists/CutPageTiered";
+import CutPage from "./lists/CutPage";
 import Navbar from "./Navbar";
 import CheckinPage from "./lists/CheckinPage";
 import ArchivedBallkidList from "./lists/ArchivedBallkidList";
@@ -44,7 +44,7 @@ function chairpersonRoutes(setToken) {
       <Route path="/archive" element={<ArchivedBallkidList />} />
       <Route path="/ballkid/:pk" element={<BallkidPageChairperson />} />
       <Route path="/checkin" element={<CheckinPage />} />
-      <Route path="/cut" element={<CutPageTiered />} />
+      <Route path="/cut" element={<CutPage />} />
       <Route path="/debug" element={<DebugPage />} />
       <Route path="/leaderboards" element={<Leaderboards />} />
       <Route path="/leaderboards/checkin" element={<CheckinLeaderboard />} />

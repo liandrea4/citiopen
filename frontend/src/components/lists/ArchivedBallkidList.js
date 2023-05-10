@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import CardActionArea from "@mui/material/CardActionArea";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import AspectRatio from "@mui/joy/AspectRatio";
 import {
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  CardActionArea,
-  Grid,
-  Button,
-  Box,
-} from "@mui/material";
-import { AspectRatio } from "@mui/joy";
-import { Icons, LayoutButtons, getAuthHeader, getLocalStorage } from "../Utils";
+  Icons,
+  LayoutButtons,
+  getAuthHeader,
+  getLocalStorage,
+  SearchBox,
+} from "../Utils";
 
 function renderUnarchiveButton(firstName, lastName, setUpdated) {
   return (
@@ -42,6 +46,8 @@ function renderUnarchiveButton(firstName, lastName, setUpdated) {
 
 export default function ArchivedBallkidList(props) {
   const [archived, setArchived] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
+
   const [gridLayout, setGridLayout] = useState(
     getLocalStorage("gridLayout") ?? true
   );
@@ -69,50 +75,60 @@ export default function ArchivedBallkidList(props) {
         <Typography variant="body1">There are no ballkids to show.</Typography>
       ) : (
         <Grid container spacing={gridLayout ? 2 : 1}>
-          {archived.map((ballkid) => (
-            <Grid
-              item
-              key={ballkid.id}
-              xs={gridLayout ? 6 : 12}
-              sm={gridLayout ? 4 : 12}
-              md={gridLayout ? 3 : 12}
-              lg={gridLayout ? 2 : 12}
-              xl={gridLayout ? 1 : 12}
-            >
-              <Card>
-                <CardActionArea href={`ballkid/${ballkid.id}`}>
-                  {!gridLayout ? (
-                    ""
-                  ) : (
-                    <AspectRatio ratio="1/1">
-                      <CardMedia component="img" image={ballkid.image} />
-                    </AspectRatio>
-                  )}
-                  <CardContent>
-                    <div className={gridLayout ? "" : "justify"}>
-                      <div className={gridLayout ? "justify" : "sxs"}>
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ fontWeight: "medium" }}
-                        >
-                          {ballkid.first_name} {ballkid.last_name}
-                        </Typography>
-                        &thinsp;
-                        <Icons ballkid={ballkid} margin={0} />
+          <Grid item xs={12}>
+            <SearchBox setSearchKeyword={setSearchKeyword} />
+          </Grid>
+
+          {archived
+            .filter((ballkid) =>
+              `${ballkid.first_name} ${ballkid.last_name}`
+                .toLowerCase()
+                .includes(searchKeyword.toLowerCase())
+            )
+            .map((ballkid) => (
+              <Grid
+                item
+                key={ballkid.id}
+                xs={gridLayout ? 6 : 12}
+                sm={gridLayout ? 4 : 12}
+                md={gridLayout ? 3 : 12}
+                lg={gridLayout ? 2 : 12}
+                xl={gridLayout ? 1 : 12}
+              >
+                <Card>
+                  <CardActionArea href={`ballkid/${ballkid.id}`}>
+                    {!gridLayout ? (
+                      ""
+                    ) : (
+                      <AspectRatio ratio="1/1">
+                        <CardMedia component="img" image={ballkid.image} />
+                      </AspectRatio>
+                    )}
+                    <CardContent>
+                      <div className={gridLayout ? "" : "justify"}>
+                        <div className={gridLayout ? "justify" : "sxs"}>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{ fontWeight: "medium" }}
+                          >
+                            {ballkid.first_name} {ballkid.last_name}
+                          </Typography>
+                          &thinsp;
+                          <Icons ballkid={ballkid} margin={0} />
+                        </div>
+                        <Box textAlign="center" sx={{ mt: gridLayout ? 1 : 0 }}>
+                          {renderUnarchiveButton(
+                            ballkid.first_name,
+                            ballkid.last_name,
+                            setUpdated
+                          )}
+                        </Box>
                       </div>
-                      <Box textAlign="center" sx={{ mt: gridLayout ? 1 : 0 }}>
-                        {renderUnarchiveButton(
-                          ballkid.first_name,
-                          ballkid.last_name,
-                          setUpdated
-                        )}
-                      </Box>
-                    </div>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </Grid>
-          ))}
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            ))}
         </Grid>
       )}
     </div>

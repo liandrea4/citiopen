@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  CardActionArea,
-  Grid,
-  Box,
-  Button,
-} from "@mui/material";
-import { AspectRatio } from "@mui/joy";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import CardActionArea from "@mui/material/CardActionArea";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import AspectRatio from "@mui/joy/AspectRatio";
 import {
   Icons,
   LayoutButtons,
@@ -158,11 +156,11 @@ export default function CheckinPage(props) {
         </Typography>
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
+
+      <SearchBox setSearchKeyword={setSearchKeyword} />
+
       <Grid container justifyContent="space-between">
-        <Grid item xs={12}>
-          <SearchBox setSearchKeyword={setSearchKeyword} />
-        </Grid>
-        <Grid item xs={12}>
+        <Grid item>
           <Typography variant="h5" sx={MARGINS}>
             Checked In
           </Typography>
@@ -173,11 +171,29 @@ export default function CheckinPage(props) {
           </Grid>
         )}
       </Grid>
-      {renderBallkids(checkedIn, true, gridLayout, setUpdated)}
+      {renderBallkids(
+        checkedIn.filter((ballkid) =>
+          `${ballkid.first_name} ${ballkid.last_name}`
+            .toLowerCase()
+            .includes(searchKeyword.toLowerCase())
+        ),
+        true,
+        gridLayout,
+        setUpdated
+      )}
       <Typography variant="h5" sx={MARGINS}>
         Checked Out
       </Typography>
-      {renderBallkids(checkedOut, false, gridLayout, setUpdated)}
+      {renderBallkids(
+        checkedOut.filter((ballkid) =>
+          `${ballkid.first_name} ${ballkid.last_name}`
+            .toLowerCase()
+            .includes(searchKeyword.toLowerCase())
+        ),
+        false,
+        gridLayout,
+        setUpdated
+      )}
     </div>
   );
 }

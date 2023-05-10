@@ -10,7 +10,13 @@ import {
   Button,
 } from "@mui/material";
 import { AspectRatio } from "@mui/joy";
-import { Icons, LayoutButtons, getAuthHeader, getLocalStorage } from "../Utils";
+import {
+  Icons,
+  LayoutButtons,
+  getAuthHeader,
+  getLocalStorage,
+  SearchBox,
+} from "../Utils";
 import { MARGINS } from "../Consts";
 
 function renderCheckinButton(firstName, lastName, isCheckedIn, setUpdated) {
@@ -125,6 +131,8 @@ function renderCheckoutAllButton(setUpdated) {
 export default function CheckinPage(props) {
   const [checkedIn, setCheckedIn] = useState([]);
   const [checkedOut, setCheckedOut] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
+
   const [gridLayout, setGridLayout] = useState(
     getLocalStorage("gridLayout") ?? true
   );
@@ -151,7 +159,10 @@ export default function CheckinPage(props) {
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
       <Grid container justifyContent="space-between">
-        <Grid item>
+        <Grid item xs={12}>
+          <SearchBox setSearchKeyword={setSearchKeyword} />
+        </Grid>
+        <Grid item xs={12}>
           <Typography variant="h5" sx={MARGINS}>
             Checked In
           </Typography>

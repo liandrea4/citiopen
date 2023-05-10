@@ -1,28 +1,27 @@
 import React, { useState } from "react";
 import { useMediaQuery } from "react-responsive";
-import {
-  Icon,
-  IconButton,
-  Alert,
-  Collapse,
-  Button,
-  TableContainer,
-  TableRow,
-  TableBody,
-  TableCell,
-  TableHead,
-  Table,
-  Typography,
-  Grid,
-} from "@mui/material";
-import {
-  Star,
-  Circle,
-  GridView,
-  List,
-  EventSeat,
-  Check,
-} from "@mui/icons-material";
+import Icon from "@mui/material/Icon";
+import IconButton from "@mui/material/IconButton";
+import Alert from "@mui/material/Alert";
+import Collapse from "@mui/material/Collapse";
+import Button from "@mui/material/Button";
+import Table from "@mui/material/Table";
+import TableContainer from "@mui/material/TableContainer";
+import TableRow from "@mui/material/TableRow";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+
+import Star from "@mui/icons-material/Star";
+import Circle from "@mui/icons-material/Circle";
+import GridView from "@mui/icons-material/GridView";
+import List from "@mui/icons-material/List";
+import EventSeat from "@mui/icons-material/EventSeat";
+import Check from "@mui/icons-material/Check";
+
 import RatingDialog from "./ratings/RatingDialog";
 import { END_DATE, START_DATE } from "./Consts";
 
@@ -118,6 +117,19 @@ export function RatingButton({ ballkid, setUpdated, isMobile }) {
         Give rating
       </Button>
     </div>
+  );
+}
+
+export function SearchBox({ setSearchKeyword }) {
+  return (
+    <TextField
+      size="small"
+      variant="outlined"
+      fullWidth
+      sx={{ py: 1 }}
+      placeholder="Search by ballkid name..."
+      onChange={(e) => setSearchKeyword(e.target.value)}
+    />
   );
 }
 

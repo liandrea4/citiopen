@@ -344,12 +344,20 @@ class BulkCreateRatings(APIView):
                     ratee=ratee,
                     rater=rater,
                     date=date,
-                    rating=line["Overall"],
-                    rolling_rating=line["Rolling"] or None,
-                    athleticism_rating=line["Athleticism"] or None,
-                    effort_rating=line["Effort"] or None,
-                    awareness_rating=line["Awareness"] or None,
-                    decision_rating=line["Decisionmaking"] or None,
+                    rating=float(line["Overall"]) / 2.0,
+                    rolling_rating=float(line["Rolling"]) / 2.0
+                    if line["Rolling"]
+                    else None,
+                    athleticism_rating=float(line["Athleticism"]) / 2.0
+                    if line["Athleticism"]
+                    else None,
+                    effort_rating=float(line["Effort"]) / 2.0 if line["Effort"] else None,
+                    awareness_rating=float(line["Awareness"]) / 2.0
+                    if line["Awareness"]
+                    else None,
+                    decision_rating=float(line["Decisionmaking"]) / 2.0
+                    if line["Decisionmaking"]
+                    else None,
                     comments=line["Note"],
                 )
                 ratings.append(rating)

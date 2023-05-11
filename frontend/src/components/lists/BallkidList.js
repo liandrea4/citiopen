@@ -33,9 +33,15 @@ export default function BallkidList(props) {
   return (
     <div className="page">
       <div className="justify">
-        <Typography variant="h4" sx={{ mb: 1 }}>
-          List by Name
-        </Typography>
+        <div className="sxs">
+          <Typography variant="h4" sx={{ mb: 1 }}>
+            List by Name
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            &ensp; (
+            {filterBallkids(ballkids, searchKeyword, filterGroup).length})
+          </Typography>
+        </div>
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
       {ballkids.length === 0 ? (

@@ -67,9 +67,16 @@ export default function ArchivedBallkidList(props) {
   return (
     <div className="page">
       <div className="justify">
-        <Typography variant="h4" sx={{ mb: 1 }}>
-          Archived Ballkids
-        </Typography>
+        <div className="sxs">
+          <Typography variant="h4" sx={{ mb: 1 }}>
+            Archived Ballkids
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            &ensp; (
+            {filterBallkids(archived, searchKeyword, filterGroup).length})
+          </Typography>
+        </div>
+
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
 

@@ -25,7 +25,7 @@ import {
   Icons,
   SearchAndFilter,
 } from "../Utils";
-import { CUT_STATUSES } from "../Consts";
+import { CUT_STATUSES, MARGINS } from "../Consts";
 
 function DraggableBallkidAndIcon({ ballkid }) {
   const [{ isDragging }, drag] = useDrag(() => ({
@@ -82,7 +82,17 @@ function CutStatusSection({ section, active, setUpdated }) {
       <Card sx={{ mb: 2 }} elevation={isOver ? 10 : 1}>
         <CardContent>
           <div className="justify">
-            <Typography variant="h6">{section}</Typography>
+            <div className="sxs">
+              <Typography variant="h6">{section}</Typography>
+              <Typography variant="subtitle1">
+                &ensp; (
+                {
+                  active.filter((ballkid) => ballkid.cut_status === section)
+                    .length
+                }
+                )
+              </Typography>
+            </div>
             <Button
               size="small"
               color={cutAllColor}
@@ -242,9 +252,15 @@ function ActiveSection({ active, sections, setUpdated }) {
 
   return (
     <div>
-      <Typography variant="h5" sx={{ mt: 2, mb: 2 }}>
-        Active Ballkids
-      </Typography>
+      <div className="sxs">
+        <Typography variant="h5" sx={MARGINS}>
+          Active Ballkids
+        </Typography>
+        <Typography variant="h6" sx={MARGINS}>
+          &ensp; ({active.filter((ballkid) => ballkid.cut_status === "").length}
+          )
+        </Typography>
+      </div>
       {active.length === 0 ? (
         <Typography>
           There are currently no active ballkids left to categorize.
@@ -292,9 +308,14 @@ function ActiveSection({ active, sections, setUpdated }) {
 function CutSection({ cut, setUpdated }) {
   return (
     <div>
-      <Typography variant="h5" sx={{ mt: 2, mb: 2 }}>
-        Cut Ballkids
-      </Typography>
+      <div className="sxs">
+        <Typography variant="h5" sx={MARGINS}>
+          Cut Ballkids
+        </Typography>
+        <Typography variant="h6" sx={MARGINS}>
+          &ensp; ({cut.length})
+        </Typography>
+      </div>
       {cut.length === 0 ? (
         <Typography>There are currently no cut ballkids.</Typography>
       ) : (

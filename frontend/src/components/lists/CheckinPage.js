@@ -166,9 +166,13 @@ export default function CheckinPage(props) {
       />
 
       <Grid container justifyContent="space-between">
-        <Grid item>
+        <Grid item className="sxs">
           <Typography variant="h5" sx={MARGINS}>
             Checked In
+          </Typography>
+          <Typography variant="h6" sx={MARGINS}>
+            &ensp; (
+            {filterBallkids(checkedIn, searchKeyword, filterGroup).length})
           </Typography>
         </Grid>
         {checkedIn.length > 0 && (
@@ -183,9 +187,15 @@ export default function CheckinPage(props) {
         gridLayout,
         setUpdated
       )}
-      <Typography variant="h5" sx={MARGINS}>
-        Checked Out
-      </Typography>
+      <Grid item className="sxs">
+        <Typography variant="h5" sx={MARGINS}>
+          Checked Out
+        </Typography>
+        <Typography variant="h6" sx={MARGINS}>
+          &ensp; (
+          {filterBallkids(checkedOut, searchKeyword, filterGroup).length})
+        </Typography>
+      </Grid>
       {renderBallkids(
         filterBallkids(checkedOut, searchKeyword, filterGroup),
         false,

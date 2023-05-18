@@ -116,9 +116,9 @@ class CreateCutHistory(APIView):
 
     def post(self, request, format=None):
         ballkid = Ballkid.objects.get(id=request.data["ballkid_id"])
-        day = datetime.strptime(request.data["furthest_day"], "%m/%d/%Y")
+        day = datetime.strptime(request.data["furthest_day"], SLASH_MONTH_DAY_YEAR_FORMAT_STR)
         furthest_date = day.date()
-        furthest_day = datetime.strftime(day, "%A")
+        furthest_day = datetime.strftime(day, WEEKDAY_FORMAT_STR)
 
         history, _ = CutHistory.objects.update_or_create(
             ballkid=ballkid,
@@ -246,8 +246,8 @@ class BulkCreateSignups(APIView):
             first_name = line["First Name"].strip()
             last_name = line["Last Name"].strip()
             is_captain = line["Are you a captain?"].strip() == "Yes"
-            dob = datetime.strptime(line["Date of Birth"].strip(), "%m/%d/%Y")
-            first_day = datetime.strptime("07/29/2023", "%m/%d/%Y")
+            dob = datetime.strptime(line["Date of Birth"].strip(), SLASH_MONTH_DAY_YEAR_FORMAT_STR)
+            first_day = datetime.strptime("07/29/2023", SLASH_MONTH_DAY_YEAR_FORMAT_STR)
             age = (first_day - dob) // timedelta(days=365.2425)
 
             user = User(

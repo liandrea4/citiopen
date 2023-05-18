@@ -350,7 +350,7 @@ class GetPastTeams(APIView):
         for history in histories:
             date = history["date"]
             ballkid_id = history["ballkid_id"]
-            date_str = datetime.strftime(date, "%a, %b %-d")
+            date_str = datetime.strftime(date, WEEKDAY_MONTH_DAY_FORMAT_STR)
 
             # If date_str is not in map yet, create an empty list of ballkids for that day
             if date_str not in date_to_ballkids:

@@ -238,8 +238,8 @@ class CreateRating(APIView):
 
     def post(self, request, format=None):
         data = {key: val for key, val in request.data.items() if key != "date"}
-        date = datetime.strptime(request.data["date"], "%m/%d/%Y")
-        data["date"] = datetime.strftime(date, "%Y-%m-%d")
+        date = datetime.strptime(request.data["date"], SLASH_MONTH_DAY_YEAR_FORMAT_STR)
+        data["date"] = datetime.strftime(date, HYPHEN_YEAR_MONTH_DAY_FORMAT_STR)
 
         serializer = self.serializer_class(data=data)
 

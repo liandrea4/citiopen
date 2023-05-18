@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from api.utils import calc_overlapping_time
 from api.models.schedule import Schedule, Court
 from django.contrib.auth.models import User
+from api.utils import *
 import logging
 
 logger = logging.getLogger("api.ballkid")
@@ -104,7 +105,7 @@ class Ballkid(models.Model):
             end_time = history.checkout if history.checkout else now
             duration += end_time - history.checkin
 
-            day = datetime.strftime(history.checkin, "%Y-%m-%d")
+            day = datetime.strftime(history.checkin, HYPHEN_YEAR_MONTH_DAY_FORMAT_STR)
             days.add(day)
 
         analytic, created = CheckinAnalytics.objects.get_or_create(ballkid_id=self.id)
@@ -502,8 +503,8 @@ class Ballkid(models.Model):
                 ballkid=self,
                 year=now.year,
                 defaults={
-                    "furthest_date": now.strftime("%Y-%m-%d"),
-                    "furthest_day": now.strftime("%A"),
+                    "furthest_date": now.strftime(HYPHEN_YEAR_MONTH_DAY_FORMAT_STR),
+                    "furthest_day": now.strftime(WEEKDAY_FORMAT_STR),
                     "self_cut": self_cut,
                 },
             )

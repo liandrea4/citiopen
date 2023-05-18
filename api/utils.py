@@ -2,9 +2,16 @@ from datetime import datetime, timedelta
 
 DEFAULT_IMAGE_FILE = "static/img/none.jpg"
 
+HYPHEN_YEAR_MONTH_DAY_FORMAT_STR = "%Y-%m-%d"
+SLASH_MONTH_DAY_YEAR_FORMAT_STR = "%m/%d/%Y"
+WEEKDAY_MONTH_DAY_FORMAT_STR = "%a, %b %-d"
+YEAR_FORMAT_STR = "%Y"
+WEEKDAY_FORMAT_STR = "%A"
+HOUR_COLON_MINUTE_FORMAT_STR = "%H:%M"
+
 
 def get_current_year():
-    return datetime.strftime(datetime.now(), "%Y")
+    return int(datetime.strftime(datetime.now(), YEAR_FORMAT_STR))
 
 
 def get_first_name(full_name):

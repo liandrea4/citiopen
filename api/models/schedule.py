@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime
+from api.utils import *
 
 
 class Court(models.TextChoices):
@@ -18,10 +19,10 @@ class Schedule(models.Model):
     court = models.CharField(max_length=10, choices=Court.choices)
 
     def get_day_str(self):
-        return datetime.strftime(self.start, "%Y-%m-%d")
+        return datetime.strftime(self.start, HYPHEN_YEAR_MONTH_DAY_FORMAT_STR)
 
     def get_hour_str(self):
-        return datetime.strftime(self.start, "%H:%M")
+        return datetime.strftime(self.start, HOUR_COLON_MINUTE_FORMAT_STR)
 
     def __str__(self):
         return f"Team {self.team} on {self.court} at {self.start}"

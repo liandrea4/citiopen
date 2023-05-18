@@ -19,7 +19,7 @@ class GetSchedule(generics.ListAPIView):
         if param == "":
             day = datetime.now()
         else:
-            day = datetime.strptime(param, "%m/%d/%Y")
+            day = datetime.strptime(param, SLASH_MONTH_DAY_YEAR_FORMAT_STR)
         start_hour = datetime(year=day.year, month=day.month, day=day.day, hour=8)
         end_hour = start_hour + timedelta(days=1)
 
@@ -34,7 +34,7 @@ class CreateSchedule(APIView):
     def post(self, request, format=None):
         start_hour = datetime.strptime(
             f"{request.data['day']} {request.data['start_hour']}",
-            "%m/%d/%Y %H:%M",
+            f"{SLASH_MONTH_DAY_YEAR_FORMAT_STR} {HOUR_COLON_MINUTE_FORMAT_STR}",
         )
         num_teams = request.data["num_teams"]
         num_hours = request.data["num_hours"]
@@ -66,7 +66,7 @@ class AddHour(APIView):
     permission_classes = [IsChairperson]
 
     def post(self, request, format=None):
-        day = datetime.strptime(request.data["day"], "%m/%d/%Y")
+        day = datetime.strptime(request.data["day"], SLASH_MONTH_DAY_YEAR_FORMAT_STR)
         start_hour = datetime(year=day.year, month=day.month, day=day.day, hour=8)
         end_hour = start_hour + timedelta(days=1)
         shifts = Schedule.objects.filter(start__gte=start_hour, start__lt=end_hour)
@@ -93,7 +93,9 @@ class UpdateSchedule(APIView):
         try:
             day = request.data["day"]
             hour = request.data["hour"]
-            start = datetime.strptime(f"{day} {hour}", "%m/%d/%Y %I%p")
+            start = datetime.strptime(
+                f"{day} {hour}", f"{SLASH_MONTH_DAY_YEAR_FORMAT_STR} %I%p"
+            )
             if "am" in hour.lower():
                 start += timedelta(days=1)
 

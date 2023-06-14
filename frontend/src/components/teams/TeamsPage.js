@@ -9,20 +9,45 @@ import Link from "@mui/material/Link";
 
 import { getAuthHeader, Icons } from "../Utils";
 
-function Team(props) {
+function Team({ team, assigned }) {
   const positions = ["Net", "Back"];
 
   return (
     <Grid item xs={12} sm={6} md={4} lg={3} xl={2}>
       <Card sx={{ mb: 2 }}>
         <CardContent>
-          <Typography variant="h6">Team {props.team}</Typography>
+          <div className="sxs">
+            <Typography variant="h6">Team {team}</Typography>
+            <Typography variant="subtitle1" sx={{ ml: 1 }}>
+              (
+              {
+                assigned.filter((ballkid) => ballkid.current_team === team)
+                  .length
+              }
+              )
+            </Typography>
+          </div>
+
           {positions.map((position) => (
             <div key={position}>
               <Divider sx={{ mt: 1, mb: 1 }} />
-              <Typography variant="subtitle1">{position}s:</Typography>
-              {props.assigned.map((ballkid) =>
-                ballkid.current_team === props.team &&
+              <div className="sxs">
+                <Typography variant="subtitle1">{position}s</Typography>
+                <Typography variant="subtitle2" sx={{ ml: 1 }}>
+                  (
+                  {
+                    assigned.filter(
+                      (ballkid) =>
+                        ballkid.current_team === team &&
+                        ballkid.position === position
+                    ).length
+                  }
+                  )
+                </Typography>
+              </div>
+
+              {assigned.map((ballkid) =>
+                ballkid.current_team === team &&
                 ballkid.position === position ? (
                   <div className="sxs" key={`ballkid${ballkid.id}`}>
                     <Link variant="body2" href={`ballkid/${ballkid.id}`}>

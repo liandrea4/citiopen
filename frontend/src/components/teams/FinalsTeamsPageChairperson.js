@@ -82,8 +82,8 @@ function Team({ team, assigned, setUpdated }) {
           <div className="justify">
             <div className="sxs">
               <Typography variant="h6">{team}</Typography>
-              <Typography variant="subtitle1">
-                &ensp; (
+              <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                (
                 {
                   assigned.filter((ballkid) => ballkid.finals_team === team)
                     .length
@@ -112,7 +112,20 @@ function Team({ team, assigned, setUpdated }) {
           {positions.map((position) => (
             <div key={position}>
               <Divider sx={{ mt: 1, mb: 1 }} />
-              <Typography variant="subtitle1">{position}s:</Typography>
+              <div className="sxs">
+                <Typography variant="subtitle1">{position}s</Typography>
+                <Typography variant="subtitle2" sx={{ ml: 1 }}>
+                  (
+                  {
+                    assigned.filter(
+                      (ballkid) =>
+                        ballkid.finals_team === team &&
+                        ballkid.finals_position === position
+                    ).length
+                  }
+                  )
+                </Typography>
+              </div>
               {renderBallkidsOnTeam(assigned, team, position, setUpdated)}
             </div>
           ))}

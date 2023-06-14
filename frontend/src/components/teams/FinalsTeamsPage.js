@@ -5,12 +5,12 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
-import Link from "@mui/material/IconButton";
+import Link from "@mui/material/Link";
 
 import { getAuthHeader, Icons } from "../Utils";
 import { MATCH_TYPES } from "../Consts";
 
-function Team(props) {
+function Team({ team, assigned }) {
   const positions = ["Net", "Back"];
 
   return (
@@ -18,14 +18,39 @@ function Team(props) {
       <Card sx={{ mb: 2 }}>
         <CardContent>
           <div className="justify">
-            <Typography variant="h6">{props.team}</Typography>
+            <div className="sxs">
+              <Typography variant="h6">{team}</Typography>
+              <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                (
+                {
+                  assigned.filter((ballkid) => ballkid.finals_team === team)
+                    .length
+                }
+                )
+              </Typography>
+            </div>
           </div>
+
           {positions.map((position) => (
             <div key={position}>
               <Divider sx={{ mt: 1, mb: 1 }} />
-              <Typography variant="subtitle1">{position}s:</Typography>
-              {props.assigned.map((ballkid) =>
-                ballkid.finals_team === props.team &&
+              <div className="sxs">
+                <Typography variant="subtitle1">{position}s</Typography>
+                <Typography variant="subtitle2" sx={{ ml: 1 }}>
+                  (
+                  {
+                    assigned.filter(
+                      (ballkid) =>
+                        ballkid.finals_team === team &&
+                        ballkid.finals_position === position
+                    ).length
+                  }
+                  )
+                </Typography>
+              </div>
+
+              {assigned.map((ballkid) =>
+                ballkid.finals_team === team &&
                 ballkid.finals_position === position ? (
                   <div className="sxs" key={`ballkid${ballkid.id}`}>
                     <Link variant="body2" href={`ballkid/${ballkid.id}`}>

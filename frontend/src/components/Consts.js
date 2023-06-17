@@ -3,6 +3,7 @@ import Circle from "@mui/icons-material/Circle";
 import EventSeat from "@mui/icons-material/EventSeat";
 
 export const MARGINS = { mt: 2, mb: 1 };
+export const ON_COURT_GREEN = "#c8f7c8";
 
 export const MATCH_TYPES = {
   MS: "Men's Singles",

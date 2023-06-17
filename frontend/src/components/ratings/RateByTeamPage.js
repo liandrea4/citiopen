@@ -16,6 +16,7 @@ import {
   isCurrentHour,
   dayHourToStr,
 } from "../Utils";
+import { ON_COURT_GREEN } from "../Consts";
 
 function Team({ team, assigned, nextShifts, setUpdated }) {
   const positions = ["Back", "Net"];
@@ -28,7 +29,9 @@ function Team({ team, assigned, nextShifts, setUpdated }) {
 
   return (
     <Grid item xs={12} sm={6} md={4} lg={3} xl={2}>
-      <Card sx={{ mb: 2, backgroundColor: isCurrentlyOn ? "lightgreen" : "" }}>
+      <Card
+        sx={{ mb: 2, backgroundColor: isCurrentlyOn ? ON_COURT_GREEN : "" }}
+      >
         <CardContent>
           <div className="justify">
             <Typography variant="h6">Team {team}</Typography>

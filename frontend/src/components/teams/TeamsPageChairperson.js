@@ -30,7 +30,7 @@ import {
   isCurrentHour,
   dayHourToStr,
 } from "../Utils";
-import { MARGINS } from "../Consts";
+import { MARGINS, ON_COURT_GREEN } from "../Consts";
 
 function DraggableBallkidAndIcon(props) {
   const ballkid = props.ballkid;
@@ -150,7 +150,7 @@ export function Team({ team, assigned, nextShifts, setUpdated }) {
   return (
     <Grid item xs={12} sm={6} md={4} lg={3} xl={2} ref={dropRef}>
       <Card
-        sx={{ mb: 2, backgroundColor: isCurrentlyOn ? "lightgreen" : "" }}
+        sx={{ mb: 2, backgroundColor: isCurrentlyOn ? ON_COURT_GREEN : "" }}
         elevation={isOver ? 10 : 1}
       >
         <CardContent>

@@ -155,12 +155,7 @@ export function Team({ team, assigned, nextShifts, setUpdated }) {
             <div className="sxs">
               <Typography variant="h6">Team {team}</Typography>
               <Typography variant="subtitle1" sx={{ ml: 1 }}>
-                (
-                {
-                  assigned.filter((ballkid) => ballkid.current_team === team)
-                    .length
-                }
-                )
+                ({assigned.length})
               </Typography>
             </div>
 
@@ -198,11 +193,8 @@ export function Team({ team, assigned, nextShifts, setUpdated }) {
                 <Typography variant="subtitle2" sx={{ ml: 1 }}>
                   (
                   {
-                    assigned.filter(
-                      (ballkid) =>
-                        ballkid.current_team === team &&
-                        ballkid.position === position
-                    ).length
+                    assigned.filter((ballkid) => ballkid.position === position)
+                      .length
                   }
                   )
                 </Typography>

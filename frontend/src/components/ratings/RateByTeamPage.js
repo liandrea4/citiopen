@@ -8,24 +8,46 @@ import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
 import Link from "@mui/material/Link";
 
-import { Icons, getAuthHeader, RatingButton, getLocalStorage } from "../Utils";
+import {
+  Icons,
+  getAuthHeader,
+  RatingButton,
+  getLocalStorage,
+  isCurrentHour,
+  dayHourToStr,
+} from "../Utils";
 
-function Team(props) {
+function Team({ team, assigned, nextShifts, setUpdated }) {
   const positions = ["Back", "Net"];
+
+  const hasAnotherShift = nextShifts.length > 0;
+  const isCurrentlyOn =
+    hasAnotherShift && isCurrentHour(nextShifts[0]["start"]);
+  const court = hasAnotherShift ? nextShifts[0]["court"] : "";
+  const time = hasAnotherShift ? dayHourToStr(nextShifts[0]["start"]) : "";
 
   return (
     <Grid item xs={12} sm={6} md={4} lg={3} xl={2}>
       <Card sx={{ mb: 2 }}>
         <CardContent>
-          <Typography variant="h6">Team {props.team}</Typography>
+          <div className="justify">
+            <Typography variant="h6">Team {team}</Typography>
+            <Typography variant="subtitle2">
+              {!hasAnotherShift
+                ? "No more shifts"
+                : isCurrentlyOn
+                ? `Currently on: ${court}`
+                : `On at ${time}: ${court}`}
+            </Typography>
+          </div>
           {positions.map((position) => (
             <div key={position}>
               <Divider sx={{ mt: 1, mb: 1 }} />
 
               <Typography variant="subtitle1">{position}s:</Typography>
 
-              {props.assigned.map((ballkid) =>
-                ballkid.current_team === props.team &&
+              {assigned.map((ballkid) =>
+                ballkid.current_team === team &&
                 ballkid.position === position ? (
                   <div className="justify" key={`ballkid${ballkid.id}`}>
                     <div className="sxs">
@@ -43,10 +65,7 @@ function Team(props) {
                     {ballkid.id === getLocalStorage("ballkid_id") ? (
                       ""
                     ) : (
-                      <RatingButton
-                        ballkid={ballkid}
-                        setUpdated={props.setUpdated}
-                      />
+                      <RatingButton ballkid={ballkid} setUpdated={setUpdated} />
                     )}
                   </div>
                 ) : (
@@ -63,8 +82,10 @@ function Team(props) {
 
 export default function RateByTeamPage(props) {
   const [assigned, setAssigned] = useState([]);
+  const [nextShifts, setNextShifts] = useState([]);
   const [teams, setTeams] = useState([]);
   const [updated, setUpdated] = useState(false);
+
   const pk = getLocalStorage("ballkid_id");
 
   useEffect(() => {
@@ -81,7 +102,11 @@ export default function RateByTeamPage(props) {
 
     fetch("/api/calc-num-teams", { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => setTeams(data["teams"]))
+      .then((data) => setTeams(data["teams"]));
+
+    fetch("/api/get-next-shifts", { headers: getAuthHeader() })
+      .then((response) => response.json())
+      .then((data) => setNextShifts(data))
       .then(() => setUpdated(false));
   }, [pk, updated]);
 
@@ -98,7 +123,10 @@ export default function RateByTeamPage(props) {
             <Team
               key={team}
               team={team}
-              assigned={assigned}
+              assigned={assigned.filter(
+                (ballkid) => ballkid.current_team === team
+              )}
+              nextShifts={nextShifts.filter((shift) => shift.team === team)}
               setUpdated={setUpdated}
             />
           ))}

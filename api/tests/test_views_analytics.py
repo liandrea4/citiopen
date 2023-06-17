@@ -249,6 +249,7 @@ class TestGetPastTeams(APITestCase):
             ballkid=self.ballkid2,
             start=datetime(2023, 4, 9, 10, 30, 0),
             end=datetime(2023, 4, 9, 15, 30, 0),
+            duration=timedelta(hours=5),
             team=3,
         )
 
@@ -267,7 +268,7 @@ class TestGetPastTeams(APITestCase):
             response.data,
         )
 
-    def test_mult_histories_captain(self):
+    def test_one_history_captain_exclude_short(self):
         CaptainHistory.objects.create(
             captain=self.captain1,
             ballkid=self.ballkid1,
@@ -287,6 +288,48 @@ class TestGetPastTeams(APITestCase):
             ballkid=self.ballkid1,
             start=datetime(2023, 4, 7, 10, 30, 0),
             end=datetime(2023, 4, 7, 15, 30, 0),
+            team=2,
+        )
+        CaptainHistory.objects.create(
+            captain=self.captain2,
+            ballkid=self.ballkid2,
+            start=datetime(2023, 4, 9, 10, 30, 0),
+            end=datetime(2023, 4, 9, 10, 45, 0),
+            duration=timedelta(minutes=15),
+            team=3,
+        )
+
+        response = self.client.get(
+            reverse("get-past-teams", kwargs={"pk": self.captain2.id}),
+            format="json",
+        )
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual({}, response.data)
+
+    def test_mult_histories_captain(self):
+        CaptainHistory.objects.create(
+            captain=self.captain1,
+            ballkid=self.ballkid1,
+            start=datetime(2023, 4, 6, 10, 30, 0),
+            end=datetime(2023, 4, 6, 15, 30, 0),
+            duration=timedelta(hours=5),
+            team=1,
+        )
+        CaptainHistory.objects.create(
+            captain=self.captain1,
+            ballkid=self.ballkid2,
+            start=datetime(2023, 4, 6, 10, 30, 0),
+            end=datetime(2023, 4, 6, 15, 30, 0),
+            duration=timedelta(hours=5),
+            team=4,
+        )
+        CaptainHistory.objects.create(
+            captain=self.captain1,
+            ballkid=self.ballkid1,
+            start=datetime(2023, 4, 7, 10, 30, 0),
+            end=datetime(2023, 4, 7, 15, 30, 0),
+            duration=timedelta(hours=5),
             team=2,
         )
         CaptainHistory.objects.create(
@@ -322,6 +365,7 @@ class TestGetPastTeams(APITestCase):
             ballkid=self.ballkid1,
             start=datetime(2023, 4, 6, 10, 30, 0),
             end=datetime(2023, 4, 6, 15, 30, 0),
+            duration=timedelta(hours=5),
             team=1,
         )
         CaptainHistory.objects.create(
@@ -329,6 +373,7 @@ class TestGetPastTeams(APITestCase):
             ballkid=self.ballkid1,
             start=datetime(2023, 4, 6, 17, 30, 0),
             end=datetime(2023, 4, 6, 19, 30, 0),
+            duration=timedelta(hours=2),
             team=4,
         )
         CaptainHistory.objects.create(
@@ -336,6 +381,7 @@ class TestGetPastTeams(APITestCase):
             ballkid=self.ballkid1,
             start=datetime(2023, 4, 7, 10, 30, 0),
             end=datetime(2023, 4, 7, 15, 30, 0),
+            duration=timedelta(hours=5),
             team=2,
         )
         CaptainHistory.objects.create(
@@ -370,6 +416,7 @@ class TestGetPastTeams(APITestCase):
             ballkid=self.ballkid1,
             start=datetime(2023, 4, 6, 10, 30, 0),
             end=datetime(2023, 4, 7, 1, 30, 0),
+            duration=timedelta(hours=15),
             team=1,
         )
         CaptainHistory.objects.create(
@@ -377,6 +424,7 @@ class TestGetPastTeams(APITestCase):
             ballkid=self.ballkid2,
             start=datetime(2023, 4, 6, 10, 30, 0),
             end=datetime(2023, 4, 6, 15, 30, 0),
+            duration=timedelta(hours=5),
             team=4,
         )
         CaptainHistory.objects.create(
@@ -384,6 +432,7 @@ class TestGetPastTeams(APITestCase):
             ballkid=self.ballkid1,
             start=datetime(2023, 4, 7, 10, 30, 0),
             end=datetime(2023, 4, 7, 15, 30, 0),
+            duration=timedelta(hours=5),
             team=2,
         )
         CaptainHistory.objects.create(
@@ -437,6 +486,7 @@ class TestGetPastTeams(APITestCase):
             ballkid=self.ballkid2,
             start=datetime(2023, 4, 9, 10, 30, 0),
             end=datetime(2023, 4, 9, 15, 30, 0),
+            duration=timedelta(hours=5),
             team=3,
         )
 

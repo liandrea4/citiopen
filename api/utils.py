@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 DEFAULT_IMAGE_FILE = "static/img/none.jpg"
+MIN_CAPTAIN_DURATION = 30
 
 NUM_COURTS_TO_COURTS = {
     5: ["Stadium", "Court 4", "Harris", "Court 5", "Grandstand"],

@@ -347,7 +347,9 @@ class GetPastTeams(APIView):
     def get(self, request, pk):
         # Get all the histories where this ballkid was a captain
         histories = (
-            CaptainHistory.objects.filter(captain_id=pk)
+            CaptainHistory.objects.filter(
+                captain_id=pk, duration__gte=timedelta(minutes=MIN_CAPTAIN_DURATION)
+            )
             .annotate(date=TruncDay("start"))
             .values("date", "ballkid_id")
             .order_by("-date", "ballkid__last_name", "ballkid__first_name")
@@ -397,7 +399,7 @@ class GetCaptainAnalytics(APIView):
         ballkid = get_object_or_404(Ballkid, id=pk)
         ballkid.recalc_captain_analytics()
         analytics = CaptainAnalytics.objects.filter(
-            ballkid_id=pk, duration__gte=timedelta(minutes=30)
+            ballkid_id=pk, duration__gte=timedelta(minutes=MIN_CAPTAIN_DURATION)
         ).order_by("-duration")
         return Response(CaptainAnalyticsSerializer(analytics, many=True).data)
 

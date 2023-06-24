@@ -29,6 +29,214 @@ import logging
 logger = logging.getLogger("api.ballkid")
 
 
+def recalc_checkin_analytics(ballkid=None, now=None):
+    """
+    Recalculates total checkin duration for the ballkid and saves to the
+    CheckinAnalytics table
+
+    TODO: make this more efficient by caching the result and only
+    updating based on the most recent history
+    """
+    if now is None:
+        now = datetime.now()
+
+    # If not updating a specific ballkid, get all histories and create analytics for
+    # all active ballkids
+    if ballkid is None:
+        histories = CheckinHistory.objects.all()
+
+        # Dict mapping ballkid_id to [duration, set of days]
+        analytics = {
+            ballkid.id: [set(), timedelta()]
+            for ballkid in Ballkid.objects.filter(is_active=True)
+        }
+
+    # If updating a specific ballkid, only get that ballkid's histories and only
+    # create 1 analytic
+    else:
+        histories = CheckinHistory.objects.filter(ballkid_id=ballkid.id)
+        analytics = {ballkid.id: [set(), timedelta()]}
+
+    # Add each history's duration and count to the dict of ballkid checkin analytics
+    for history in histories:
+        if history.ballkid_id not in analytics:
+            logger.warn(
+                f"[recalc-checkin-analytics] Key {history.ballkid_id} not found in analytics"
+            )
+            continue
+
+        day = datetime.strftime(history.start, HYPHEN_YEAR_MONTH_DAY_FORMAT_STR)
+        analytics[history.ballkid_id][0].add(day)
+
+        end_time = history.end if history.end else now
+        analytics[history.ballkid_id][1] += end_time - history.start
+
+    CheckinAnalytics.objects.bulk_create(
+        [
+            CheckinAnalytics(ballkid_id=key, count=len(val[0]), duration=val[1])
+            for key, val in analytics.items()
+        ],
+        update_conflicts=True,
+        unique_fields=["ballkid_id"],
+        update_fields=["count", "duration"],
+    )
+
+
+def recalc_court_analytics(ballkid=None, now=None):
+    if now is None:
+        now = datetime.now()
+
+    # If not updating a specific ballkid, get all histories and create analytics for
+    # all active ballkids
+    if ballkid is None:
+        histories = TeamHistory.objects.all()
+
+        # Dict mapping ballkid_id to [count, duration]
+        analytics = {
+            (ballkid.id, court): [0, timedelta()]
+            for ballkid in Ballkid.objects.filter(is_active=True)
+            for court, _ in COURT.choices
+        }
+
+    # If updating a specific ballkid, only get that ballkid's histories and only
+    # create 1 analytic
+    else:
+        histories = TeamHistory.objects.filter(ballkid_id=ballkid.id)
+        analytics = {(ballkid.id, court): [0, timedelta()] for court, _ in COURT.choices}
+
+    for history in histories:
+        # Find all associated shifts of the ballkid's team, filtered to only shifts which have
+        # overlap with the history. Note that this should theoretically improve performance but
+        # for some reason does not so extra filters are commented out.
+        shifts = Schedule.objects.filter(
+            team=history.team,
+            # start__gte=history.start - timedelta(hours=1),
+            # start__lte=history.end if history.end else now,
+        )
+
+        for shift in shifts:
+            overlapping = calc_overlapping_time(
+                history.start,
+                history.end if history.end else now,
+                shift.start,
+                shift.end if shift.end else shift.start + timedelta(hours=1),
+            )
+
+            # ONLY if there is non-zero overlapping time, then log the court to the
+            # ballkid's CourtAnalytics (counts and durations)
+            if overlapping:
+                key = (history.ballkid_id, shift.court)
+                if key not in analytics:
+                    logger.warn(
+                        f"[recalc-court-analytics] Key {key} not found in analytics"
+                    )
+                    continue
+
+                analytics[key][0] += 1
+                analytics[key][1] += overlapping
+
+    CourtAnalytics.objects.bulk_create(
+        [
+            CourtAnalytics(ballkid_id=key[0], court=key[1], count=val[0], duration=val[1])
+            for key, val in analytics.items()
+        ],
+        update_conflicts=True,
+        unique_fields=["ballkid_id", "court"],
+        update_fields=["count", "duration"],
+    )
+
+
+def recalc_captain_analytics(ballkid, now=None):
+    """
+    Recalculates captain counts and durations BIDIRECTIONALLY. This means that
+    - for a ballkid, CaptainAnalytics is updated to account for all captains that
+    the ballkid has had
+    - for a captain, CaptainAnalytics is updated to account for all ballkids (captain
+    and non-captain) that have had this ballkid as captain
+    )
+    """
+
+    if now is None:
+        now = datetime.now()
+
+    for updateAsCaptain in [True, False]:
+        # If ballkid is not a captain, then don't update as captain
+        if updateAsCaptain and not ballkid.is_captain:
+            continue
+
+        durations = {}
+        counts = {}
+
+        # If updating as captain, then treat self as the captain
+        if updateAsCaptain:
+            histories = CaptainHistory.objects.filter(captain=ballkid)
+        # If not updating as captain, then treat self as the ballkid
+        else:
+            histories = CaptainHistory.objects.filter(ballkid=ballkid)
+
+        # For each history between ballkid and captain
+        for history in histories:
+            other_id = history.ballkid_id if updateAsCaptain else history.captain_id
+
+            if other_id not in durations:
+                durations[other_id] = timedelta()
+            if other_id not in counts:
+                counts[other_id] = 0
+
+            # Boolean to indicate whether there was any shift that had positive
+            # overlap. If so, increment the count of number of histories between
+            # ballkid and captain
+            overlapping = False
+
+            shifts = Schedule.objects.filter(team=history.team)
+            # For each shift, check if there is any overlapping time between the
+            # start and end of the CaptainHistory and the start and end of a shift
+            for shift in shifts:
+                overlap = calc_overlapping_time(
+                    history.start,
+                    history.end if history.end else now,
+                    shift.start,
+                    shift.end if shift.end else shift.start + timedelta(hours=1),
+                )
+                durations[other_id] += overlap
+                if overlap:
+                    overlapping = True
+
+            # If any overlap with a shift, increment count of number of histories
+            # between ballkid and captain
+            if overlapping:
+                counts[other_id] += 1
+
+        for other_id, duration in durations.items():
+            # If no overlapping times between (ballkid, captain) pair,
+            # then continue and do not create a CaptainAnalytics entry
+            if not duration:
+                continue
+
+            logger.info(
+                f"[recalc-captain-analytics] For ballkid {ballkid.id} updating as captain {updateAsCaptain} with other ballkid/captain durations of {durations}"
+            )
+
+            if updateAsCaptain:
+                analytic, created = CaptainAnalytics.objects.update_or_create(
+                    ballkid_id=other_id,
+                    captain=ballkid,
+                    defaults={"duration": durations[other_id], "count": counts[other_id]},
+                )
+                logger.info(
+                    f"[recalc-captain-analytics] For (ballkid {other_id}, captain {ballkid.id}), created {created} analytic {analytic}"
+                )
+            else:
+                analytic, created = CaptainAnalytics.objects.update_or_create(
+                    ballkid=ballkid,
+                    captain_id=other_id,
+                    defaults={"duration": durations[other_id], "count": counts[other_id]},
+                )
+                logger.info(
+                    f"[recalc-captain-analytics] For (ballkid {ballkid.id}, captain {other_id}), created {created} analytic {analytic}"
+                )
+
+
 class BallkidsList(generics.ListAPIView):
     serializer_class = BallkidSerializer
     permission_classes = [IsAuthenticated]
@@ -387,7 +595,7 @@ class GetCheckinDuration(APIView):
 
     def get(self, request, pk):
         ballkid = get_object_or_404(Ballkid, id=pk)
-        ballkid.recalc_checkin_analytics()
+        recalc_checkin_analytics(ballkid=ballkid)
         analytic = CheckinAnalytics.objects.filter(ballkid_id=pk).first()
         return Response(CheckinAnalyticsSerializer(analytic).data)
 
@@ -397,7 +605,7 @@ class GetCaptainAnalytics(APIView):
 
     def get(self, request, pk):
         ballkid = get_object_or_404(Ballkid, id=pk)
-        ballkid.recalc_captain_analytics()
+        recalc_captain_analytics(ballkid=ballkid)
         analytics = CaptainAnalytics.objects.filter(
             ballkid_id=pk, duration__gte=timedelta(minutes=MIN_CAPTAIN_DURATION)
         ).order_by("-duration")
@@ -409,7 +617,7 @@ class GetCourtAnalytics(APIView):
 
     def get(self, request, pk):
         ballkid = get_object_or_404(Ballkid, id=pk)
-        ballkid.recalc_court_analytics()
+        recalc_court_analytics(ballkid=ballkid)
         analytics = CourtAnalytics.objects.filter(ballkid_id=pk)
         return Response(CourtAnalyticsSerializer(analytics, many=True).data)
 
@@ -419,8 +627,7 @@ class GetCheckinLeaderboard(generics.ListAPIView):
     serializer_class = BallkidSerializer
 
     def get_queryset(self):
-        for ballkid in Ballkid.objects.filter(is_active=True):
-            ballkid.recalc_checkin_analytics()
+        recalc_checkin_analytics()
 
         return (
             Ballkid.objects.filter(is_active=True)
@@ -436,8 +643,7 @@ class GetAverageCheckinLeaderboard(APIView):
     permission_classes = [IsChairperson]
 
     def get(self, request):
-        for ballkid in Ballkid.objects.filter(is_active=True):
-            ballkid.recalc_checkin_analytics()
+        recalc_checkin_analytics()
 
         averages = Ballkid.objects.filter(is_active=True).aggregate(
             checkin_avg=Avg("checkinanalytics__duration"),
@@ -505,9 +711,8 @@ class GetCourtLeaderboard(generics.ListAPIView):
     serializer_class = BallkidSerializer
 
     def get_queryset(self):
-        for ballkid in Ballkid.objects.filter(is_active=True):
-            ballkid.recalc_court_analytics()
-            ballkid.recalc_checkin_analytics()
+        recalc_court_analytics()
+        recalc_checkin_analytics()
 
         return (
             Ballkid.objects.filter(is_active=True)
@@ -558,9 +763,8 @@ class GetAverageCourtLeaderboard(APIView):
     permission_classes = [IsChairperson]
 
     def get(self, request):
-        for ballkid in Ballkid.objects.filter(is_active=True):
-            ballkid.recalc_court_analytics()
-            ballkid.recalc_checkin_analytics()
+        recalc_court_analytics()
+        recalc_checkin_analytics()
 
         averages = (
             Ballkid.objects.filter(is_active=True)

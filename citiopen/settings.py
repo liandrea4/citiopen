@@ -270,6 +270,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": True,
         },
+        "api.schedule": {
+            "handlers": ["infoFile", "warningFile"],
+            "level": "INFO",
+            "propagate": True,
+        },
         "accounts": {
             "handlers": ["infoFile", "warningFile"],
             "level": "INFO",

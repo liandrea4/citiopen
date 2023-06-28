@@ -18,7 +18,7 @@ import logging
 logger = logging.getLogger("api.rating")
 
 
-def dict_to_rcal(data, min_date, rating_name="overall", returnAveraged=True):
+def queryset_to_rcal(data, min_date, rating_name="overall", returnAveraged=True):
     """
     Converts a Django queryset into the appropriate format for review calibration:
         Queryset of Rating objects => dict of (captain, ballkid, day) : rating
@@ -27,6 +27,10 @@ def dict_to_rcal(data, min_date, rating_name="overall", returnAveraged=True):
 
     NOTE THAT RATINGS OF 0 ARE CONSIDERED EMPTY AND ARE NOT INCLUDED
     """
+
+    logger.info(
+        f"{datetime.now()} [queryset_to_rcal] data {data} with min_date {min_date} and rating_name {rating_name}"
+    )
 
     # Number of days per date bucketing for calibration. A larger number results in
     # more likely to succeed (but theoretically less accurate) calibration
@@ -61,6 +65,10 @@ def dict_to_rcal(data, min_date, rating_name="overall", returnAveraged=True):
         if rating_val:
             rcal_dict.setdefault(key, []).append(float(rating_val))
 
+    logger.info(
+        f"{datetime.now()} [queryset_to_rcal] return dict {rcal_dict} with averaging: {returnAveraged}"
+    )
+
     if not returnAveraged:
         return rcal_dict
 
@@ -93,14 +101,23 @@ def remove_nonoverlapping_reviewers(data):
     new_data = {(r, p, d): y for ((r, p, d), y) in data.items() if r in con}
     excluded = set(g.nodes).difference(con)
 
+    logger.info(
+        f"{datetime.now()} [remove_nonoverlapping_reviewers] data {new_data} after exclusion of reviewers {excluded}"
+    )
+
     return new_data, excluded
 
 
 def calibrate(ratings, rating_name="overall", min_rating=0.5, max_rating=5, stdev=2):
+    logger.info(
+        f"{datetime.now()} [calibrate] starting calibration for {len(ratings)} ratings \
+            and rating_name {rating_name}. First 10: {ratings[:10]}"
+    )
+
     min_date = min([rating.date for rating in ratings])
 
-    train = dict_to_rcal(ratings, min_date, rating_name, returnAveraged=True)
-    test = dict_to_rcal(ratings, min_date, rating_name, returnAveraged=False)
+    train = queryset_to_rcal(ratings, min_date, rating_name, returnAveraged=True)
+    test = queryset_to_rcal(ratings, min_date, rating_name, returnAveraged=False)
 
     train, excluded = remove_nonoverlapping_reviewers(train)
     test, _ = remove_nonoverlapping_reviewers(test)
@@ -111,10 +128,26 @@ def calibrate(ratings, rating_name="overall", min_rating=0.5, max_rating=5, stde
     cp.set_reviewer_offsets({r: 0 for r in excluded})
     cp.set_reviewer_scales({r: 1 for r in excluded})
 
+    logger.info(
+        f"{datetime.now()} [calibrate] completed calibration excluding {excluded}"
+    )
+
     return cp, excluded
 
 
 def save_calibration_parameters(cp, calibrated=None):
+    """
+    Save calibration params as a CalibrationParams object.
+
+    Arguments:
+    cp: rcal cp object to represent calibration
+    calibrated: Dict mapping (rating id, ratee name) to calibrated rating. Used
+    for saving calibrated parameters
+    """
+    logger.info(
+        f"{datetime.now()} [save_calibration_parameters] saving calibration params"
+    )
+
     current_year = get_current_year()
 
     improvements = cp.improvement_rates()
@@ -179,11 +212,18 @@ def save_calibration_parameters(cp, calibrated=None):
                     "ratee_calibrated_stdev": calibrated_stdev,
                 },
             )
+            logger.info(
+                f"{datetime.now()} [save_calibration_params] Created {created} calibration params object for ballkid {ballkid} with defaults {default_vals}, ratee calibrated avg {calibrated_avg} ratee calibrated stdev {calibrated_stdev}"
+            )
 
         else:
             cp, created = CalibrationParams.objects.update_or_create(
                 ballkid=ballkid, defaults=default_vals
             )
+            logger.info(
+                f"{datetime.now()} [save_calibration_params] Created {created} calibration params object for ballkid {ballkid} with defaults {default_vals}"
+            )
+
         cp.save()
 
 
@@ -259,12 +299,17 @@ class CreateRating(APIView):
                 comments=serializer.data["comments"],
             )
 
+            logger.info(f"{datetime.now()} [CreateRating] Created rating {rating}")
+
             # Update calibration parameters
             cp, _ = calibrate(Rating.objects.all())
             save_calibration_parameters(cp)
 
             return Response(RatingSerializer(rating).data)
 
+        logger.warn(
+            f"{datetime.now()} [CreateRating] Error creating rating with serializer errors {serializer.errors}"
+        )
         return Response(
             {"Invalid serializer": f"Errors: {serializer.errors}"},
             status=status.HTTP_400_BAD_REQUEST,
@@ -289,6 +334,10 @@ class CalibratedRatings(APIView):
         cp_dict, excluded = {}, {}
         ratings = Rating.objects.all()
 
+        logger.info(
+            f"{datetime.now()} [CalibratedRatings] Starting rating calibration for {len(ratings)} ratings"
+        )
+
         # See which rating categories throw Rcal warnings
         all_warnings = set()
         for rating_name in RATING_CATEGORIES:
@@ -299,6 +348,10 @@ class CalibratedRatings(APIView):
             if any((x.category == RcalWarning for x in caught_warnings)):
                 all_warnings.add(rating_name)
 
+        logger.warn(
+            f"{datetime.now()} [CalibratedRatings] rating categories with warnings {all_warnings}"
+        )
+
         # Get dict of all calibrated overall ratings for saving calibration params
         calibrated = {
             (rating.id, rating.ratee.get_name()): cp_dict["overall"].calibrate_rating(
@@ -308,6 +361,9 @@ class CalibratedRatings(APIView):
             )
             for rating in ratings
         }
+        logger.info(
+            f"{datetime.now()} [CalibratedRatings] completed calibration for {len(calibrated)} ratings"
+        )
 
         # Save calibration parameters for overall ratings only
         save_calibration_parameters(cp_dict["overall"], calibrated)
@@ -387,10 +443,20 @@ class CalibratedRatings(APIView):
             ),
         )
 
+        # If an rcal warning was thrown for the overall rating category
         if "overall" in all_warnings:
+            logger.warn(
+                f"{datetime.now()} [CalibratedRatings] overall rating category threw an rcal warning"
+            )
             s = status.HTTP_204_NO_CONTENT
+
+        # If a non-zero number of reviewers had no overlap in the overall rating category
         elif excluded["overall"]:
+            logger.warn(
+                f"{datetime.now()} [CalibratedRatings] overall rating category had non-zero excluded reviewers"
+            )
             s = status.HTTP_206_PARTIAL_CONTENT
+
         else:
             s = status.HTTP_200_OK
 
@@ -402,8 +468,10 @@ class GetCalibrationParams(generics.RetrieveAPIView):
     serializer_class = CalibrationParamsSerializer
 
     def get_object(self):
-        params, created = CalibrationParams.objects.get_or_create(
-            ballkid_id=self.kwargs["pk"]
+        pk = self.kwargs["pk"]
+        params, created = CalibrationParams.objects.get_or_create(ballkid_id=pk)
+        logger.info(
+            f"{datetime.now()} [GetCalibrationParams] params {params} for ballkid_id {pk}"
         )
         return params
 
@@ -415,6 +483,7 @@ class GetAverageCalibrationParams(APIView):
         avg_offset = CalibrationParams.objects.aggregate(
             Avg("rater_offset"), Avg("rater_scale")
         )
+        logger.info(f"{datetime.now()} [GetAverageCalibrationParams] avg {avg_offset}")
         return Response(avg_offset)
 
 
@@ -424,5 +493,6 @@ class DeleteRating(APIView):
 
     def delete(self, request, pk, format=None):
         rating = Rating.objects.get(pk=pk)
+        logger.info(f"{datetime.now()} [DeleteRating] deleting rating {rating}")
         rating.delete()
         return Response(status=status.HTTP_200_OK)

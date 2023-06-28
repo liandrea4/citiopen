@@ -513,8 +513,7 @@ class CheckinHistory(models.Model):
     duration = models.DurationField(default=timedelta)
 
     def __str__(self):
-        return f"{self.ballkid.get_name()} checked in at {self.start} and checked out at \
-            {self.end} (total duration: {self.duration})"
+        return f"{self.ballkid.get_name()} checked in at {self.start} and checked out at {self.end} (total duration: {self.duration})"
 
 
 class CheckinAnalytics(models.Model):

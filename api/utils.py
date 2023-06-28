@@ -47,9 +47,6 @@ def calc_overlapping_time(start1, end1, start2, end2):
     start2(datetime): start time for second time interval
     end2(datetime): end time for second time interval
     """
-    logger.info(
-        f"{datetime.now()} [calc_overlapping_time] start1: {start1}, end1: {end1}, start2: {start2}, end2: {end2}"
-    )
     if end1 is None or end2 is None:
         return timedelta()
 
@@ -67,8 +64,6 @@ def timedelta_to_str(delta):
     Converts a timedelta object into a string of the form: "xx hrs yy mins"
     If no timedelta object provided (None), "0 hrs 0 mins" is outputted
     """
-    logger.info(f"{datetime.now()} [timedelta_to_str] input: {delta}")
-
     if delta is None:
         return "0 hrs 0 mins"
 
@@ -88,10 +83,6 @@ def datetime_str_to_datetime(input_str, format_str="%Y-%m-%d %H:%M:%S"):
     Note that this function as it is currently built ALWAYS ASSUMES "T" to split
     up the date and time. Milliseconds after "." is optional in the input_str
     """
-    logger.info(
-        f"{datetime.now()} [datetime_str_to_datetime] input: {input_str}; format string: {format_str}"
-    )
-
     if not input_str:
         return
 

@@ -60,8 +60,7 @@ def recalc_checkin_analytics(ballkid=None, now=None):
         analytics = {ballkid.id: [set(), timedelta()]}
 
     logger.info(
-        f"{datetime.now()} [recalc-checkin-analytics] # histories: {len(histories)}, \
-        first 10: {histories[:10]}"
+        f"{datetime.now()} [recalc-checkin-analytics] # histories: {len(histories)}, first 10: {histories[:10]}"
     )
 
     # Add each history's duration and count to the dict of ballkid checkin analytics
@@ -78,8 +77,7 @@ def recalc_checkin_analytics(ballkid=None, now=None):
         end_time = history.end if history.end else now
         analytics[history.ballkid_id][1] += end_time - history.start
     logger.info(
-        f"{datetime.now()} [recalc-checkin-analytics] Compiled analytics: {analytics}, \
-            starting bulk create"
+        f"{datetime.now()} [recalc-checkin-analytics] Compiled analytics: {analytics}, starting bulk create"
     )
 
     CheckinAnalytics.objects.bulk_create(
@@ -119,8 +117,7 @@ def recalc_court_analytics(ballkid=None, now=None):
         analytics = {(ballkid.id, court): [0, timedelta()] for court, _ in COURT.choices}
 
     logger.info(
-        f"{datetime.now()} [recalc-court-analytics] # histories: {len(histories)}, \
-        first 10: {histories[:10]}"
+        f"{datetime.now()} [recalc-court-analytics] # histories: {len(histories)}, first 10: {histories[:10]}"
     )
 
     for history in histories:
@@ -155,8 +152,7 @@ def recalc_court_analytics(ballkid=None, now=None):
                 analytics[key][1] += overlapping
 
     logger.info(
-        f"{datetime.now()} [recalc-court-analytics] Compiled analytics: {analytics}, \
-            starting bulk create"
+        f"{datetime.now()} [recalc-court-analytics] Compiled analytics: {analytics}, starting bulk create"
     )
 
     CourtAnalytics.objects.bulk_create(
@@ -201,8 +197,7 @@ def recalc_captain_analytics(ballkid, now=None):
             histories = CaptainHistory.objects.filter(ballkid=ballkid)
 
         logger.info(
-            f"{datetime.now()} [recalc-captain-analytics] # histories: {len(histories)}, \
-        first 10: {histories[:10]}"
+            f"{datetime.now()} [recalc-captain-analytics] # histories: {len(histories)}, first 10: {histories[:10]}"
         )
 
         # For each history between ballkid and captain
@@ -245,9 +240,7 @@ def recalc_captain_analytics(ballkid, now=None):
                 continue
 
             logger.info(
-                f"{datetime.now()} [recalc-captain-analytics] For ballkid {ballkid.id} \
-                    updating as captain {updateAsCaptain} with other ballkid/captain \
-                    durations of {durations}"
+                f"{datetime.now()} [recalc-captain-analytics] For ballkid {ballkid.id} updating as captain {updateAsCaptain} with other ballkid/captain durations of {durations}"
             )
 
             if updateAsCaptain:
@@ -257,8 +250,7 @@ def recalc_captain_analytics(ballkid, now=None):
                     defaults={"duration": durations[other_id], "count": counts[other_id]},
                 )
                 logger.info(
-                    f"{datetime.now()} [recalc-captain-analytics] For (ballkid {other_id}, \
-                        captain {ballkid.id}), created {created} analytic {analytic}"
+                    f"{datetime.now()} [recalc-captain-analytics] For (ballkid {other_id}, captain {ballkid.id}), created {created} analytic {analytic}"
                 )
             else:
                 analytic, created = CaptainAnalytics.objects.update_or_create(
@@ -267,8 +259,7 @@ def recalc_captain_analytics(ballkid, now=None):
                     defaults={"duration": durations[other_id], "count": counts[other_id]},
                 )
                 logger.info(
-                    f"{datetime.now()} [recalc-captain-analytics] For (ballkid {ballkid.id}, \
-                        captain {other_id}), created {created} analytic {analytic}"
+                    f"{datetime.now()} [recalc-captain-analytics] For (ballkid {ballkid.id}, captain {other_id}), created {created} analytic {analytic}"
                 )
 
 
@@ -623,7 +614,6 @@ class GetPastTeams(APIView):
         )
 
         logger.info(f"{datetime.now()} [GetPastTeams] pk: {pk}; histories {histories}")
-
 
         # Map from date_str to list of ballkids that were on the captain's team
         # on that date

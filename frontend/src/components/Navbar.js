@@ -334,32 +334,23 @@ export default function Navbar(props) {
 
   return (
     // <Box sx={{ flexGrow: 1 }}>
-    <AppBar position="static">
+    <AppBar position="sticky">
       <Toolbar>
-        {/* <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              sx={{ mr: 2 }}
-            >
-              <Menu />
-            </IconButton> */}
         <div className="justify" style={{ height: "100%" }}>
           <div className="sxs">
-            <div className="sxs">
+            <Box
+              className="sxs"
+              component={Link}
+              to="/"
+              sx={{ textDecoration: "none", color: "white" }}
+            >
               <Icon>
                 <SportsTennis />
               </Icon>
-              <Typography
-                component={Link}
-                to="/"
-                variant="h6"
-                sx={{ mx: 2, textDecoration: "none", color: "white" }}
-                // sx={{ flexGrow: 1, textDecoration: "none", color: "white" }}
-              >
+              <Typography variant="h6" sx={{ mx: 2 }}>
                 Citi Open Ballkids
               </Typography>
-            </div>
+            </Box>
 
             {!props.isLoggedIn || isMobile ? (
               ""

@@ -144,7 +144,7 @@ export function Team({ team, assigned, nextShifts, setUpdated }) {
   });
 
   return (
-    <Grid item xs={12} sm={6} md={4} lg={3} xl={2} ref={dropRef}>
+    <Grid item xs={12} sm={6} md={6} lg={4} xl={3} ref={dropRef}>
       <Card
         sx={{ mb: 2, backgroundColor: isCurrentlyOn ? ON_COURT_GREEN : "" }}
         elevation={isOver ? 10 : 1}
@@ -397,13 +397,28 @@ export default function TeamsPageChairperson(props) {
 
   return (
     <div className="page">
-      <Header />
-      {renderTeams(assigned, teams, nextShifts, setUpdated)}
-      <Unassigned
-        unassigned={unassigned}
-        teams={teams}
-        setUpdated={setUpdated}
-      />
+      <Grid container className="justify-top">
+        <Grid item md={7} lg={7.5} xl={8} sx={{ pr: 3 }} alignItems="top">
+          <Header />
+          {renderTeams(assigned, teams, nextShifts, setUpdated)}
+        </Grid>
+        <Divider orientation="vertical" variant="middle" flexItem />
+
+        <Grid
+          item
+          md={4.5}
+          lg={4}
+          xl={3.5}
+          sx={{ pl: 3 }}
+          style={{ maxHeight: "100vh", overflow: "auto" }}
+        >
+          <Unassigned
+            unassigned={unassigned}
+            teams={teams}
+            setUpdated={setUpdated}
+          />
+        </Grid>
+      </Grid>
     </div>
   );
 }

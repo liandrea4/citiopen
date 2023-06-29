@@ -27,26 +27,25 @@ body {
   transform: translate(-50%, -50%);
 }
 
+/* Put elements side by side horizontally and vertically center align*/
 .sxs {
   display: flex;
   align-items: center;
   direction: column;
 }
 
-.sxs-center {
-  display: flex;
-  justify-content: center;
-}
-
-.stack-center {
-  justify-content: center;
-  align-items: center;
-}
-
+/* Justify elements horizontally and vertically center align */
 .justify {
   display: flex;
   justify-content: space-between;
   align-items: center;
   direction: column;
+  width: 100%;
+}
+
+/* Justify elements horizontally and keep elements aligned to the top */
+.justify-top {
+  display: flex;
+  justify-content: space-between;
   width: 100%;
 }

@@ -4,7 +4,6 @@ import { useDrop } from "react-dnd";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 
 import { getAuthHeader, SearchAndFilter, filterBallkids } from "../Utils";
@@ -13,6 +12,7 @@ import {
   DraggableBallkidAndIcon,
   Teams,
   Header,
+  renderCheckoutUnassignedButton,
 } from "./TeamsPageChairpersonUtils";
 
 function Unassigned({ unassigned, setUpdated }) {
@@ -55,25 +55,10 @@ function Unassigned({ unassigned, setUpdated }) {
             {filterBallkids(unassigned, searchKeyword, filterGroup).length})
           </Typography>
         </div>
-        <Button
-          variant="outlined"
-          size="small"
-          color="error"
-          sx={MARGINS}
-          onClick={() => {
-            fetch("/api/checkout-all", {
-              method: "PATCH",
-              headers: getAuthHeader(),
-              body: JSON.stringify({
-                checkout_group: "unassigned",
-              }),
-            })
-              .then((response) => response.json())
-              .then(() => setUpdated(true));
-          }}
-        >
-          Check Out All
-        </Button>
+
+        {unassigned.length === 0
+          ? ""
+          : renderCheckoutUnassignedButton(setUpdated)}
       </div>
 
       <div>
@@ -162,8 +147,9 @@ export default function TeamsPageChairpersonDesktop(props) {
       <Grid container className="justify-top">
         <Grid
           item
-          sm={8}
-          md={8}
+          sm={6}
+          md={7}
+          lg={8}
           xl={9}
           style={{ maxHeight: "85vh", overflow: "auto" }}
         >
@@ -178,8 +164,9 @@ export default function TeamsPageChairpersonDesktop(props) {
 
         <Grid
           item
-          sm={4}
-          md={4}
+          sm={6}
+          md={5}
+          lg={4}
           xl={3}
           style={{ maxHeight: "85vh", overflow: "auto" }}
         >

@@ -23,7 +23,7 @@ import {
   CourtAssignment,
   useIsMobile,
 } from "../Utils";
-import { ON_COURT_GREEN } from "../Consts";
+import { ON_COURT_GREEN, MARGINS } from "../Consts";
 
 export function DraggableBallkidAndIcon(props) {
   const ballkid = props.ballkid;
@@ -181,13 +181,15 @@ function renderTeamCardHeader(team, assigned, nextShifts, setUpdated) {
           </Typography>
         </div>
 
-        {renderClearButton(team, setUpdated)}
+        {assigned.length === 0 ? "" : renderClearButton(team, setUpdated)}
       </div>
 
       <div className="justify">
         <CourtAssignment nextShifts={nextShifts} />
 
-        {renderCheckoutTeamButton(team, setUpdated)}
+        {assigned.length === 0
+          ? ""
+          : renderCheckoutTeamButton(team, setUpdated)}
       </div>
     </div>
   );
@@ -271,6 +273,30 @@ function Team({ team, assigned, nextShifts, isMobile, isNewTeam, setUpdated }) {
         )}
       </Card>
     </Grid>
+  );
+}
+
+export function renderCheckoutUnassignedButton(setUpdated) {
+  return (
+    <Button
+      variant="outlined"
+      size="small"
+      color="error"
+      sx={MARGINS}
+      onClick={() => {
+        fetch("/api/checkout-all", {
+          method: "PATCH",
+          headers: getAuthHeader(),
+          body: JSON.stringify({
+            checkout_group: "unassigned",
+          }),
+        })
+          .then((response) => response.json())
+          .then(() => setUpdated(true));
+      }}
+    >
+      Check Out All
+    </Button>
   );
 }
 

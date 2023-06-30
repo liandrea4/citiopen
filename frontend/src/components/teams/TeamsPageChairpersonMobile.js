@@ -17,6 +17,7 @@ import {
   DraggableBallkidAndIcon,
   Teams,
   Header,
+  renderCheckoutUnassignedButton,
 } from "./TeamsPageChairpersonUtils";
 
 function renderAssignButton(ballkid, buttonString, teamNum, setUpdated) {
@@ -68,14 +69,20 @@ function Unassigned({ unassigned, teams, setUpdated }) {
 
   return (
     <div>
-      <div className="sxs">
-        <Typography variant="h5" sx={MARGINS}>
-          Unassigned
-        </Typography>
-        <Typography variant="h6" sx={MARGINS}>
-          &ensp; (
-          {filterBallkids(unassigned, searchKeyword, filterGroup).length})
-        </Typography>
+      <div className="justify">
+        <div className="sxs">
+          <Typography variant="h5" sx={MARGINS}>
+            Unassigned
+          </Typography>
+          <Typography variant="h6" sx={MARGINS}>
+            &ensp; (
+            {filterBallkids(unassigned, searchKeyword, filterGroup).length})
+          </Typography>
+        </div>
+
+        {unassigned.length === 0
+          ? ""
+          : renderCheckoutUnassignedButton(setUpdated)}
       </div>
 
       {unassigned.length === 0 ? (

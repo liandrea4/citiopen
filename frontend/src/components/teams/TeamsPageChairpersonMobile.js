@@ -6,15 +6,19 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
+import Table from "@mui/material/Table";
+import TableContainer from "@mui/material/TableContainer";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
 import Close from "@mui/icons-material/Close";
-import SwapVert from "@mui/icons-material/SwapVert";
 
 import {
   getAuthHeader,
@@ -66,9 +70,7 @@ function renderBallkidsOnTeam(assigned, teamNum, position, setUpdated) {
           <div key={`ballkid${ballkid.id}`} className="justify">
             {<DraggableBallkidAndIcon ballkid={ballkid} />}
             <div className="sxs">
-              {!ballkid.preferred_position.includes("/") ? (
-                ""
-              ) : (
+              {ballkid.preferred_position.includes("/") ? (
                 <Button
                   variant="outlined"
                   size="small"
@@ -86,8 +88,10 @@ function renderBallkidsOnTeam(assigned, teamNum, position, setUpdated) {
                       .then(() => setUpdated(true));
                   }}
                 >
-                  <SwapVert />
+                  Switch
                 </Button>
+              ) : (
+                ""
               )}
               <IconButton
                 size="small"
@@ -140,7 +144,7 @@ export function Team({ team, assigned, nextShifts, setUpdated }) {
   });
 
   return (
-    <Grid item xs={12} sm={6} md={6} lg={4} xl={3} ref={dropRef}>
+    <Grid item xs={12} sm={6} md={4} lg={3} xl={2} ref={dropRef}>
       <Card
         sx={{ mb: 2, backgroundColor: isCurrentlyOn ? ON_COURT_GREEN : "" }}
         elevation={isOver ? 10 : 1}
@@ -176,7 +180,7 @@ export function Team({ team, assigned, nextShifts, setUpdated }) {
 
           {positions.map((position) => (
             <div key={position}>
-              <Divider sx={{ my: 1 }} />
+              <Divider sx={{ mt: 1, mb: 1 }} />
               <div className="sxs">
                 <Typography variant="subtitle1">{position}s</Typography>
                 <Typography variant="subtitle2" sx={{ ml: 1 }}>
@@ -217,11 +221,35 @@ function renderTeams(assigned, teams, nextShifts, setUpdated) {
   );
 }
 
-function Unassigned({ unassigned, setUpdated }) {
+function renderAssignButton(ballkid, buttonString, teamNum, setUpdated) {
+  return (
+    <Button
+      key={teamNum}
+      sx={{ m: 0.2 }}
+      size="small"
+      variant="outlined"
+      onClick={(e) => {
+        fetch("/api/update-ballkid", {
+          method: "PATCH",
+          headers: getAuthHeader(),
+          body: JSON.stringify({
+            first_name: ballkid.first_name,
+            last_name: ballkid.last_name,
+            current_team: teamNum,
+          }),
+        })
+          .then((response) => response.json())
+          .then(() => setUpdated(true));
+      }}
+    >
+      {buttonString}
+    </Button>
+  );
+}
+
+function Unassigned({ unassigned, teams, setUpdated }) {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterGroup, setFilterGroup] = useState();
-
-  const positions = ["Net", "Back"];
 
   const [{ isOver }, dropRef] = useDrop({
     accept: "ballkid",
@@ -241,12 +269,7 @@ function Unassigned({ unassigned, setUpdated }) {
   });
 
   return (
-    <Box
-      component={Paper}
-      ref={dropRef}
-      elevation={isOver ? 10 : 1}
-      sx={{ pl: { xs: 0, md: 3 }, ml: { xs: 0, md: 3 } }}
-    >
+    <div>
       <div className="sxs">
         <Typography variant="h5" sx={MARGINS}>
           Unassigned
@@ -257,48 +280,59 @@ function Unassigned({ unassigned, setUpdated }) {
         </Typography>
       </div>
 
-      <div>
-        <SearchAndFilter
-          setSearchKeyword={setSearchKeyword}
-          filterGroup={filterGroup}
-          setFilterGroup={setFilterGroup}
-          filters={["captain", "rookie", "chairperson"]}
-        />
-        {positions.map((position) => {
-          const ballkids = filterBallkids(
-            unassigned,
-            searchKeyword,
-            filterGroup
-          ).filter((ballkid) => ballkid.preferred_position.includes(position));
-          return (
-            <div>
-              <div className="sxs">
-                <Typography variant="h6" sx={MARGINS}>
-                  {position}s
-                </Typography>
-                <Typography variant="subtitle1" sx={{ ...MARGINS, ml: 1 }}>
-                  ({ballkids.length})
-                </Typography>
-              </div>
-              {ballkids.length === 0 ? (
-                <Typography variant="body1" sx={{ pb: 1 }}>
-                  There are currently no checked in {position.toLowerCase()}s
-                  who are unassigned.
-                </Typography>
-              ) : (
-                <Grid container>
-                  {ballkids.map((ballkid) => (
-                    <Grid item sm={3} md={6} sx={{ px: 1 }}>
-                      {<DraggableBallkidAndIcon ballkid={ballkid} />}
-                    </Grid>
-                  ))}
-                </Grid>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </Box>
+      {unassigned.length === 0 ? (
+        <Typography variant="body1">
+          There are currently no checked in ballkids who are unassigned.
+        </Typography>
+      ) : (
+        <div>
+          <SearchAndFilter
+            setSearchKeyword={setSearchKeyword}
+            filterGroup={filterGroup}
+            setFilterGroup={setFilterGroup}
+          />
+
+          <TableContainer
+            component={Paper}
+            ref={dropRef}
+            elevation={isOver ? 10 : 1}
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Preferred Position</TableCell>
+                  <TableCell align="right">Assign To Team</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filterBallkids(unassigned, searchKeyword, filterGroup).map(
+                  (ballkid) => (
+                    <TableRow key={ballkid.id}>
+                      <TableCell component="th" scope="row">
+                        {<DraggableBallkidAndIcon ballkid={ballkid} />}
+                      </TableCell>
+                      <TableCell>{ballkid.preferred_position}</TableCell>
+                      <TableCell align="right">
+                        {teams.map((team) =>
+                          renderAssignButton(ballkid, team, team, setUpdated)
+                        )}
+                        {renderAssignButton(
+                          ballkid,
+                          "New Team",
+                          teams.length + 1,
+                          setUpdated
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -326,7 +360,7 @@ function Header() {
   );
 }
 
-export default function TeamsPageChairperson(props) {
+export default function TeamsPageChairpersonMobile(props) {
   const [assigned, setAssigned] = useState([]);
   const [unassigned, setUnassigned] = useState([]);
   const [nextShifts, setNextShifts] = useState([]);
@@ -363,29 +397,13 @@ export default function TeamsPageChairperson(props) {
 
   return (
     <div className="page">
-      <Grid container className="justify-top">
-        <Grid
-          item
-          sm={12}
-          md={8}
-          xl={9}
-          style={{ maxHeight: "85vh", overflow: "auto" }}
-        >
-          <Header />
-          {renderTeams(assigned, teams, nextShifts, setUpdated)}
-        </Grid>
-        {/* <Divider orientation="vertical" variant="middle" flexItem /> */}
-
-        <Grid
-          item
-          sm={12}
-          md={4}
-          xl={3}
-          style={{ maxHeight: "85vh", overflow: "auto" }}
-        >
-          <Unassigned unassigned={unassigned} setUpdated={setUpdated} />
-        </Grid>
-      </Grid>
+      <Header />
+      {renderTeams(assigned, teams, nextShifts, setUpdated)}
+      <Unassigned
+        unassigned={unassigned}
+        teams={teams}
+        setUpdated={setUpdated}
+      />
     </div>
   );
 }

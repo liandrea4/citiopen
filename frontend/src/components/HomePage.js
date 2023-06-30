@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import BallkidList from "./lists/BallkidList";
 import BallkidPage from "./ballkid/BallkidPage";
 import TeamsPage from "./teams/TeamsPage";
-import TeamsPageChairperson from "./teams/TeamsPageChairperson";
+import TeamsPageChairpersonDesktop from "./teams/TeamsPageChairpersonDesktop";
+import TeamsPageChairpersonMobile from "./teams/TeamsPageChairpersonMobile";
 import CutPage from "./lists/CutPage";
 import Navbar from "./Navbar";
 import CheckinPage from "./lists/CheckinPage";
@@ -34,10 +35,10 @@ import CourtLeaderboard from "./leaderboards/CourtLeaderboard";
 import BallkidLeaderboard from "./leaderboards/BallkidLeaderboard";
 import TournamentSettings from "./settings/TournamentSettings";
 
-import { useToken, getLocalStorage } from "./Utils";
+import { useToken, getLocalStorage, useIsMobile } from "./Utils";
 import GamePage from "./settings/GamePage";
 
-function chairpersonRoutes(setToken) {
+function chairpersonRoutes(isMobile, setToken) {
   return (
     <Routes>
       <Route exact path="/" element={<BallkidList />} />
@@ -59,7 +60,16 @@ function chairpersonRoutes(setToken) {
       <Route path="/rate-by-past-team" element={<RateByPastTeamPage />} />
       <Route path="/ratings" element={<RatingsPage />} />
       <Route path="/schedule" element={<SchedulePageChairperson />} />
-      <Route path="/teams" element={<TeamsPageChairperson />} />
+      <Route
+        path="/teams"
+        element={
+          isMobile ? (
+            <TeamsPageChairpersonMobile />
+          ) : (
+            <TeamsPageChairpersonDesktop />
+          )
+        }
+      />
       <Route path="/finals-teams" element={<FinalsTeamsPageChairperson />} />
       <Route path="/tournament-settings" element={<TournamentSettings />} />
       <Route path="/game" element={<GamePage />} />
@@ -121,6 +131,8 @@ function loggedOutRoutes(setToken) {
 
 export default function HomePage(props) {
   const { token, setToken } = useToken();
+  const isMobile = useIsMobile();
+
   const group = getLocalStorage("group");
 
   return !token ? (
@@ -132,7 +144,7 @@ export default function HomePage(props) {
     <Router>
       <Navbar isLoggedIn={true} setToken={setToken} />
       {group === "chairperson"
-        ? chairpersonRoutes(setToken)
+        ? chairpersonRoutes(isMobile, setToken)
         : group === "captain"
         ? captainRoutes(setToken)
         : ballkidRoutes(setToken)}

@@ -69,7 +69,7 @@ const chairpersonTabs = [
       { label: "By Name", url: "/" },
       { label: "Check-In", url: "/checkin" },
       { label: "Cut", url: "/cut" },
-      { label: "Archive", url: "/archive" },
+      { label: "Inactive", url: "/inactive" },
     ],
   },
   {

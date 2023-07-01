@@ -1,0 +1,212 @@
+import React, { useState, useEffect } from "react";
+import { Link as RouterLink } from "react-router-dom";
+
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import CardActionArea from "@mui/material/CardActionArea";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+
+import AspectRatio from "@mui/joy/AspectRatio";
+
+import {
+  Icons,
+  LayoutButtons,
+  getAuthHeader,
+  getLocalStorage,
+  SearchAndFilter,
+  filterBallkids,
+} from "../Utils";
+import { MARGINS } from "../Consts";
+
+function renderUnarchiveButton(ballkid, setUpdated) {
+  return (
+    <Button
+      variant="outlined"
+      color="success"
+      size="small"
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        fetch("/api/update-ballkid", {
+          method: "PATCH",
+          headers: getAuthHeader(),
+          body: JSON.stringify({
+            first_name: ballkid.first_name,
+            last_name: ballkid.last_name,
+            is_active: true,
+          }),
+        })
+          .then((response) => response.json())
+          .then(() => setUpdated(true));
+      }}
+    >
+      Un-Archive
+    </Button>
+  );
+}
+
+function renderUncutButton(ballkid, setUpdated) {
+  return (
+    <Button
+      variant="outlined"
+      label="Cut"
+      color="success"
+      size="small"
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        fetch("/api/update-ballkid", {
+          method: "PATCH",
+          headers: getAuthHeader(),
+          body: JSON.stringify({
+            first_name: ballkid.first_name,
+            last_name: ballkid.last_name,
+            is_cut: false,
+          }),
+        })
+          .then((response) => response.json())
+          .then(() => setUpdated(true));
+      }}
+    >
+      Un-cut
+    </Button>
+  );
+}
+
+function renderBallkids(ballkids, section, gridLayout, setUpdated) {
+  return ballkids.length === 0 ? (
+    <Typography variant="body1">
+      There are currently no {section} ballkids.
+    </Typography>
+  ) : (
+    <Grid container spacing={gridLayout ? 2 : 1}>
+      {ballkids.map((ballkid) => (
+        <Grid
+          item
+          key={ballkid.id}
+          xs={gridLayout ? 6 : 12}
+          sm={gridLayout ? 4 : 12}
+          md={gridLayout ? 3 : 12}
+          lg={gridLayout ? 2 : 12}
+          xl={gridLayout ? 1 : 12}
+        >
+          <Card>
+            <CardActionArea
+              component={RouterLink}
+              to={`/ballkid/${ballkid.id}`}
+            >
+              {!gridLayout ? (
+                ""
+              ) : (
+                <AspectRatio ratio="1/1">
+                  <CardMedia component="img" image={ballkid.image} />
+                </AspectRatio>
+              )}
+              <CardContent>
+                <div className={gridLayout ? "" : "justify"}>
+                  <div className={gridLayout ? "justify" : "sxs"}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ fontWeight: "medium" }}
+                    >
+                      {ballkid.first_name} {ballkid.last_name}
+                    </Typography>
+                    &thinsp;
+                    <Icons ballkid={ballkid} margin={0} />
+                  </div>
+                  <Box textAlign="center" sx={{ mt: gridLayout ? 1 : 0 }}>
+                    {section === "cut"
+                      ? renderUncutButton(ballkid, setUpdated)
+                      : renderUnarchiveButton(ballkid, setUpdated)}
+                  </Box>
+                </div>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+  );
+}
+
+export default function InactiveBallkidList(props) {
+  const [archived, setArchived] = useState([]);
+  const [cut, setCut] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [filterGroup, setFilterGroup] = useState();
+
+  const [gridLayout, setGridLayout] = useState(
+    getLocalStorage("gridLayout") ?? true
+  );
+  const [updated, setUpdated] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/inactive-list", { headers: getAuthHeader() })
+      .then((response) => response.json())
+      .then((data) => {
+        setArchived(data.filter((ballkid) => ballkid.is_active === false));
+        setCut(
+          data.filter(
+            (ballkid) => ballkid.is_active === true && ballkid.is_cut === true
+          )
+        );
+      })
+      .then(() => setUpdated(false));
+  }, [updated]);
+
+  return (
+    <div className="page">
+      <div className="justify">
+        <Typography variant="h4" sx={{ mb: 1 }}>
+          Inactive Ballkids
+        </Typography>
+
+        <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
+      </div>
+
+      <SearchAndFilter
+        setSearchKeyword={setSearchKeyword}
+        filterGroup={filterGroup}
+        setFilterGroup={setFilterGroup}
+      />
+
+      <Grid item className="sxs">
+        <Typography variant="h5" sx={MARGINS}>
+          Cut Ballkids
+        </Typography>
+        <Typography variant="h6" sx={MARGINS}>
+          &ensp; ({filterBallkids(cut, searchKeyword, filterGroup).length})
+        </Typography>
+      </Grid>
+
+      {renderBallkids(
+        filterBallkids(cut, searchKeyword, filterGroup),
+        "cut",
+        gridLayout,
+        setUpdated
+      )}
+
+      <Grid item className="sxs">
+        <Typography variant="h5" sx={MARGINS}>
+          Archived Ballkids
+        </Typography>
+        <Typography variant="h6" sx={MARGINS}>
+          &ensp; ({filterBallkids(archived, searchKeyword, filterGroup).length})
+        </Typography>
+      </Grid>
+
+      {renderBallkids(
+        filterBallkids(archived, searchKeyword, filterGroup),
+        "archived",
+        gridLayout,
+        setUpdated
+      )}
+    </div>
+  );
+}

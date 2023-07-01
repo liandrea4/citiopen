@@ -73,9 +73,9 @@ class TestBallkidListView(APITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)
 
-    def test_archived_list(self):
-        response = self.client.get(reverse("archived-list"))
-        ballkids = [self.ballkid4]
+    def test_inactive_list(self):
+        response = self.client.get(reverse("inactive-list"))
+        ballkids = [self.ballkid4, self.ballkid5]
         serializer = BallkidSerializer(ballkids, many=True)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)

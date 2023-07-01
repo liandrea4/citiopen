@@ -22,7 +22,6 @@ import DialogContentText from "@mui/material/DialogContentText";
 
 import Clear from "@mui/icons-material/Clear";
 import Dangerous from "@mui/icons-material/Dangerous";
-import ReportOff from "@mui/icons-material/ReportOff";
 
 import {
   filterBallkids,
@@ -268,69 +267,6 @@ function ActiveSection({ active, sections, setUpdated }) {
   );
 }
 
-function CutSection({ cut, setUpdated }) {
-  return (
-    <div>
-      <div className="sxs">
-        <Typography variant="h5" sx={MARGINS}>
-          Cut Ballkids
-        </Typography>
-        <Typography variant="h6" sx={MARGINS}>
-          &ensp; ({cut.length})
-        </Typography>
-      </div>
-      {cut.length === 0 ? (
-        <Typography>There are currently no cut ballkids.</Typography>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Preferred Position</TableCell>
-                <TableCell align="right">Un-Cut?</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {cut.map((ballkid) => (
-                <TableRow key={ballkid.id}>
-                  <TableCell component="th" scope="row">
-                    {<DraggableBallkidAndIcon ballkid={ballkid} />}
-                  </TableCell>
-                  <TableCell>{ballkid.preferred_position}</TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      variant="outlined"
-                      label="Cut"
-                      color="success"
-                      size="small"
-                      onClick={(e) => {
-                        fetch("/api/update-ballkid", {
-                          method: "PATCH",
-                          headers: getAuthHeader(),
-                          body: JSON.stringify({
-                            first_name: ballkid.first_name,
-                            last_name: ballkid.last_name,
-                            is_cut: false,
-                          }),
-                        })
-                          .then((response) => response.json())
-                          .then(() => setUpdated(true));
-                      }}
-                    >
-                      <ReportOff />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-    </div>
-  );
-}
-
 function ConfirmDialog({ section, message, open, setOpen, setUpdated }) {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -385,7 +321,6 @@ function ConfirmDialog({ section, message, open, setOpen, setUpdated }) {
 
 export default function CutPageMobile(props) {
   const [active, setActive] = useState([]);
-  const [cut, setCut] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterGroup, setFilterGroup] = useState();
   const [updated, setUpdated] = useState(false);
@@ -395,10 +330,7 @@ export default function CutPageMobile(props) {
   useEffect(() => {
     fetch("/api/all-sorted-list", { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => {
-        setActive(data.filter((ballkid) => !ballkid.is_cut));
-        setCut(data.filter((ballkid) => ballkid.is_cut));
-      })
+      .then((data) => setActive(data.filter((ballkid) => !ballkid.is_cut)))
       .then(() => setUpdated(false));
   }, [updated]);
 
@@ -428,11 +360,6 @@ export default function CutPageMobile(props) {
       <ActiveSection
         active={filterBallkids(active, searchKeyword, filterGroup)}
         sections={sections}
-        setUpdated={setUpdated}
-      />
-
-      <CutSection
-        cut={filterBallkids(cut, searchKeyword, filterGroup)}
         setUpdated={setUpdated}
       />
     </div>

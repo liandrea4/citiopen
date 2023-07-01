@@ -349,14 +349,14 @@ class BallkidsSortedList(generics.ListAPIView):
         )
 
 
-class BallkidsArchivedList(generics.ListAPIView):
+class BallkidsInactiveList(generics.ListAPIView):
     serializer_class = BallkidSerializer
     permission_classes = [IsChairperson]
 
     def get_queryset(self):
         return (
-            Ballkid.objects.all()
-            .filter(is_active=False)
+            Ballkid.objects
+            .filter(Q(is_active=False) | Q(is_cut=True))
             .order_by("last_name", "first_name")
         )
 

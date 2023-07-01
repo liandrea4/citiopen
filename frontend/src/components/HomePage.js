@@ -9,7 +9,6 @@ import CutPageMobile from "./lists/CutPageMobile";
 import CutPageDesktop from "./lists/CutPageDesktop";
 import Navbar from "./Navbar";
 import CheckinPage from "./lists/CheckinPage";
-import ArchivedBallkidList from "./lists/ArchivedBallkidList";
 import SchedulePage from "./schedule/SchedulePage";
 import DebugPage from "./settings/DebugPage";
 import LoginPage from "./auth/LoginPage";
@@ -36,6 +35,7 @@ import BallkidLeaderboard from "./leaderboards/BallkidLeaderboard";
 import TournamentSettings from "./settings/TournamentSettings";
 import FinalsTeamsPageChairpersonMobile from "./teams/FinalsTeamsPageChairpersonMobile";
 import FinalsTeamsPageChairpersonDesktop from "./teams/FinalsTeamsPageChairpersonDesktop";
+import InactiveBallkidList from "./lists/InactiveBallkidList";
 
 import { useToken, getLocalStorage, useIsMobile } from "./Utils";
 import GamePage from "./settings/GamePage";
@@ -44,7 +44,7 @@ function chairpersonRoutes(isMobile, setToken) {
   return (
     <Routes>
       <Route exact path="/" element={<BallkidList />} />
-      <Route path="/archive" element={<ArchivedBallkidList />} />
+      <Route path="/inactive" element={<InactiveBallkidList />} />
       <Route path="/ballkid/:pk" element={<BallkidPageChairperson />} />
       <Route path="/checkin" element={<CheckinPage />} />
       <Route

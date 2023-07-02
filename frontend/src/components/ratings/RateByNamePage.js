@@ -39,88 +39,80 @@ function getBallkidsToRender(ballkids, showUnrated, showTeam, myTeam) {
   return ballkidsToRender;
 }
 
-function BallkidsSection({ ballkids, gridLayout, setUpdated }) {
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [filterGroup, setFilterGroup] = useState();
+function renderSwitch(param, setParam, offStr, onStr) {
+  return (
+    <Grid item className="sxs" xs={12} md={6} lg={5} xl={4}>
+      <Typography variant="body1">{offStr}</Typography>
+      <Switch checked={param} onClick={(e) => setParam(e.target.checked)} />
+      <Typography variant="body1">{onStr}</Typography>
+    </Grid>
+  );
+}
 
+function BallkidsSection({ ballkids, gridLayout, setUpdated }) {
   const isMobile = useIsMobile();
   const isChairperson = getLocalStorage("group") === "chairperson";
-  const pk = getLocalStorage("ballkid_id");
 
   return ballkids.length === 0 ? (
     <Typography variant="body1">There are no ballkids to rate.</Typography>
   ) : (
-    <Grid container spacing={gridLayout ? 2 : 1}>
-      <SearchAndFilter
-        setSearchKeyword={setSearchKeyword}
-        filterGroup={filterGroup}
-        setFilterGroup={setFilterGroup}
-      />
-
-      {filterBallkids(ballkids, searchKeyword, filterGroup).map((ballkid) => (
-        <Grid
-          item
-          key={ballkid.id}
-          xs={gridLayout ? 6 : 12}
-          sm={gridLayout ? 4 : 12}
-          md={gridLayout ? 3 : 12}
-          lg={gridLayout ? 2 : 12}
-          xl={gridLayout ? 1 : 12}
-        >
-          <Card>
-            <CardActionArea
-              component={RouterLink}
-              to={`/ballkid/${ballkid.id}`}
-            >
-              {!gridLayout ? (
-                ""
-              ) : (
-                <AspectRatio ratio="1/1">
-                  <CardMedia component="img" image={ballkid.image} />
-                </AspectRatio>
-              )}
-              <CardContent>
-                <div className={gridLayout ? "" : "justify"}>
-                  <div className={gridLayout ? "justify" : "sxs"}>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: "medium" }}
-                    >
-                      {ballkid.first_name} {ballkid.last_name}
-                    </Typography>
-                    &thinsp;
-                    <Icons ballkid={ballkid} margin={0} />
-                  </div>
-
-                  <Box textAlign="center" sx={{ mt: gridLayout ? 1 : 0 }}>
-                    {ballkid.id === getLocalStorage("ballkid_id") ? (
-                      ""
-                    ) : (
-                      <RatingButton
-                        ballkid={ballkid}
-                        setUpdated={setUpdated}
-                        isMobile={isMobile}
-                      />
-                    )}
-
-                    {isChairperson ? (
-                      <Typography
-                        variant="subtitle2"
-                        sx={{ mt: gridLayout ? 0.5 : 0 }}
-                      >
-                        Total ratings: {ballkid.num_ratings}
-                      </Typography>
-                    ) : (
-                      ""
-                    )}
-                  </Box>
+    ballkids.map((ballkid) => (
+      <Grid
+        item
+        key={ballkid.id}
+        xs={gridLayout ? 6 : 12}
+        sm={gridLayout ? 4 : 12}
+        md={gridLayout ? 3 : 12}
+        lg={gridLayout ? 2 : 12}
+        xl={gridLayout ? 1 : 12}
+      >
+        <Card>
+          <CardActionArea component={RouterLink} to={`/ballkid/${ballkid.id}`}>
+            {!gridLayout ? (
+              ""
+            ) : (
+              <AspectRatio ratio="1/1">
+                <CardMedia component="img" image={ballkid.image} />
+              </AspectRatio>
+            )}
+            <CardContent>
+              <div className={gridLayout ? "" : "justify"}>
+                <div className={gridLayout ? "justify" : "sxs"}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: "medium" }}>
+                    {ballkid.first_name} {ballkid.last_name}
+                  </Typography>
+                  &thinsp;
+                  <Icons ballkid={ballkid} margin={0} />
                 </div>
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
+
+                <Box textAlign="center" sx={{ mt: gridLayout ? 1 : 0 }}>
+                  {ballkid.id === getLocalStorage("ballkid_id") ? (
+                    ""
+                  ) : (
+                    <RatingButton
+                      ballkid={ballkid}
+                      setUpdated={setUpdated}
+                      isMobile={isMobile}
+                    />
+                  )}
+
+                  {isChairperson ? (
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mt: gridLayout ? 0.5 : 0 }}
+                    >
+                      Total ratings: {ballkid.num_ratings}
+                    </Typography>
+                  ) : (
+                    ""
+                  )}
+                </Box>
+              </div>
+            </CardContent>
+          </CardActionArea>
+        </Card>
+      </Grid>
+    ))
   );
 }
 
@@ -131,6 +123,9 @@ export default function RateByNamePage(props) {
   const [showUnrated, setShowUnrated] = useState(false);
   const [showTeam, setShowTeam] = useState(true);
   const [updated, setUpdated] = useState(false);
+
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [filterGroup, setFilterGroup] = useState();
 
   const [gridLayout, setGridLayout] = useState(
     getLocalStorage("gridLayout") ?? true
@@ -156,35 +151,54 @@ export default function RateByNamePage(props) {
           <Typography variant="h4" sx={{ mb: 1 }}>
             Rate by Name
           </Typography>
+
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            &ensp; (
+            {
+              filterBallkids(
+                getBallkidsToRender(ballkids, showUnrated, showTeam, myTeam),
+                searchKeyword,
+                filterGroup
+              ).length
+            }
+            )
+          </Typography>
         </div>
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
 
       <Grid container>
-        <Grid item className="sxs" xs={12} md={6} lg={5} xl={4}>
-          <Typography variant="body1">Show All Ballkids</Typography>
-          <Switch
-            checked={showUnrated}
-            onClick={(e) => setShowUnrated(e.target.checked)}
-          />
-          <Typography variant="body1">Show Ballkids to Rate</Typography>
-        </Grid>
+        {renderSwitch(
+          showUnrated,
+          setShowUnrated,
+          "Show All Ballkids",
+          "Show Ballkids to Rate"
+        )}
 
-        <Grid item className="sxs" xs={12} md={6} lg={5} xl={4}>
-          <Typography variant="body1">Show All Teams</Typography>
-          <Switch
-            checked={showTeam}
-            onClick={(e) => setShowTeam(e.target.checked)}
-          />
-          <Typography variant="body1">Show My Team Only</Typography>
-        </Grid>
+        {renderSwitch(
+          showTeam,
+          setShowTeam,
+          "Show All Teams",
+          "Show My Team Only"
+        )}
       </Grid>
 
-      <BallkidsSection
-        ballkids={getBallkidsToRender(ballkids, showUnrated, showTeam, myTeam)}
-        gridLayout={gridLayout}
-        setUpdated={setUpdated}
-      />
+      <Grid container spacing={gridLayout ? 2 : 1}>
+        <SearchAndFilter
+          setSearchKeyword={setSearchKeyword}
+          filterGroup={filterGroup}
+          setFilterGroup={setFilterGroup}
+        />
+        <BallkidsSection
+          ballkids={filterBallkids(
+            getBallkidsToRender(ballkids, showUnrated, showTeam, myTeam),
+            searchKeyword,
+            filterGroup
+          )}
+          gridLayout={gridLayout}
+          setUpdated={setUpdated}
+        />
+      </Grid>
     </div>
   );
 }

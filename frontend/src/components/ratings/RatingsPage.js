@@ -40,7 +40,10 @@ export default function RatingsPage(props) {
         }
         return response.json();
       })
-      .then((data) => setCalibrated(data))
+      .then((data) => {
+        console.log(data);
+        setCalibrated(data);
+      })
       .then(() => setUpdated(false));
   }, [year, updated]);
 

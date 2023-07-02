@@ -110,8 +110,7 @@ def remove_nonoverlapping_reviewers(data):
 
 def calibrate(ratings, rating_name="overall", min_rating=0.5, max_rating=5, stdev=2):
     logger.info(
-        f"{datetime.now()} [calibrate] starting calibration for {len(ratings)} ratings \
-            and rating_name {rating_name}. First 10: {ratings[:10]}"
+        f"{datetime.now()} [calibrate] starting calibration for {len(ratings)} ratings and rating_name {rating_name}. First 10: {ratings[:10]}"
     )
 
     min_date = min([rating.date for rating in ratings])
@@ -460,6 +459,9 @@ class CalibratedRatings(APIView):
         else:
             s = status.HTTP_200_OK
 
+        logger.info(
+            f"{datetime.now()} [CalibratedRatings] post-processed calibrated ratings {postprocessed} "
+        )
         return Response(RatingSerializer(postprocessed, many=True).data, status=s)
 
 

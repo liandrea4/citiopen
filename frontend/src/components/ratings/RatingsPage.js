@@ -29,9 +29,9 @@ export default function RatingsPage(props) {
 
     fetch(`/api/calibrated-ratings/${year}`, { headers: getAuthHeader() })
       .then((response) => {
-        if (response.status === 204) {
+        if (response.status === 203) {
           setCalibrationWarning(
-            "Warning: Potentially insufficient data for effective calibration."
+            "Warning: Potentially insufficient data for effective overall calibration."
           );
         } else if (response.status === 206) {
           setCalibrationWarning(
@@ -40,10 +40,7 @@ export default function RatingsPage(props) {
         }
         return response.json();
       })
-      .then((data) => {
-        console.log(data);
-        setCalibrated(data);
-      })
+      .then((data) => setCalibrated(data))
       .then(() => setUpdated(false));
   }, [year, updated]);
 

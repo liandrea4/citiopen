@@ -441,18 +441,17 @@ class CalibratedRatings(APIView):
                 k["ratee_name"].split(" ")[0],
             ),
         )
-
         # If an rcal warning was thrown for the overall rating category
         if "overall" in all_warnings:
             logger.warn(
                 f"{datetime.now()} [CalibratedRatings] overall rating category threw an rcal warning"
             )
-            s = status.HTTP_204_NO_CONTENT
+            s = status.HTTP_203_NON_AUTHORITATIVE_INFORMATION
 
         # If a non-zero number of reviewers had no overlap in the overall rating category
         elif excluded["overall"]:
             logger.warn(
-                f"{datetime.now()} [CalibratedRatings] overall rating category had non-zero excluded reviewers"
+                f"{datetime.now()} [CalibratedRatings] overall rating category had excluded reviewers {excluded['overall']}"
             )
             s = status.HTTP_206_PARTIAL_CONTENT
 

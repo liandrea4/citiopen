@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Link as RouterLink } from "react-router-dom";
 
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import CardActionArea from "@mui/material/CardActionArea";
-import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-
-import AspectRatio from "@mui/joy/AspectRatio";
+import Typography from "@mui/material/Typography";
 
 import {
-  Icons,
   LayoutButtons,
   SearchAndFilter,
   filterBallkids,
   getAuthHeader,
   getLocalStorage,
+  BallkidCard,
 } from "../Utils";
 
 export default function BallkidList(props) {
@@ -69,41 +62,14 @@ export default function BallkidList(props) {
                 lg={gridLayout ? 2 : 12}
                 xl={gridLayout ? 1 : 12}
               >
-                <Card>
-                  <CardActionArea
-                    component={RouterLink}
-                    to={
-                      ballkid.id === getLocalStorage("ballkid_id")
-                        ? "/me"
-                        : `/ballkid/${ballkid.id}`
-                    }
-                  >
-                    {!gridLayout ? (
-                      ""
-                    ) : (
-                      <AspectRatio ratio="1/1">
-                        <CardMedia component="img" image={ballkid.image} />
-                      </AspectRatio>
-                    )}
-                    <CardContent>
-                      <div className={gridLayout ? "" : "justify"}>
-                        <div className={gridLayout ? "justify" : "sxs"}>
-                          <Typography
-                            variant="subtitle1"
-                            sx={{ fontWeight: "medium" }}
-                          >
-                            {ballkid.first_name} {ballkid.last_name}
-                          </Typography>
-                          &thinsp;
-                          <Icons ballkid={ballkid} margin={0} />
-                        </div>
-                        <Typography variant="body2" color="text.secondary">
-                          {ballkid.preferred_position}
-                        </Typography>
-                      </div>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
+                <BallkidCard
+                  ballkid={ballkid}
+                  renderAdditional={
+                    <Typography variant="body2" color="text.secondary">
+                      {ballkid.preferred_position}
+                    </Typography>
+                  }
+                />
               </Grid>
             )
           )}

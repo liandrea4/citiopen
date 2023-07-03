@@ -3,6 +3,10 @@ import { useMediaQuery } from "react-responsive";
 import { useDrag } from "react-dnd";
 import { Link as RouterLink } from "react-router-dom";
 
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import CardActionArea from "@mui/material/CardActionArea";
 import Link from "@mui/material/Link";
 import Icon from "@mui/material/Icon";
 import IconButton from "@mui/material/IconButton";
@@ -24,6 +28,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContentText from "@mui/material/DialogContentText";
+
+import AspectRatio from "@mui/joy/AspectRatio";
 
 import GridView from "@mui/icons-material/GridView";
 import List from "@mui/icons-material/List";
@@ -352,6 +358,43 @@ export function BallkidAndIcon({ ballkid }) {
       &thinsp;
       <Icons ballkid={ballkid} margin={0} />
     </div>
+  );
+}
+
+export function BallkidCard({ ballkid, renderAdditional }) {
+  const gridLayout = getLocalStorage("gridLayout");
+
+  return (
+    <Card>
+      <CardActionArea
+        component={RouterLink}
+        to={
+          ballkid.id === getLocalStorage("ballkid_id")
+            ? "/me"
+            : `/ballkid/${ballkid.id}`
+        }
+      >
+        {!gridLayout ? (
+          ""
+        ) : (
+          <AspectRatio ratio="1/1">
+            <CardMedia component="img" image={ballkid.image} />
+          </AspectRatio>
+        )}
+        <CardContent>
+          <div className={gridLayout ? "" : "justify"}>
+            <div className={gridLayout ? "justify" : "sxs"}>
+              <Typography variant="subtitle1" sx={{ fontWeight: "medium" }}>
+                {ballkid.first_name} {ballkid.last_name}
+              </Typography>
+              &thinsp;
+              <Icons ballkid={ballkid} margin={0} />
+            </div>
+            {renderAdditional}
+          </div>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 }
 

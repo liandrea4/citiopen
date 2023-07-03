@@ -51,7 +51,7 @@ function Team({ team, assigned }) {
               {assigned.map((ballkid) =>
                 ballkid.finals_team === team &&
                 ballkid.finals_position === position ? (
-                  <BallkidAndIcon ballkid={ballkid} />
+                  <BallkidAndIcon key={ballkid.id} ballkid={ballkid} />
                 ) : (
                   ""
                 )

@@ -54,7 +54,7 @@ function Team({ team, assigned, nextShifts }) {
               {assigned.map((ballkid) =>
                 ballkid.current_team === team &&
                 ballkid.position === position ? (
-                  <BallkidAndIcon ballkid={ballkid} />
+                  <BallkidAndIcon key={ballkid.id} ballkid={ballkid} />
                 ) : (
                   ""
                 )

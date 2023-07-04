@@ -331,11 +331,114 @@ export function renderBallkidCutHistory(cuts) {
   );
 }
 
+function renderRatingsCaptainSection(ballkid, ballkidGroup, params, average) {
+  const pk = getLocalStorage("ballkid_id");
+
+  return (
+    <Grid item xs={12} lg={6} sx={{ mx: 1 }}>
+      <Button
+        size="small"
+        variant="outlined"
+        component={RouterLink}
+        to={`/ratings?rater=${ballkid.id}`}
+        endIcon={<Shortcut />}
+        sx={{ my: 1 }}
+      >
+        View all {params["num_rater_ratings"]} ratings by{" "}
+        {pk === ballkid.id ? "you" : `this ${ballkidGroup}`}
+      </Button>
+
+      {params.rater_scale == null ? (
+        ""
+      ) : (
+        <div>
+          {/* <Typography variant="body1">
+            Reviewer average: {Number(params.rater_scale).toFixed(3)}
+          </Typography>
+          <Typography variant="body1">
+            Reviewer standard deviation:{" "}
+            {Number(params.rater_offset).toFixed(3)}
+          </Typography> */}
+          <Typography variant="body1">
+            Reviewer scale: {Number(params.rater_scale).toFixed(3)}
+          </Typography>
+          <Typography variant="body1">
+            Reviewer offset: {Number(params.rater_offset).toFixed(3)}
+          </Typography>
+
+          <RaterParamsChart
+            offset={params.rater_offset}
+            scale={params.rater_scale}
+            average_offset={average.rater_offset__avg}
+            average_scale={average.rater_scale__avg}
+            sx={{ mb: 2 }}
+          />
+        </div>
+      )}
+    </Grid>
+  );
+}
+
+function renderRatingsBallkidSection(ballkid, params) {
+  return (
+    <Grid item xs={12} lg={5.5} sx={{ mx: 1 }}>
+      <Button
+        size="small"
+        variant="outlined"
+        component={RouterLink}
+        to={`/ratings?ratee=${ballkid.id}`}
+        endIcon={<Shortcut />}
+        sx={{ my: 1, mr: 1 }}
+      >
+        View all {params["num_ratee_ratings"]} ratings for this ballkid
+      </Button>
+      <Button
+        size="small"
+        variant="outlined"
+        component={RouterLink}
+        to={`/my-ratings?ratee=${ballkid.id}`}
+        endIcon={<Shortcut />}
+        sx={{ my: 1 }}
+      >
+        View my ratings for this ballkid
+      </Button>
+
+      {params.ratee_improvement == null ? (
+        ""
+      ) : (
+        <div>
+          {params["num_ratee_ratings"] >= NUM_RATINGS_WARNING_THRESHOLD &&
+          params["num_raters"] >= NUM_RATERS_WARNING_THRESHOLD ? (
+            ""
+          ) : (
+            <Alert severity="warning" sx={{ my: 1 }}>
+              Note: This ballkid only had {params["num_raters"]} rater(s) and
+              received a total of {params["num_ratee_ratings"]} rating(s).
+            </Alert>
+          )}
+
+          <Typography variant="body1">
+            Ballkid improvement: {Number(params.ratee_improvement).toFixed(3)}
+          </Typography>
+          <Typography variant="body1">
+            Ballkid offset: {Number(params.ratee_offset).toFixed(3)}
+          </Typography>
+
+          <BallkidParamsChart
+            offset={params.ratee_offset}
+            improvement={params.ratee_improvement}
+            sx={{ mb: 2 }}
+          />
+        </div>
+      )}
+    </Grid>
+  );
+}
+
 function RatingSection({ ballkid }) {
   const [params, setParams] = useState({});
   const [average, setAverage] = useState({});
 
-  const pk = getLocalStorage("ballkid_id");
   const ballkidGroup = ballkid.is_chairperson
     ? "chairperson"
     : ballkid.is_captain
@@ -361,101 +464,13 @@ function RatingSection({ ballkid }) {
       <Grid item xs={12}>
         <Typography variant="h6">Ratings:</Typography>
       </Grid>
-      {!ballkid.is_captain ? (
-        ""
-      ) : (
-        <Grid item xs={12} lg={6} sx={{ mx: 1 }}>
-          <Button
-            size="small"
-            variant="outlined"
-            component={RouterLink}
-            to={`/ratings?rater=${ballkid.id}`}
-            endIcon={<Shortcut />}
-            sx={{ my: 1 }}
-          >
-            View all {params["num_rater_ratings"]} ratings by{" "}
-            {pk === ballkid.id ? "you" : `this ${ballkidGroup}`}
-          </Button>
+      {!ballkid.is_captain
+        ? ""
+        : renderRatingsCaptainSection(ballkid, ballkidGroup, params, average)}
 
-          {params.rater_scale == null ? (
-            ""
-          ) : (
-            <div>
-              <Typography variant="body1">
-                Reviewer scale: {Number(params.rater_scale).toFixed(3)}
-              </Typography>
-              <Typography variant="body1">
-                Reviewer offset: {Number(params.rater_offset).toFixed(3)}
-              </Typography>
-
-              <RaterParamsChart
-                offset={params.rater_offset}
-                scale={params.rater_scale}
-                average_offset={average.rater_offset__avg}
-                average_scale={average.rater_scale__avg}
-                sx={{ mb: 2 }}
-              />
-            </div>
-          )}
-        </Grid>
-      )}
-
-      {ballkidGroup === "chairperson" ? (
-        ""
-      ) : (
-        <Grid item xs={12} lg={5.5} sx={{ mx: 1 }}>
-          <Button
-            size="small"
-            variant="outlined"
-            component={RouterLink}
-            to={`/ratings?ratee=${ballkid.id}`}
-            endIcon={<Shortcut />}
-            sx={{ my: 1, mr: 1 }}
-          >
-            View all {params["num_ratee_ratings"]} ratings for this ballkid
-          </Button>
-          <Button
-            size="small"
-            variant="outlined"
-            component={RouterLink}
-            to={`/my-ratings?ratee=${ballkid.id}`}
-            endIcon={<Shortcut />}
-            sx={{ my: 1 }}
-          >
-            View my ratings for this ballkid
-          </Button>
-
-          {params.ratee_improvement == null ? (
-            ""
-          ) : (
-            <div>
-              {params["num_ratee_ratings"] >= NUM_RATINGS_WARNING_THRESHOLD &&
-              params["num_raters"] >= NUM_RATERS_WARNING_THRESHOLD ? (
-                ""
-              ) : (
-                <Alert severity="warning" sx={{ my: 1 }}>
-                  Note: This ballkid only had {params["num_raters"]} rater(s)
-                  and received a total of {params["num_ratee_ratings"]}{" "}
-                  rating(s).
-                </Alert>
-              )}
-              <Typography variant="body1">
-                Ballkid improvement:{" "}
-                {Number(params.ratee_improvement).toFixed(3)}
-              </Typography>
-              <Typography variant="body1">
-                Ballkid offset: {Number(params.ratee_offset).toFixed(3)}
-              </Typography>
-
-              <BallkidParamsChart
-                offset={params.ratee_offset}
-                improvement={params.ratee_improvement}
-                sx={{ mb: 2 }}
-              />
-            </div>
-          )}
-        </Grid>
-      )}
+      {ballkidGroup === "chairperson"
+        ? ""
+        : renderRatingsBallkidSection(ballkid, params)}
     </Grid>
   );
 }
@@ -711,7 +726,9 @@ export function AggregateMetrics({ pk }) {
   const isChairperson = getLocalStorage("group") === "chairperson";
 
   useEffect(() => {
-    fetch(`/api/get-analytics/${pk}`, { headers: getAuthHeader() })
+    fetch(`/api/get-checkin-court-analytics/${pk}`, {
+      headers: getAuthHeader(),
+    })
       .then((response) => response.json())
       .then((data) => setMetrics(data));
 

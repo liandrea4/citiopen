@@ -39,7 +39,9 @@ export function CourtHistoryChart({ pk }) {
   const isChairperson = getLocalStorage("group") === "chairperson";
 
   useEffect(() => {
-    fetch(`/api/get-analytics/${pk}`, { headers: getAuthHeader() })
+    fetch(`/api/get-checkin-court-analytics/${pk}`, {
+      headers: getAuthHeader(),
+    })
       .then((response) => response.json())
       .then((data) => setAnalytics(data));
 

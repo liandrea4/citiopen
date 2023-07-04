@@ -694,7 +694,7 @@ class GetCaptainAnalytics(APIView):
         return Response(CaptainAnalyticsSerializer(analytics, many=True).data)
 
 
-class GetAnalytics(APIView):
+class GetCheckinCourtAnalytics(APIView):
     permission_classes = [IsChairpersonOrSelf]
 
     def get(self, request, pk):

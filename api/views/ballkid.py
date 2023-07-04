@@ -682,16 +682,6 @@ class GetCheckinHistory(APIView):
         return Response(CheckinHistorySerializer(histories, many=True).data)
 
 
-class GetCheckinDuration(APIView):
-    permission_classes = [IsChairpersonOrSelf]
-
-    def get(self, request, pk):
-        ballkid = get_object_or_404(Ballkid, id=pk)
-        recalc_checkin_analytics(ballkid=ballkid)
-        analytic = CheckinAnalytics.objects.filter(ballkid_id=pk).first()
-        return Response(CheckinAnalyticsSerializer(analytic).data)
-
-
 class GetCaptainAnalytics(APIView):
     permission_classes = [IsChairpersonOrSelf]
 
@@ -702,16 +692,6 @@ class GetCaptainAnalytics(APIView):
             ballkid_id=pk, duration__gte=timedelta(minutes=MIN_CAPTAIN_DURATION)
         ).order_by("-duration")
         return Response(CaptainAnalyticsSerializer(analytics, many=True).data)
-
-
-class GetCourtAnalytics(APIView):
-    permission_classes = [IsChairpersonOrSelf]
-
-    def get(self, request, pk):
-        ballkid = get_object_or_404(Ballkid, id=pk)
-        recalc_court_analytics(ballkid=ballkid)
-        analytics = CourtAnalytics.objects.filter(ballkid_id=pk)
-        return Response(CourtAnalyticsSerializer(analytics, many=True).data)
 
 
 class GetAnalytics(APIView):

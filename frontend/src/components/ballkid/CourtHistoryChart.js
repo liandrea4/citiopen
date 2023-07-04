@@ -15,38 +15,33 @@ import { getTimeFloat, getAuthHeader, getLocalStorage } from "../Utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
 
-function getDuration(courts, court) {
-  for (const analytic of courts) {
-    if (analytic["court"] === court) {
-      return analytic["duration"];
-    }
-  }
-  return "00:00";
+const courtNameToKey = {
+  Stadium: "stadium",
+  Harris: "harris",
+  Grandstand: "grandstand",
+  "Court 4": "four",
+  "Court 5": "five",
+};
+
+function getDurationFloat(analytics, court) {
+  return getTimeFloat(analytics[`${courtNameToKey[court]}_duration`]);
 }
 
 function getAverageDurationFloat(averages, court) {
-  const courtNameToKey = {
-    Stadium: "stadium_avg",
-    Harris: "harris_avg",
-    Grandstand: "grandstand_avg",
-    "Court 4": "four_avg",
-    "Court 5": "five_avg",
-  };
-
-  return parseFloat(averages[courtNameToKey[court]]) / 3600;
+  return parseFloat(averages[`${courtNameToKey[court]}_avg`]) / 3600;
 }
 
 export function CourtHistoryChart({ pk }) {
-  const [courts, setCourts] = useState([]);
+  const [analytics, setAnalytics] = useState([]);
   const [averages, setAverages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const isChairperson = getLocalStorage("group") === "chairperson";
 
   useEffect(() => {
-    fetch(`/api/get-courts/${pk}`, { headers: getAuthHeader() })
+    fetch(`/api/get-analytics/${pk}`, { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => setCourts(data));
+      .then((data) => setAnalytics(data));
 
     isChairperson
       ? fetch("/api/get-average-court-leaderboard", {
@@ -92,7 +87,7 @@ export function CourtHistoryChart({ pk }) {
   var dataset = [
     {
       label: "Time on Court",
-      data: labels.map((court) => getTimeFloat(getDuration(courts, court))),
+      data: labels.map((court) => getDurationFloat(analytics, court)),
       backgroundColor: "rgb(177, 156, 217)",
     },
   ];

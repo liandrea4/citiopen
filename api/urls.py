@@ -41,15 +41,9 @@ schedule_urls = [
 # Analytics URLs
 analytics_urls = [
     path("get-analytics/<int:pk>", GetAnalytics.as_view(), name="get-analytics"),
-    path(
-        "get-checkin-duration/<int:pk>",
-        GetCheckinDuration.as_view(),
-        name="get-checkin-duration",
-    ),
     path("get-checkins/<int:pk>", GetCheckinHistory.as_view(), name="get-checkins"),
     path("get-past-teams/<int:pk>", GetPastTeams.as_view(), name="get-past-teams"),
     path("get-captains/<int:pk>", GetCaptainAnalytics.as_view(), name="get-captains"),
-    path("get-courts/<int:pk>", GetCourtAnalytics.as_view(), name="get-courts"),
     path(
         "get-finals-history/<int:pk>",
         GetFinalsHistory.as_view(),

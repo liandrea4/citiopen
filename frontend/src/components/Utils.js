@@ -415,7 +415,7 @@ export function filterBallkids(ballkids, searchKeyword, filterGroup) {
 
 export function renderBallkidFinalsHistory(finals) {
   return (
-    <Grid item xs={12} sm={6.5}>
+    <Grid item xs={12} md={6.5}>
       <Typography variant="h6" sx={MARGINS}>
         Previous Years' Finals:
       </Typography>
@@ -444,7 +444,7 @@ export function renderBallkidFinalsHistory(finals) {
 
 export function renderBallkidCutHistory(cuts) {
   return (
-    <Grid item xs={12} sm={6.5}>
+    <Grid item xs={12} md={6.5}>
       <Typography variant="h6" sx={MARGINS}>
         Cut History:
       </Typography>
@@ -537,6 +537,11 @@ export function getTimeStr(timeFloat, verbose = true) {
   });
 
   return verbose ? hours + " hrs " + mins + " mins" : hours + ":" + mins;
+}
+
+export function toPercent(val) {
+  const percent = Number((val * 100).toFixed(1));
+  return `${percent}%`;
 }
 
 // Checks if the shift start time string in the format

@@ -17,6 +17,7 @@ import {
   getTimeStr,
   getTimeFloat,
   BallkidAndIcon,
+  toPercent,
 } from "../Utils";
 
 function renderAverages(averages, showPercent) {
@@ -131,7 +132,7 @@ export default function CourtLeaderboard(props) {
       valueFormatter: (obj) =>
         showPercent
           ? obj.value
-            ? `${Number((obj.value * 100).toFixed(1))}%`
+            ? toPercent(obj.value)
             : "0%"
           : getTimeStr(obj.value, false),
     },
@@ -147,7 +148,7 @@ export default function CourtLeaderboard(props) {
       valueFormatter: (obj) =>
         showPercent
           ? obj.value
-            ? `${Number((obj.value * 100).toFixed(1))}%`
+            ? toPercent(obj.value)
             : "0%"
           : getTimeStr(obj.value, false),
     },
@@ -163,7 +164,7 @@ export default function CourtLeaderboard(props) {
       valueFormatter: (obj) =>
         showPercent
           ? obj.value
-            ? `${Number((obj.value * 100).toFixed(1))}%`
+            ? toPercent(obj.value)
             : "0%"
           : getTimeStr(obj.value, false),
     },
@@ -179,7 +180,7 @@ export default function CourtLeaderboard(props) {
       valueFormatter: (obj) =>
         showPercent
           ? obj.value
-            ? `${Number((obj.value * 100).toFixed(1))}%`
+            ? toPercent(obj.value)
             : "0%"
           : getTimeStr(obj.value, false),
     },
@@ -194,7 +195,7 @@ export default function CourtLeaderboard(props) {
       valueFormatter: (obj) =>
         showPercent
           ? obj.value
-            ? `${Number((obj.value * 100).toFixed(1))}%`
+            ? toPercent(obj.value)
             : "0%"
           : getTimeStr(obj.value, false),
     },
@@ -209,7 +210,7 @@ export default function CourtLeaderboard(props) {
       valueFormatter: (obj) =>
         showPercent
           ? obj.value
-            ? `${Number((obj.value * 100).toFixed(1))}%`
+            ? toPercent(obj.value)
             : "0%"
           : getTimeStr(obj.value, false),
     },

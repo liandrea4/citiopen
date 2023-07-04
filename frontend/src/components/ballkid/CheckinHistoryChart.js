@@ -50,7 +50,7 @@ function getCheckinDuration(history, date) {
   return 0.1;
 }
 
-export function CheckinHistoryChart({ histories, totalTime }) {
+export function CheckinHistoryChart({ histories }) {
   // Note that this only plots the first shift a ballkid is checked in for the day.
   // TODO: modify to capture if ballkid checks in, then out, then in, then out
   //

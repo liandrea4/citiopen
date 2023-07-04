@@ -12,12 +12,7 @@ import {
   Tooltip,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import {
-  getTimeFloat,
-  getAuthHeader,
-  getLocalStorage,
-  getTimeStr,
-} from "../Utils";
+import { getTimeFloat, getAuthHeader, getLocalStorage } from "../Utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
 

@@ -12,6 +12,13 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
+import Table from "@mui/material/Table";
+import TableContainer from "@mui/material/TableContainer";
+import TableRow from "@mui/material/TableRow";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import AspectRatio from "@mui/joy/AspectRatio";
 
@@ -41,6 +48,7 @@ import {
   useIsMobile,
   getTimeFloat,
   getTimeStr,
+  toPercent,
 } from "../Utils";
 import {
   NUM_RATERS_WARNING_THRESHOLD,
@@ -635,6 +643,78 @@ function Comments(props) {
   );
 }
 
+function AggregateMetrics({ pk }) {
+  const [metrics, setMetrics] = useState([]);
+  const [averages, setAverages] = useState();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/get-court-leaderboard", { headers: getAuthHeader() })
+      .then((response) => response.json())
+      .then((data) =>
+        setMetrics(data.filter((ballkid) => ballkid.id === pk)[0])
+      );
+
+    fetch("/api/get-average-court-leaderboard", { headers: getAuthHeader() })
+      .then((response) => response.json())
+      .then((data) => setAverages(data))
+      .then(() => setLoading(false));
+  }, [pk]);
+
+  return loading ? (
+    <CircularProgress className="center-div" size={30} />
+  ) : (
+    <Grid container>
+      <Grid item xs={12} md={10} lg={8}>
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell align="center"></TableCell>
+                <TableCell align="center">Total Time Checked In</TableCell>
+                <TableCell align="center">Total Time on Court</TableCell>
+                <TableCell align="center">% Time on Court</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell align="center">Ballkid</TableCell>
+                <TableCell align="center">
+                  {getTimeStr(getTimeFloat(metrics["checkin_duration"]))}
+                </TableCell>
+                <TableCell align="center">
+                  {getTimeStr(getTimeFloat(metrics["court_duration"]))}
+                </TableCell>
+                <TableCell align="center">
+                  {toPercent(
+                    getTimeFloat(metrics["court_duration"]) /
+                      getTimeFloat(metrics["checkin_duration"])
+                  )}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell align="center">Average</TableCell>
+                <TableCell align="center">
+                  {getTimeStr(parseFloat(averages["checkin_avg"]) / 3600)}
+                </TableCell>
+                <TableCell align="center">
+                  {getTimeStr(parseFloat(averages["court_avg"]) / 3600)}
+                </TableCell>
+                <TableCell align="center">
+                  {toPercent(
+                    parseFloat(averages["court_avg"]) /
+                      parseFloat(averages["checkin_avg"])
+                  )}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Grid>
+    </Grid>
+  );
+}
+
 export default function BallkidPageChairperson(props) {
   const [ballkid, setBallkid] = useState(null);
   const [updated, setUpdated] = useState(false);
@@ -645,11 +725,9 @@ export default function BallkidPageChairperson(props) {
   const [checkins, setCheckins] = useState([]);
   const [captains, setCaptains] = useState([]);
 
-  const [totalTime, setTotalTime] = useState("");
-
   const isMobile = useIsMobile();
   var { pk } = useParams();
-  pk = pk ?? getLocalStorage("ballkid_id");
+  pk = parseInt(pk ?? getLocalStorage("ballkid_id"));
 
   useEffect(() => {
     fetch(`/api/get-ballkid/${pk}`, { headers: getAuthHeader() })
@@ -674,11 +752,7 @@ export default function BallkidPageChairperson(props) {
 
     fetch(`/api/get-checkins/${pk}`, { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => setCheckins(data));
-
-    fetch(`/api/get-checkin-duration/${pk}`, { headers: getAuthHeader() })
-      .then((response) => response.json())
-      .then((data) => setTotalTime(data["duration"]))
+      .then((data) => setCheckins(data))
       .then(() => setUpdated(false));
   }, [updated, pk]);
 
@@ -740,13 +814,12 @@ export default function BallkidPageChairperson(props) {
           <Typography variant="h6" sx={MARGINS}>
             Analytics:
           </Typography>
-          <Typography variant="body1">
-            Total time checked in: {getTimeStr(getTimeFloat(totalTime))}
-          </Typography>
+
+          <AggregateMetrics pk={pk} />
 
           <Grid container>
             <Grid item xs={12} lg={5.5} sx={{ m: 2 }}>
-              <CheckinHistoryChart histories={checkins} totalTime={totalTime} />
+              <CheckinHistoryChart histories={checkins} />
             </Grid>
 
             <Grid item xs={12} lg={5.5} sx={{ m: 2 }}>

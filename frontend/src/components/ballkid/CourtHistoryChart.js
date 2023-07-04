@@ -1,4 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+
+import CircularProgress from "@mui/material/CircularProgress";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,21 +12,61 @@ import {
   Tooltip,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { getTimeFloat } from "../Utils";
+import {
+  getTimeFloat,
+  getAuthHeader,
+  getLocalStorage,
+  getTimeStr,
+} from "../Utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
 
-function getAnalytic(analytics, court) {
-  for (const analytic of analytics) {
+function getDuration(courts, court) {
+  for (const analytic of courts) {
     if (analytic["court"] === court) {
-      return analytic;
+      return analytic["duration"];
     }
   }
-  return { duration: "00:00" };
+  return "00:00";
+}
+
+function getAverageDurationFloat(averages, court) {
+  const courtNameToKey = {
+    Stadium: "stadium_avg",
+    Harris: "harris_avg",
+    Grandstand: "grandstand_avg",
+    "Court 4": "four_avg",
+    "Court 5": "five_avg",
+  };
+
+  return parseFloat(averages[courtNameToKey[court]]) / 3600;
 }
 
 export function CourtHistoryChart(props) {
-  const analytics = props.histories;
+  const [courts, setCourts] = useState([]);
+  const [averages, setAverages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const isChairperson = getLocalStorage("group") === "chairperson";
+
+  var { pk } = useParams();
+  pk = pk ?? getLocalStorage("ballkid_id");
+
+  useEffect(() => {
+    fetch(`/api/get-courts/${pk}`, { headers: getAuthHeader() })
+      .then((response) => response.json())
+      .then((data) => setCourts(data));
+
+    isChairperson
+      ? fetch("/api/get-average-court-leaderboard", {
+          headers: getAuthHeader(),
+        })
+          .then((response) => response.json())
+          .then((data) => setAverages(data))
+          .then(() => setLoading(false))
+      : setLoading(false);
+  }, [pk, isChairperson]);
+
   const labels = ["Stadium", "Harris", "Grandstand", "Court 4", "Court 5"];
 
   const options = {
@@ -32,7 +76,8 @@ export function CourtHistoryChart(props) {
         text: "Court Time History",
       },
       legend: {
-        display: false,
+        display: isChairperson ? true : false,
+        position: "top",
       },
     },
     responsive: true,
@@ -53,17 +98,32 @@ export function CourtHistoryChart(props) {
     },
   };
 
+  var dataset = [
+    {
+      label: "Time on Court",
+      data: labels.map((court) => getTimeFloat(getDuration(courts, court))),
+      backgroundColor: "rgb(177, 156, 217)",
+    },
+  ];
+  dataset = !isChairperson
+    ? dataset
+    : [
+        ...dataset,
+        {
+          label: "Average Time on Court",
+          data: labels.map((court) => getAverageDurationFloat(averages, court)),
+          backgroundColor: "rgba(177, 156, 240, 0.5)",
+        },
+      ];
+
   const data = {
     labels,
-    datasets: [
-      {
-        label: "Time on Court",
-        data: labels.map((court) =>
-          getTimeFloat(getAnalytic(analytics, court)["duration"])
-        ),
-        backgroundColor: "rgb(177, 156, 217)",
-      },
-    ],
+    datasets: dataset,
   };
-  return <Bar options={options} data={data} />;
+
+  return loading ? (
+    <CircularProgress className="center-div" size={30} />
+  ) : (
+    <Bar options={options} data={data} />
+  );
 }

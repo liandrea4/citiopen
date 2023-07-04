@@ -27,6 +27,14 @@ body {
   transform: translate(-50%, -50%);
 }
 
+.center-div {
+  margin: 15px;
+  position: relative;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+}
+
 /* Put elements side by side horizontally and vertically center align*/
 .sxs {
   display: flex;

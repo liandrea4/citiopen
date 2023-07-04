@@ -500,7 +500,7 @@ export function getDays() {
   return days;
 }
 
-// Converts datetime string into human readable format. Assumes format of:
+// Converts duration string into float as # of hours. Assumes format of:
 // {days} {hours}:{minutes}:{seconds}.{milliseconds} OR
 // {hours}:{minutes}:{seconds}.{milliseconds}. Returns as float of # hours
 export function getTimeFloat(timeStr) {

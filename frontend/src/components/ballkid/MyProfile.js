@@ -21,6 +21,16 @@ import { CourtHistoryChart } from "./CourtHistoryChart";
 import { MARGINS } from "../Consts";
 
 function RatingSection({ ballkid }) {
+  const [params, setParams] = useState({});
+
+  useEffect(() => {
+    fetch(`/api/calibration-parameters/${ballkid.id}`, {
+      headers: getAuthHeader(),
+    })
+      .then((response) => response.json())
+      .then((data) => setParams(data));
+  }, [ballkid.id]);
+
   return !ballkid.is_captain ? (
     ""
   ) : (
@@ -37,8 +47,16 @@ function RatingSection({ ballkid }) {
           endIcon={<Shortcut />}
           sx={{ my: 1 }}
         >
-          View ratings submitted by me
+          View all {params.num_rater_ratings} ratings by me
         </Button>
+
+        <Typography variant="body1">
+          Reviewer average: {Number(params.rater_raw_avg).toFixed(3)}
+        </Typography>
+        <Typography variant="body1">
+          Reviewer standard deviation:{" "}
+          {Number(params.rater_raw_stdev).toFixed(3)}
+        </Typography>
       </Grid>
     </Grid>
   );

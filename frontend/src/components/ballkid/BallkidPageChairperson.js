@@ -345,20 +345,20 @@ function renderRatingsCaptainSection(ballkid, ballkidGroup, params, average) {
         sx={{ my: 1 }}
       >
         View all {params.num_rater_ratings} ratings by{" "}
-        {pk === ballkid.id ? "you" : `this ${ballkidGroup}`}
+        {pk === ballkid.id ? "me" : `this ${ballkidGroup}`}
       </Button>
+
+      <Typography variant="body1">
+        Reviewer average: {Number(params.rater_raw_avg).toFixed(3)}
+      </Typography>
+      <Typography variant="body1">
+        Reviewer standard deviation: {Number(params.rater_raw_stdev).toFixed(3)}
+      </Typography>
 
       {params.rater_scale == null ? (
         ""
       ) : (
         <div>
-          <Typography variant="body1">
-            Reviewer average: {Number(params.rater_raw_avg).toFixed(3)}
-          </Typography>
-          <Typography variant="body1">
-            Reviewer standard deviation:{" "}
-            {Number(params.rater_raw_stdev).toFixed(3)}
-          </Typography>
           <Typography variant="body1">
             Reviewer scale: {Number(params.rater_scale).toFixed(3)}
           </Typography>

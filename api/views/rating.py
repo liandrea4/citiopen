@@ -493,7 +493,7 @@ class CalibratedRatings(APIView):
 
 
 class GetCalibrationParams(generics.RetrieveAPIView):
-    permission_classes = [IsChairperson]
+    permission_classes = [IsChairpersonOrSelf]
     serializer_class = CalibrationParamsSerializer
 
     def get_object(self):

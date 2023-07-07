@@ -177,6 +177,39 @@ class UpdateSchedule(APIView):
             )
 
 
+class UpdateCourtName(APIView):
+    permission_classes = [IsChairperson]
+
+    def patch(self, request, format=None):
+        old_name = request.data["oldName"]
+        new_name = request.data["newName"]
+
+        shifts = get_days_shifts(request.data["date"])
+        court_shifts = shifts.filter(court=old_name)
+
+        for shift in court_shifts:
+            if new_name == "":
+                logger.info(
+                    f"{datetime.now()} [UpdateCourtName] deleting {shift} due to empty new name"
+                )
+                shift.delete()
+
+            else:
+                logger.info(
+                    f"{datetime.now()} [UpdateCourtName] updating shift {shift} to new court name {new_name}"
+                )
+
+                shift.court = new_name
+                shift.save()
+
+        return Response(
+            {
+                "Success": f"Updated court name {old_name} to {new_name} for {len(court_shifts)} shifts"
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class GetNextShifts(APIView):
     permission_classes = [IsAuthenticated]
 

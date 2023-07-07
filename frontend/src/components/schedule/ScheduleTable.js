@@ -41,7 +41,38 @@ export function ScheduleTable({ shifts, date, readOnly, setUpdated }) {
                   </TableCell>
                   {courts.map((court) => (
                     <TableCell key={court} align="center" width="50px">
-                      {court}
+                      {readOnly ? (
+                        court
+                      ) : (
+                        <TextField
+                          variant="standard"
+                          defaultValue={court}
+                          InputProps={{
+                            inputProps: {
+                              style: {
+                                textAlign: "center",
+                                fontSize: "14px",
+                                fontWeight: "bold",
+                              },
+                            },
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              fetch("/api/update-court-name", {
+                                method: "PATCH",
+                                headers: getAuthHeader(),
+                                body: JSON.stringify({
+                                  date: date,
+                                  oldName: court,
+                                  newName: e.target.value,
+                                }),
+                              })
+                                .then((response) => response.json())
+                                .then((data) => setUpdated(true));
+                            }
+                          }}
+                        />
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

@@ -36,6 +36,7 @@ schedule_urls = [
     path("add-hour", AddHour.as_view(), name="add-hour"),
     path("add-court", AddCourt.as_view(), name="add-court"),
     path("update-schedule", UpdateSchedule.as_view(), name="update-schedule"),
+    path("update-court-name", UpdateCourtName.as_view(), name="update-court-name"),
     path("update-shift", UpdateShift.as_view(), name="update-shift"),
     path("get-next-shifts", GetNextShifts.as_view(), name="get-next-shifts"),
 ]

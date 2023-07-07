@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDrop } from "react-dnd";
 
 import Card from "@mui/material/Card";
@@ -6,6 +6,7 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
+import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 
@@ -299,8 +300,19 @@ export function Teams({ assigned, teams, nextShifts, setUpdated }) {
 }
 
 export function Header() {
+  const [showTeams, setShowTeams] = useState(false);
+
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    fetch("/api/get-tournament", {
+      method: "GET",
+      headers: getAuthHeader(),
+    })
+      .then((response) => response.json())
+      .then((data) => setShowTeams(data["show_teams"]));
+  });
 
   return (
     <div>
@@ -310,14 +322,16 @@ export function Header() {
         setSuccessMsg={setSuccessMsg}
         setErrorMsg={setErrorMsg}
       />
-      <div className="justify" style={{ marginBottom: 10 }}>
+      <Box className="justify" sx={{ mb: 1 }}>
         <Typography variant="h4">Current Teams</Typography>
         <HideShowToggle
           teamType=""
+          showTeams={showTeams}
+          setShowTeams={setShowTeams}
           setSuccessMsg={setSuccessMsg}
           setErrorMsg={setErrorMsg}
         />
-      </div>
+      </Box>
     </div>
   );
 }

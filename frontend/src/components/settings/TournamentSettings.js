@@ -1,29 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 
 import { Alerts, HideShowToggle, getAuthHeader } from "../Utils";
+import { TextField } from "@mui/material";
 
 export default function TournamentSettings(props) {
+  const [showTeams, setShowTeams] = useState(false);
+  const [showFinalsTeams, setShowFinalsTeams] = useState(false);
+  const [banner, setBanner] = useState("");
+
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // const downloadFile = ({ data, fileName, fileType }) => {
-  //   const blob = new Blob([data], { type: fileType });
-
-  //   const a = document.createElement("a");
-  //   a.download = fileName;
-  //   a.href = window.URL.createObjectURL(blob);
-  //   const clickEvt = new MouseEvent("click", {
-  //     view: window,
-  //     bubbles: true,
-  //     cancelable: true,
-  //   });
-  //   a.dispatchEvent(clickEvt);
-  //   a.remove();
-  // };
+  useEffect(() => {
+    fetch("/api/get-tournament", {
+      method: "GET",
+      headers: getAuthHeader(),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setShowTeams(data.show_teams);
+        setShowFinalsTeams(data.show_finals_teams);
+        setBanner(data.banner);
+      });
+  }, []);
 
   return (
     <div className="page">
@@ -38,7 +41,28 @@ export default function TournamentSettings(props) {
         Tournament Settings
       </Typography>
 
-      <Grid container spacing={2} sx={{ px: 2 }}>
+      <Grid container spacing={2} sx={{ pr: 2 }}>
+        <Grid item xs={12} className="justify">
+          <Typography variant="subtitle1">Set site-wide banner</Typography>
+          <TextField
+            variant="standard"
+            defaultValue={banner}
+            style={{ width: "75%" }}
+            multiline
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                fetch("/api/update-tournament", {
+                  method: "PATCH",
+                  headers: getAuthHeader(),
+                  body: JSON.stringify({
+                    banner: e.target.value ?? "",
+                  }),
+                }).then((response) => response.json());
+              }
+            }}
+          />
+        </Grid>
+
         {["", "finals "].map((teamType) => (
           <Grid item key={teamType} xs={12} className="justify">
             <Typography variant="subtitle1">
@@ -47,6 +71,8 @@ export default function TournamentSettings(props) {
 
             <HideShowToggle
               teamType={teamType.trim()}
+              showTeams={teamType === "" ? showTeams : showFinalsTeams}
+              setShowTeams={teamType === "" ? setShowTeams : setShowFinalsTeams}
               setSuccessMsg={setSuccessMsg}
               setErrorMsg={setErrorMsg}
             />

@@ -708,9 +708,7 @@ function Comments(props) {
               }),
             })
               .then((response) => response.json())
-              .then(() => {
-                setDisabled(true);
-              });
+              .then(() => setDisabled(true));
           }
         }}
       />

@@ -178,25 +178,16 @@ export function SearchAndFilter({
   );
 }
 
-export function HideShowToggle({ teamType, setSuccessMsg, setErrorMsg }) {
-  const [showTeams, setShowTeams] = useState(false);
-
+export function HideShowToggle({
+  teamType,
+  showTeams,
+  setShowTeams,
+  setSuccessMsg,
+  setErrorMsg,
+}) {
   const teamStr = teamType === "finals" ? "Finals teams" : "Teams";
   const showMessage = `${teamStr} are now visible to ballkids and captains.`;
   const hideMessage = `${teamStr} are now hidden from ballkids and captains.`;
-
-  useEffect(() => {
-    fetch("/api/get-tournament", {
-      method: "GET",
-      headers: getAuthHeader(),
-    })
-      .then((response) => response.json())
-      .then((data) =>
-        setShowTeams(
-          data[teamType === "finals" ? "show_finals_teams" : "show_teams"]
-        )
-      );
-  }, [teamType]);
 
   return (
     <div className="sxs">

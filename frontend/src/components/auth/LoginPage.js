@@ -93,7 +93,7 @@ export default function LoginPage(props) {
               type="password"
               required={true}
               onChange={(e) => handleChange(e, state, setState)}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   submitPassword(
                     state,

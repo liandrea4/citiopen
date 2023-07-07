@@ -144,8 +144,14 @@ def calibrate(ratings, rating_name="overall", year=get_current_year()):
     train, excluded = remove_nonoverlapping_reviewers(train)
     test, _ = remove_nonoverlapping_reviewers(test)
 
-    cp = calibrate_parameters(train, rating_delta=(MAX_RATING - MIN_RATING))
-    cp.rescale_parameters(test, (MIN_RATING, MAX_RATING), ignore_outliers=CALIBRATE_STDEV)
+    try:
+        cp = calibrate_parameters(train, rating_delta=(MAX_RATING - MIN_RATING))
+        cp.rescale_parameters(
+            test, (MIN_RATING, MAX_RATING), ignore_outliers=CALIBRATE_STDEV
+        )
+
+    except RcalException as e:
+        return None, excluded, e
 
     cp.set_reviewer_offsets({r: 0 for r in excluded})
     cp.set_reviewer_scales({r: 1 for r in excluded})
@@ -153,7 +159,7 @@ def calibrate(ratings, rating_name="overall", year=get_current_year()):
     logger.info(
         f"{datetime.now()} [calibrate] completed calibration excluding {excluded}"
     )
-    return cp, excluded
+    return cp, excluded, None
 
 
 def save_calibration_parameters(cp, calibrated=None, year=get_current_year()):
@@ -341,7 +347,7 @@ class CreateRating(APIView):
             logger.info(f"{datetime.now()} [CreateRating] Created rating {rating}")
 
             # Update calibration parameters
-            cp, _ = calibrate(Rating.objects.all())
+            cp, _, _ = calibrate(Rating.objects.all())
             save_calibration_parameters(cp)
 
             return Response(RatingSerializer(rating).data)
@@ -372,18 +378,11 @@ class CalibratedRatings(APIView):
 
         # Try calibration for all rating categories
         for rating_name in RATING_CATEGORIES:
-            try:
-                cp_dict[rating_name], excluded[rating_name] = calibrate(
-                    ratings, rating_name, year=year
-                )
-            except RcalException as e:
-                # Log thrown rcal exceptions for a given rating category
-                failed_categories[rating_name] = e
-
-                # If rcal warning was thrown for rating_name, then clear out cp_dict
-                # for that rating name and just return the untransformed rating for
-                # the rating category
-                cp_dict[rating_name] = None
+            (
+                cp_dict[rating_name],
+                excluded[rating_name],
+                failed_categories[rating_name],
+            ) = calibrate(ratings, rating_name, year=year)
 
         logger.warning(
             f"{datetime.now()} [CalibratedRatings] rating categories with failed rating categories {failed_categories}"
@@ -470,7 +469,7 @@ class CalibratedRatings(APIView):
         )
 
         # If an rcal warning was thrown for the overall rating category
-        if "overall" in failed_categories:
+        if "overall" in failed_categories and failed_categories["overall"] is not None:
             logger.warning(
                 f"{datetime.now()} [CalibratedRatings] overall rating category threw an rcal warning"
             )
@@ -526,7 +525,7 @@ class DeleteRating(APIView):
         rating.delete()
 
         # Update calibration parameters
-        cp, _ = calibrate(Rating.objects.all())
+        cp, _, _ = calibrate(Rating.objects.all())
         save_calibration_parameters(cp)
 
         return Response(status=status.HTTP_200_OK)

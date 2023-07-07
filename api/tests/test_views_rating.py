@@ -10,12 +10,16 @@ class TestViewsRating(TestCase):
     def setUp(self):
         self.ratee1 = Ballkid(first_name="Lacy", last_name="Iosue")
         self.ratee2 = Ballkid(first_name="Andrea", last_name="Iosue")
+        self.ratee3 = Ballkid(first_name="Lace", last_name="Iosue")
         self.rater1 = Ballkid(first_name="Captain", last_name="Iosue")
         self.rater2 = Ballkid(first_name="Joe", last_name="Iosue")
+        self.rater3 = Ballkid(first_name="Dino", last_name="Iosue")
         self.ratee1.save()
         self.ratee2.save()
+        self.ratee3.save()
         self.rater1.save()
         self.rater2.save()
+        self.rater3.save()
 
         self.days_per_bucket = 4
 
@@ -324,7 +328,7 @@ class TestViewsRating(TestCase):
 
         self.assertEqual(rcal_dict, queryset_to_rcal(ratings, rating_name="decision"))
 
-    def test_calibrate(self):
+    def test_calibrate_passing(self):
         Rating.objects.create(
             ratee=self.ratee1,
             rater=self.rater1,
@@ -348,5 +352,68 @@ class TestViewsRating(TestCase):
         )
         ratings = Rating.objects.all()
 
-        cp, excluded = calibrate(ratings)
+        cp, excluded, error = calibrate(ratings)
         self.assertIsInstance(cp, CalibrationParameters, f"Type: {type(cp)}")
+
+    def test_calibrate_excluded(self):
+        Rating.objects.create(
+            ratee=self.ratee1,
+            rater=self.rater1,
+            date=date.today(),
+            rating=5,
+            decision_rating=0.5,
+        )
+        Rating.objects.create(
+            ratee=self.ratee2,
+            rater=self.rater2,
+            date=date.today(),
+            rating=3,
+            decision_rating=2,
+        )
+        Rating.objects.create(
+            ratee=self.ratee1,
+            rater=self.rater2,
+            date=date.today(),
+            rating=4,
+            decision_rating=2,
+        )
+        Rating.objects.create(
+            ratee=self.ratee3,
+            rater=self.rater3,
+            date=date.today(),
+            rating=4,
+        )
+        ratings = Rating.objects.all()
+
+        cp, excluded, error = calibrate(ratings)
+        self.assertIsInstance(cp, CalibrationParameters, f"Type: {type(cp)}")
+
+        self.assertEqual(1, len(excluded))
+        self.assertEqual(self.rater3.get_name(), excluded.pop())
+
+    def test_calibrate_fail(self):
+        Rating.objects.create(
+            ratee=self.ratee1,
+            rater=self.rater1,
+            date=date.today(),
+            rating=5,
+            decision_rating=0.5,
+        )
+        Rating.objects.create(
+            ratee=self.ratee2,
+            rater=self.rater2,
+            date=date.today(),
+            rating=3,
+            decision_rating=2,
+        )
+        Rating.objects.create(
+            ratee=self.ratee3,
+            rater=self.rater3,
+            date=date.today(),
+            rating=4,
+        )
+        ratings = Rating.objects.all()
+
+        cp, excluded, error = calibrate(ratings)
+        self.assertIsNone(cp)
+        self.assertIsNotNone(error)

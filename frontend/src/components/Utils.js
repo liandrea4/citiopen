@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { useDrag } from "react-dnd";
 import { Link as RouterLink } from "react-router-dom";
@@ -199,11 +199,15 @@ export function HideShowToggle({
           fetch("/api/get-tournament", {
             method: "PATCH",
             headers: getAuthHeader(),
-            body: JSON.stringify({
-              show_teams: teamType === "finals" ? null : e.target.checked,
-              show_finals_teams:
-                teamType === "finals" ? e.target.checked : null,
-            }),
+            body: JSON.stringify(
+              teamType === ""
+                ? {
+                    show_teams: e.target.checked,
+                  }
+                : {
+                    show_finals_teams: e.target.checked,
+                  }
+            ),
           }).then((response) => {
             if (response.ok) {
               setSuccessMsg(e.target.checked ? showMessage : hideMessage);

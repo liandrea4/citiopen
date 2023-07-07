@@ -112,8 +112,8 @@ export function UnassignedDesktop({
 
               {ballkids.length === 0 ? (
                 <Typography variant="body1" sx={{ pb: 1 }}>
-                  There are currently no checked in {position.toLowerCase()}s
-                  who are unassigned.
+                  There are currently no {isFinalsPage ? "" : "checked in "}
+                  {position.toLowerCase()}s who are unassigned.
                 </Typography>
               ) : (
                 <Grid container>

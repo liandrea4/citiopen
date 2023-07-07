@@ -73,26 +73,22 @@ function renderUnassignButton(ballkid, setUpdated) {
   );
 }
 
-function renderBallkidsOnTeam(ballkids, position, setUpdated) {
+function renderBallkidsOnTeam(ballkids, setUpdated) {
   return (
     <div>
-      {ballkids.map((ballkid) =>
-        ballkid.position === position ? (
-          <div key={`ballkid${ballkid.id}`} className="justify">
-            {<DraggableBallkidAndIcon ballkid={ballkid} />}
+      {ballkids.map((ballkid) => (
+        <div key={`ballkid${ballkid.id}`} className="justify">
+          {<DraggableBallkidAndIcon ballkid={ballkid} />}
 
-            <div className="sxs">
-              {!ballkid.preferred_position.includes("/")
-                ? ""
-                : renderSwitchButton(ballkid, setUpdated)}
+          <div className="sxs">
+            {!ballkid.preferred_position.includes("/")
+              ? ""
+              : renderSwitchButton(ballkid, setUpdated)}
 
-              {renderUnassignButton(ballkid, setUpdated)}
-            </div>
+            {renderUnassignButton(ballkid, setUpdated)}
           </div>
-        ) : (
-          ""
-        )
-      )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -149,13 +145,7 @@ function renderTeamCardHeader(team, assigned, nextShifts, setOpen, setUpdated) {
   );
 }
 
-export function Team({
-  team,
-  assigned,
-  nextShifts,
-  setUpdated,
-  isNewTeam = false,
-}) {
+function Team({ team, assigned, nextShifts, setUpdated, isNewTeam = false }) {
   const positions = ["Net", "Back"];
   const isCurrentlyOn =
     nextShifts.length > 0 && isCurrentHour(nextShifts[0]["start"]);
@@ -242,8 +232,7 @@ export function Team({
                   </Typography>
                 </div>
                 {renderBallkidsOnTeam(
-                  assigned.filter((ballkid) => ballkid.current_team === team),
-                  position,
+                  assigned.filter((ballkid) => ballkid.position === position),
                   setUpdated
                 )}
               </div>

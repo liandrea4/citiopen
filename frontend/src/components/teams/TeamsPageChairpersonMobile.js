@@ -24,21 +24,31 @@ import {
   renderCheckoutUnassignedButton,
 } from "./TeamsPageChairpersonUtils";
 
-function renderAssignButton(ballkid, buttonString, teamNum, setUpdated) {
+function renderAssignButton(
+  ballkid,
+  buttonString,
+  team,
+  setUpdated,
+  isFinalsPage = false
+) {
   return (
     <Button
-      key={teamNum}
+      key={team}
       sx={{ m: 0.2, minWidth: 0 }}
       size="small"
       variant="outlined"
       onClick={(e) => {
+        const teamAssignDict = isFinalsPage
+          ? { finals_team: team }
+          : { current_team: team };
+
         fetch("/api/update-ballkid", {
           method: "PATCH",
           headers: getAuthHeader(),
           body: JSON.stringify({
             first_name: ballkid.first_name,
             last_name: ballkid.last_name,
-            current_team: teamNum,
+            ...teamAssignDict,
           }),
         })
           .then((response) => response.json())
@@ -50,7 +60,12 @@ function renderAssignButton(ballkid, buttonString, teamNum, setUpdated) {
   );
 }
 
-function Unassigned({ unassigned, teams, setUpdated }) {
+export function UnassignedMobile({
+  unassigned,
+  teams,
+  setUpdated,
+  isFinalsPage = false,
+}) {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterGroup, setFilterGroup] = useState();
   const [open, setOpen] = useState(false);
@@ -78,12 +93,15 @@ function Unassigned({ unassigned, teams, setUpdated }) {
           </Typography>
         </div>
 
-        {unassigned.length === 0 ? "" : renderCheckoutUnassignedButton(setOpen)}
+        {unassigned.length === 0 || isFinalsPage
+          ? ""
+          : renderCheckoutUnassignedButton(setOpen)}
       </div>
 
       {unassigned.length === 0 ? (
         <Typography variant="body1">
-          There are currently no checked in ballkids who are unassigned.
+          There are currently no {isFinalsPage ? "" : "checked in "}ballkids who
+          are unassigned.
         </Typography>
       ) : (
         <div>
@@ -112,14 +130,22 @@ function Unassigned({ unassigned, teams, setUpdated }) {
                       <TableCell>{ballkid.preferred_position}</TableCell>
                       <TableCell align="right">
                         {teams.map((team) =>
-                          renderAssignButton(ballkid, team, team, setUpdated)
+                          renderAssignButton(
+                            ballkid,
+                            team,
+                            team,
+                            setUpdated,
+                            isFinalsPage
+                          )
                         )}
-                        {renderAssignButton(
-                          ballkid,
-                          "New Team",
-                          teams.length + 1,
-                          setUpdated
-                        )}
+                        {isFinalsPage
+                          ? ""
+                          : renderAssignButton(
+                              ballkid,
+                              "New Team",
+                              teams.length + 1,
+                              setUpdated
+                            )}
                       </TableCell>
                     </TableRow>
                   )
@@ -177,7 +203,7 @@ export default function TeamsPageChairpersonMobile(props) {
         nextShifts={nextShifts}
         setUpdated={setUpdated}
       />
-      <Unassigned
+      <UnassignedMobile
         unassigned={unassigned}
         teams={teams}
         setUpdated={setUpdated}

@@ -53,6 +53,7 @@ class Ballkid(models.Model):
         max_length=100, default="api/static/img/none.jpg", blank=True
     )
     num_years_experience = models.IntegerField(default=0)
+    is_out_of_town = models.BooleanField(default=False)
     is_captain = models.BooleanField(default=False)
     is_chairperson = models.BooleanField(default=False)
     preferred_position = models.CharField(

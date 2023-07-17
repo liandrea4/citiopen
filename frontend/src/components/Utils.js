@@ -46,6 +46,10 @@ export function Icons({ ballkid, margin, isTeamsPage = false }) {
     <Icon sx={{ mb: margin }}>
       {ballkid.is_chairperson && ICON_DICT["chairperson"]}
       {ballkid.is_captain && ICON_DICT["captain"]}
+      {ballkid.num_years_experience === 0 &&
+        ballkid.is_out_of_town &&
+        isTeamsPage &&
+        ICON_DICT["outOfTownRookie"]}
       {ballkid.num_years_experience === 0 && ICON_DICT["rookie"]}
       {ballkid.num_years_experience > 3 && isTeamsPage && ICON_DICT["supervet"]}
     </Icon>

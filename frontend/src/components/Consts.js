@@ -27,6 +27,7 @@ export const ICON_DICT = {
   rookie: <Circle sx={{ color: "green" }} />,
   chairperson: <EventSeat sx={{ color: "purple" }} />,
   supervet: <LocalPolice sx={{ color: "info.main" }} />,
+  outOfTownRookie: <Circle sx={{ color: "error.main" }} />,
   back: <EmojiPeople sx={{ color: "primary.main" }} />,
   net: <Fence sx={{ color: "gray" }} />,
 };

@@ -109,6 +109,7 @@ export function UnassignedMobile({
             setSearchKeyword={setSearchKeyword}
             filterGroup={filterGroup}
             setFilterGroup={setFilterGroup}
+            filters={["captain", "supervet", "rookie", "chairperson"]}
           />
 
           <TableContainer component={Paper} elevation={1}>

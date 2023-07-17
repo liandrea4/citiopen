@@ -91,7 +91,7 @@ export function UnassignedDesktop({
           setSearchKeyword={setSearchKeyword}
           filterGroup={filterGroup}
           setFilterGroup={setFilterGroup}
-          filters={["captain", "rookie", "chairperson"]}
+          filters={["captain", "supervet", "rookie", "chairperson"]}
         />
         {positions.map((position) => {
           const ballkids = filterBallkids(

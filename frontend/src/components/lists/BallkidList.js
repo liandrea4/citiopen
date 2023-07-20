@@ -20,6 +20,8 @@ export default function BallkidList(props) {
   const [gridLayout, setGridLayout] = useState(
     getLocalStorage("gridLayout") ?? true
   );
+  const group = getLocalStorage("group");
+  const filters = ["captain", "chairperson", "back", "net"];
 
   useEffect(() => {
     fetch("/api/list", { headers: getAuthHeader() })
@@ -49,6 +51,7 @@ export default function BallkidList(props) {
             setSearchKeyword={setSearchKeyword}
             filterGroup={filterGroup}
             setFilterGroup={setFilterGroup}
+            filters={group === "ballkid" ? filters : ["rookie", ...filters]}
           />
 
           {filterBallkids(ballkids, searchKeyword, filterGroup).map(

@@ -40,6 +40,8 @@ import { END_DATE, START_DATE, ICON_DICT, TOOLTIP_DICT } from "./Consts";
 import { MenuItem, Tooltip } from "@mui/material";
 
 export function Icons({ ballkid, margin, isTeamsPage = false }) {
+  const group = getLocalStorage("group");
+
   if (
     !ballkid.is_captain &&
     ballkid.num_years_experience <= 3 &&
@@ -52,11 +54,14 @@ export function Icons({ ballkid, margin, isTeamsPage = false }) {
     <Icon sx={{ mb: margin }}>
       {ballkid.is_chairperson && ICON_DICT["chairperson"]}
       {ballkid.is_captain && ICON_DICT["captain"]}
-      {ballkid.num_years_experience === 0 &&
+      {group !== "ballkid" &&
+        ballkid.num_years_experience === 0 &&
         ballkid.is_out_of_town &&
         isTeamsPage &&
         ICON_DICT["outOfTownRookie"]}
-      {ballkid.num_years_experience === 0 && ICON_DICT["rookie"]}
+      {group !== "ballkid" &&
+        ballkid.num_years_experience === 0 &&
+        ICON_DICT["rookie"]}
       {ballkid.num_years_experience > 3 && isTeamsPage && ICON_DICT["supervet"]}
     </Icon>
   );
@@ -66,9 +71,11 @@ export function LayoutButtons({ gridLayout, setGridLayout }) {
   return (
     <div sx={{ mb: 1 }}>
       {[true, false].map((isGridButton) => (
-        <Tooltip title={isGridButton ? "Grid View" : "List View"}>
+        <Tooltip
+          title={isGridButton ? "Grid View" : "List View"}
+          key={isGridButton}
+        >
           <IconButton
-            key={isGridButton}
             size="small"
             style={{
               borderRadius: 0,
@@ -163,7 +170,7 @@ export function SearchAndFilter({
   setSearchKeyword,
   filterGroup,
   setFilterGroup,
-  filters = ["captain", "rookie", "chairperson", "back", "net"],
+  filters = ["rookie", "captain", "chairperson", "back", "net"],
 }) {
   return (
     <Grid item xs={12} className="justify">

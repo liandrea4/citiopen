@@ -93,36 +93,14 @@ function renderBallkidsOnTeam(ballkids, setUpdated) {
   );
 }
 
-function renderClearButton(team, setUpdated) {
-  return (
-    <Button
-      size="small"
-      onClick={(e) => {
-        fetch("/api/clear-team", {
-          method: "PATCH",
-          headers: getAuthHeader(),
-          body: JSON.stringify({
-            current_team: team,
-          }),
-        })
-          .then((response) => response.json())
-          .then(() => setUpdated(true));
-      }}
-    >
-      Clear
-    </Button>
-  );
-}
-
-function renderCheckoutTeamButton(setOpen) {
-  return (
-    <Button size="small" color="error" onClick={() => setOpen(true)}>
-      Check Out All
-    </Button>
-  );
-}
-
-function renderTeamCardHeader(team, assigned, nextShifts, setOpen, setUpdated) {
+function renderTeamCardHeader(
+  team,
+  assigned,
+  nextShifts,
+  setCheckoutOpen,
+  setClearOpen,
+  setUpdated
+) {
   return (
     <div>
       <div className="justify">
@@ -133,13 +111,29 @@ function renderTeamCardHeader(team, assigned, nextShifts, setOpen, setUpdated) {
           </Typography>
         </div>
 
-        {assigned.length === 0 ? "" : renderClearButton(team, setUpdated)}
+        {assigned.length === 0 ? (
+          ""
+        ) : (
+          <Button size="small" onClick={(e) => setClearOpen(true)}>
+            Clear
+          </Button>
+        )}
       </div>
 
       <div className="justify">
         <CourtAssignment nextShifts={nextShifts} />
 
-        {assigned.length === 0 ? "" : renderCheckoutTeamButton(setOpen)}
+        {assigned.length === 0 ? (
+          ""
+        ) : (
+          <Button
+            size="small"
+            color="error"
+            onClick={() => setCheckoutOpen(true)}
+          >
+            Check Out All
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -150,7 +144,8 @@ function Team({ team, assigned, nextShifts, setUpdated, isNewTeam = false }) {
   const isCurrentlyOn =
     nextShifts.length > 0 && isCurrentHour(nextShifts[0]["start"]);
 
-  const [open, setOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const [{ isOver }, dropRef] = useDrop({
@@ -188,8 +183,21 @@ function Team({ team, assigned, nextShifts, setUpdated, isNewTeam = false }) {
         body={JSON.stringify({
           checkout_group: team,
         })}
-        open={open}
-        setOpen={setOpen}
+        open={checkoutOpen}
+        setOpen={setCheckoutOpen}
+        setUpdated={setUpdated}
+      />
+
+      <ConfirmDialog
+        message={`You are about to clear Team ${team} and unassign all ${
+          assigned.length
+        } ballkid${assigned.length > 1 ? "s" : ""}.`}
+        url={"/api/clear-team"}
+        body={JSON.stringify({
+          current_team: team,
+        })}
+        open={clearOpen}
+        setOpen={setClearOpen}
         setUpdated={setUpdated}
       />
 
@@ -215,7 +223,8 @@ function Team({ team, assigned, nextShifts, setUpdated, isNewTeam = false }) {
               team,
               assigned,
               nextShifts,
-              setOpen,
+              setCheckoutOpen,
+              setClearOpen,
               setUpdated
             )}
 

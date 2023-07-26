@@ -5,7 +5,6 @@ import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import DialogContentText from "@mui/material/DialogContentText";
 
 import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -13,6 +12,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { ScheduleTable } from "./ScheduleTable";
 import { getAuthHeader, getToday, ConfirmDialog, HelpIcon } from "../Utils";
+import { schedule } from "../HelpMessages";
 
 function CreateSchedule({ date, setUpdated }) {
   const [numCourts, setNumCourts] = useState(5);
@@ -124,28 +124,6 @@ export default function SchedulePageChairperson(props) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
 
-  const helpMessage = (
-    <DialogContentText>
-      This page displays the schedule for the selected date.
-      <br /> <br />
-      If there are no shifts found for the selected date, you can create a
-      default schedule based on the inputted parameters.
-      <br /> <br />
-      If there are shifts found for the selected date, you can view and edit the
-      schedule. When editing the schedule, you can update which team is assigned
-      to which court at what hour, add and delete hours, add and delete courts,
-      and change court names. To change a court name, enter edit mode, enter the
-      desired court name, and hit ENTER to save. To delete a court, enter edit
-      mode, delete the court name, and hit ENTER to save.
-      <br /> <br />
-      The schedule can be shifted up or down by 1 hour increments. You need to
-      be in view mode (not edit mode) to be able to shift the schedule.
-      <br /> <br />
-      The schedule can also be deleted for the day. This enables you to recreate
-      a default schedule with inputted parameters.
-    </DialogContentText>
-  );
-
   useEffect(() => {
     fetch(`/api/get-schedule?date=${date}`, { headers: getAuthHeader() })
       .then((response) => response.json())
@@ -171,7 +149,7 @@ export default function SchedulePageChairperson(props) {
       <div className="sxs" sx={{ mb: 2 }}>
         <Typography variant="h4">Schedule</Typography>
         &thinsp;
-        <HelpIcon page="Schedule" message={helpMessage} />
+        <HelpIcon page="Schedule" message={schedule} />
       </div>
 
       <Box className="justify" sx={{ mb: 2 }}>

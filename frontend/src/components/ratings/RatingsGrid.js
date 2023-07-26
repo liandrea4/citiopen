@@ -349,7 +349,7 @@ export default function RatingsGrid({ ratings, setUpdated }) {
                     setOpen(false);
                     setSuccessMsg("");
                     setUpdated(true);
-                  }, 2000);
+                  }, 2500);
                 } else {
                   setErrorMsg("Error deleting rating.");
                 }

@@ -14,6 +14,7 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import Box from "@mui/material/Box";
 
 import Clear from "@mui/icons-material/Clear";
 import Dangerous from "@mui/icons-material/Dangerous";
@@ -24,8 +25,10 @@ import {
   SearchAndFilter,
   ConfirmDialog,
   DraggableBallkidAndIcon,
+  HelpIcon,
 } from "../Utils";
 import { CUT_STATUSES, MARGINS } from "../Consts";
+import { cut } from "../HelpMessages";
 
 function CutStatusSection({ section, active, setUpdated }) {
   const [open, setOpen] = useState(false);
@@ -283,9 +286,11 @@ export default function CutPageMobile(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 1 }}>
-        Cut Page
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Cut Page</Typography>
+        &thinsp;
+        <HelpIcon page="Cut" message={cut} />
+      </Box>
 
       <Grid container spacing={2}>
         {sections.map((section) => (

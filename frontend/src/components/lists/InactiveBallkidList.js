@@ -12,8 +12,10 @@ import {
   SearchAndFilter,
   filterBallkids,
   BallkidCard,
+  HelpIcon,
 } from "../Utils";
 import { MARGINS } from "../Consts";
+import { inactive } from "../HelpMessages";
 
 function renderUnarchiveButton(ballkid, setUpdated) {
   return (
@@ -133,9 +135,11 @@ export default function InactiveBallkidList(props) {
   return (
     <div className="page">
       <div className="justify">
-        <Typography variant="h4" sx={{ mb: 1 }}>
-          Inactive Ballkids
-        </Typography>
+        <Box className="sxs" sx={{ mb: 1 }}>
+          <Typography variant="h4">Inactive</Typography>
+          &thinsp;
+          <HelpIcon page="Inactive" message={inactive} />
+        </Box>
 
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>

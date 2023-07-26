@@ -391,7 +391,7 @@ export function ConfirmDialog({
                   setOpen(false);
                   setSuccessMsg("");
                   setUpdated(true);
-                }, 1000);
+                }, 2500);
               } else {
                 setErrorMsg("Error.");
               }

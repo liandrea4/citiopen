@@ -22,8 +22,10 @@ import {
   CourtAssignment,
   useIsMobile,
   ConfirmDialog,
+  HelpIcon,
 } from "../Utils";
 import { ON_COURT_GREEN, MARGINS } from "../Consts";
+import { teams } from "../HelpMessages.js";
 
 function renderSwitchButton(ballkid, setUpdated) {
   return (
@@ -322,7 +324,12 @@ export function Header() {
         setErrorMsg={setErrorMsg}
       />
       <Box className="justify" sx={{ mb: 1 }}>
-        <Typography variant="h4">Current Teams</Typography>
+        <Box className="sxs">
+          <Typography variant="h4">Current Teams</Typography>
+          &thinsp;
+          <HelpIcon page="Teams" message={teams} />
+        </Box>
+
         <HideShowToggle
           teamType=""
           showTeams={showTeams}

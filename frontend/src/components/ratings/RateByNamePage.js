@@ -15,7 +15,9 @@ import {
   filterBallkids,
   BallkidCard,
   setLocalStorage,
+  HelpIcon,
 } from "../Utils";
+import { rateByName } from "../HelpMessages";
 
 function getBallkidsToRender(ballkids, showUnrated, showTeam, myTeam) {
   const pk = getLocalStorage("ballkid_id");
@@ -140,13 +142,11 @@ export default function RateByNamePage(props) {
   return (
     <div className="page">
       <div className="justify">
-        <div className="sxs">
-          <Typography variant="h4" sx={{ mb: 1 }}>
-            Rate by Name
-          </Typography>
-
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            &ensp; (
+        <Box className="sxs" sx={{ mb: 1 }}>
+          <Typography variant="h4">Rate by Name</Typography>
+          &ensp;
+          <Typography variant="h6">
+            (
             {
               filterBallkids(
                 getBallkidsToRender(ballkids, showUnrated, showTeam, myTeam),
@@ -156,7 +156,9 @@ export default function RateByNamePage(props) {
             }
             )
           </Typography>
-        </div>
+          &thinsp;
+          <HelpIcon page="Rate by Name" message={rateByName} />
+        </Box>
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
 

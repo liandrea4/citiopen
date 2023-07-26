@@ -13,8 +13,11 @@ import {
   isCurrentHour,
   CourtAssignment,
   BallkidAndIcon,
+  HelpIcon,
 } from "../Utils";
 import { ON_COURT_GREEN } from "../Consts";
+import { Box } from "@mui/material";
+import { rateByCurrentTeam } from "../HelpMessages";
 
 function Team({ team, assigned, nextShifts, setUpdated }) {
   const positions = ["Back", "Net"];
@@ -117,9 +120,12 @@ export default function RateByCurrentTeamsPage(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 1 }}>
-        Rate by Current Team
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Rate by Current Team</Typography>
+        &thinsp;
+        <HelpIcon page="Rate by Current Team" message={rateByCurrentTeam} />
+      </Box>
+
       {assigned.length === 0 || (group !== "chairperson" && !showTeams) ? (
         <Typography>There are currently no teams assigned.</Typography>
       ) : (

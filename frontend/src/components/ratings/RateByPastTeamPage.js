@@ -12,8 +12,10 @@ import {
   getLocalStorage,
   BallkidCard,
   setLocalStorage,
+  HelpIcon,
 } from "../Utils";
 import { MARGINS } from "../Consts";
+import { rateByPastTeam } from "../HelpMessages";
 
 function renderBallkid(ballkid, gridLayout, setUpdated) {
   return ballkid === undefined || ballkid === null ? (
@@ -73,9 +75,12 @@ export default function RateByPastTeamPage(props) {
   return (
     <div className="page">
       <div className="justify">
-        <Typography variant="h4" sx={{ mb: 1 }}>
-          Rate by Past Team
-        </Typography>
+        <Box className="sxs" sx={{ mb: 1 }}>
+          <Typography variant="h4">Rate by Past Team</Typography>
+          &thinsp;
+          <HelpIcon page="Rate by Past Team" message={rateByPastTeam} />
+        </Box>
+
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
 

@@ -5,7 +5,9 @@ import Link from "@mui/material/Link";
 
 import { DataGrid } from "@mui/x-data-grid";
 
-import { BallkidAndIcon, getAuthHeader } from "../Utils";
+import { BallkidAndIcon, HelpIcon, getAuthHeader } from "../Utils";
+import { Box } from "@mui/material";
+import { ratingsCaptainLeaderboard } from "../HelpMessages";
 
 export default function CaptainLeaderboard(props) {
   const [ballkids, setBallkids] = useState([]);
@@ -73,9 +75,14 @@ export default function CaptainLeaderboard(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Ratings Leaderboard - Captain
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Ratings Leaderboard - Captain</Typography>
+        &thinsp;
+        <HelpIcon
+          page="Ratings Leaderboard - Captain"
+          message={ratingsCaptainLeaderboard}
+        />
+      </Box>
 
       <div style={{ height: 500 }}>
         <DataGrid

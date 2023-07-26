@@ -13,8 +13,10 @@ import {
   filterBallkids,
   ConfirmDialog,
   BallkidCard,
+  HelpIcon,
 } from "../Utils";
 import { MARGINS } from "../Consts";
+import { checkin } from "../HelpMessages";
 
 function renderCheckinButton(firstName, lastName, isCheckedIn, setUpdated) {
   const checkinString = isCheckedIn ? "Check Out" : "Check In";
@@ -134,9 +136,11 @@ export default function CheckinPage(props) {
       />
 
       <div className="justify">
-        <Typography variant="h4" sx={{ mb: 1 }}>
-          Check-in
-        </Typography>
+        <Box className="sxs" sx={{ mb: 1 }}>
+          <Typography variant="h4">Check-in</Typography>
+          &thinsp;
+          <HelpIcon page="Check-in" message={checkin} />
+        </Box>
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
 

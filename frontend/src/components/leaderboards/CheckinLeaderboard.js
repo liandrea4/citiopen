@@ -16,7 +16,10 @@ import {
   getTimeStr,
   getTimeFloat,
   BallkidAndIcon,
+  HelpIcon,
 } from "../Utils";
+import { Box } from "@mui/material";
+import { checkinLeaderboard } from "../HelpMessages";
 
 function renderAverages(averages) {
   return (
@@ -116,9 +119,11 @@ export default function CheckinLeaderboard(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Check-in Leaderboard
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Check-in Leaderboard</Typography>
+        &thinsp;
+        <HelpIcon page="Check-in Leaderboard" message={checkinLeaderboard} />
+      </Box>
 
       {loading ? (
         <CircularProgress className="center" size={30} />

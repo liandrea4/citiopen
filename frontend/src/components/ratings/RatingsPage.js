@@ -8,7 +8,8 @@ import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 
-import { getAuthHeader } from "../Utils";
+import { HelpIcon, getAuthHeader } from "../Utils";
+import { viewRatings } from "../HelpMessages";
 import RatingsGrid from "./RatingsGrid";
 
 export default function RatingsPage(props) {
@@ -46,9 +47,11 @@ export default function RatingsPage(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        View Ratings
-      </Typography>
+      <Box className="sxs" sx={{ mb: 2 }}>
+        <Typography variant="h4">View Ratings</Typography>
+        &thinsp;
+        <HelpIcon page="View Ratings" message={viewRatings} />
+      </Box>
 
       <Box className="sxs" sx={{ mb: 2 }}>
         <Typography variant="body1">Showing ratings for: &thinsp;</Typography>

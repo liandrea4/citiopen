@@ -18,7 +18,9 @@ import {
   HideShowToggle,
   DraggableBallkidAndIcon,
   ConfirmDialog,
+  HelpIcon,
 } from "../Utils";
+import { finalsTeams } from "../HelpMessages";
 
 function Team({ team, assigned, setUpdated }) {
   const positions = ["Net", "Back"];
@@ -203,7 +205,11 @@ export function Header() {
         setErrorMsg={setErrorMsg}
       />
       <div className="justify" sx={{ mb: 1 }}>
-        <Typography variant="h4">Finals Teams</Typography>
+        <div className="sxs">
+          <Typography variant="h4">Finals Teams</Typography>
+          &thinsp;
+          <HelpIcon page="Finals Teams" message={finalsTeams} />
+        </div>
         <HideShowToggle
           teamType="finals"
           showTeams={showFinalsTeams}

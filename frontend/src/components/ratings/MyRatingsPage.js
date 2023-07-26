@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 
 import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
-import { getAuthHeader, getLocalStorage } from "../Utils";
+import { HelpIcon, getAuthHeader, getLocalStorage } from "../Utils";
 import RatingsGrid from "./RatingsGrid";
+import { viewMyRatings } from "../HelpMessages";
 
 export default function MyRatingsPage(props) {
   const [ratings, setRatings] = useState([]);
@@ -20,9 +22,11 @@ export default function MyRatingsPage(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        View My Ratings
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">View My Ratings</Typography>
+        &thinsp;
+        <HelpIcon page="View My Ratings" message={viewMyRatings} />
+      </Box>
 
       <RatingsGrid ratings={ratings} setUpdated={setUpdated} />
     </div>

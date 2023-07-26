@@ -235,7 +235,7 @@ export default function RatingDialog({ open, setOpen, ballkid, setUpdated }) {
                   setDecisionRating(null);
                   setEffortRating(null);
                   setSuccessMsg("");
-                }, 1000);
+                }, 2500);
               } else {
                 setErrorMsg("Error submitting rating.");
               }

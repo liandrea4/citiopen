@@ -4,7 +4,9 @@ import Typography from "@mui/material/Typography";
 
 import { DataGrid } from "@mui/x-data-grid";
 
-import { BallkidAndIcon, getAuthHeader } from "../Utils";
+import { BallkidAndIcon, HelpIcon, getAuthHeader } from "../Utils";
+import { Box } from "@mui/material";
+import { ratingsBallkidLeaderboard } from "../HelpMessages";
 
 export default function BallkidLeaderboard(props) {
   const [ballkids, setBallkids] = useState([]);
@@ -73,9 +75,14 @@ export default function BallkidLeaderboard(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Ratings Leaderboard - Ballkid
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Ratings Leaderboard - Ballkid</Typography>
+        &thinsp;
+        <HelpIcon
+          page="Ratings Leaderboard - Ballkid"
+          message={ratingsBallkidLeaderboard}
+        />
+      </Box>
 
       <div style={{ height: 500 }}>
         <DataGrid

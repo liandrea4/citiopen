@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 import {
   LayoutButtons,
@@ -10,7 +11,9 @@ import {
   getAuthHeader,
   getLocalStorage,
   BallkidCard,
+  HelpIcon,
 } from "../Utils";
+import { list } from "../HelpMessages";
 
 export default function BallkidList(props) {
   const [ballkids, setBallkids] = useState([]);
@@ -32,15 +35,15 @@ export default function BallkidList(props) {
   return (
     <div className="page">
       <div className="justify">
-        <div className="sxs">
-          <Typography variant="h4" sx={{ mb: 1 }}>
-            List by Name
-          </Typography>
-          <Typography variant="h6" sx={{ mb: 1 }}>
+        <Box className="sxs" sx={{ mb: 1 }}>
+          <Typography variant="h4">List by Name</Typography>
+          <Typography variant="h6">
             &ensp; (
             {filterBallkids(ballkids, searchKeyword, filterGroup).length})
           </Typography>
-        </div>
+          &thinsp;
+          <HelpIcon page="List By Name" message={list} />
+        </Box>
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
       {ballkids.length === 0 ? (

@@ -20,8 +20,10 @@ import {
   SearchAndFilter,
   ConfirmDialog,
   DraggableBallkidAndIcon,
+  HelpIcon,
 } from "../Utils";
 import { CUT_STATUSES, MARGINS } from "../Consts";
+import { cut } from "../HelpMessages";
 
 function CutStatusSection({ section, active, setUpdated }) {
   const [open, setOpen] = useState(false);
@@ -282,9 +284,12 @@ export default function CutPageDesktop(props) {
           xl={9}
           style={{ maxHeight: "85vh", overflow: "auto" }}
         >
-          <Typography variant="h4" sx={{ mb: 1 }}>
-            Cut Page
-          </Typography>
+          <Box className="sxs" sx={{ mb: 1 }}>
+            <Typography variant="h4">Cut Page</Typography>
+            &thinsp;
+            <HelpIcon page="Cut" message={cut} />
+          </Box>
+
           <Grid container spacing={2}>
             {sections.map((section) => (
               <CutStatusSection

@@ -9,6 +9,7 @@ import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import TableBody from "@mui/material/TableBody";
 import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
 
 import { DataGrid } from "@mui/x-data-grid";
 
@@ -18,7 +19,9 @@ import {
   getTimeFloat,
   BallkidAndIcon,
   toPercent,
+  HelpIcon,
 } from "../Utils";
+import { courtLeaderboard } from "../HelpMessages";
 
 function renderAverages(averages, showPercent) {
   const courtTimes = {
@@ -230,9 +233,11 @@ export default function CourtLeaderboard(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" mb={2}>
-        Court Time Leaderboard
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Court Time Leaderboard</Typography>
+        &thinsp;
+        <HelpIcon page="Court Time Leaderboard" message={courtLeaderboard} />
+      </Box>
 
       {/* <div className="sxs">
         <Typography variant="body1">Raw Court Time</Typography>

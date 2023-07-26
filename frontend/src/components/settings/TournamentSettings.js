@@ -4,8 +4,9 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 
-import { Alerts, HideShowToggle, getAuthHeader } from "../Utils";
-import { TextField } from "@mui/material";
+import { Alerts, HelpIcon, HideShowToggle, getAuthHeader } from "../Utils";
+import { Box, TextField } from "@mui/material";
+import { tournamentSettings } from "../HelpMessages";
 
 function SetBanner({ banner, setSuccessMsg, setErrorMsg }) {
   const [bannerDisabled, setBannerDisabled] = useState(true);
@@ -90,9 +91,11 @@ export default function TournamentSettings(props) {
         setErrorMsg={setErrorMsg}
       />
 
-      <Typography variant="h4" sx={{ mb: 1 }}>
-        Tournament Settings
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Tournament Settings</Typography>
+        &thinsp;
+        <HelpIcon page="Tournament Settings" message={tournamentSettings} />
+      </Box>
 
       <Grid container spacing={2} sx={{ pr: 2 }}>
         <Grid item xs={12} className="justify-top">

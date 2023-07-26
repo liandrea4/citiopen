@@ -15,7 +15,7 @@ import {
   SearchAndFilter,
   filterBallkids,
   ConfirmDialog,
-  BallkidAndIcon,
+  DraggableBallkidAndIcon,
 } from "../Utils";
 import { MARGINS } from "../Consts";
 import {
@@ -112,7 +112,7 @@ export function UnassignedMobile({
             setSearchKeyword={setSearchKeyword}
             filterGroup={filterGroup}
             setFilterGroup={setFilterGroup}
-            filters={["captain", "supervet", "rookie", "chairperson"]}
+            filters={["rookie", "supervet", "captain", "chairperson"]}
           />
 
           <TableContainer component={Paper} elevation={1}>
@@ -129,7 +129,7 @@ export function UnassignedMobile({
                   (ballkid) => (
                     <TableRow key={ballkid.id}>
                       <TableCell component="th" scope="row">
-                        <BallkidAndIcon ballkid={ballkid} />
+                        <DraggableBallkidAndIcon ballkid={ballkid} />
                       </TableCell>
                       <TableCell>{ballkid.preferred_position}</TableCell>
                       <TableCell align="right">

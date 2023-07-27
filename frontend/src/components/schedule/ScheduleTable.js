@@ -223,7 +223,11 @@ export function ScheduleTable({ shifts, date, readOnly, editing, setUpdated }) {
             <Table style={{ tableLayout: "fixed" }}>
               <TableHead>
                 <TableRow>
-                  <TableCell align="center" width="10px"></TableCell>
+                  {readOnly ? (
+                    ""
+                  ) : (
+                    <TableCell align="center" width="10px"></TableCell>
+                  )}
                   <TableCell align="center" width="20px">
                     Time
                   </TableCell>
@@ -251,16 +255,20 @@ export function ScheduleTable({ shifts, date, readOnly, editing, setUpdated }) {
                       backgroundColor: isCurrentHour(hour) ? "lightblue" : "",
                     }}
                   >
-                    <TableCell align="center">
-                      {editing ? (
-                        ""
-                      ) : (
-                        <ShiftScheduleButtons
-                          hour={hour}
-                          setUpdated={setUpdated}
-                        />
-                      )}
-                    </TableCell>
+                    {readOnly ? (
+                      ""
+                    ) : (
+                      <TableCell align="center">
+                        {editing ? (
+                          ""
+                        ) : (
+                          <ShiftScheduleButtons
+                            hour={hour}
+                            setUpdated={setUpdated}
+                          />
+                        )}
+                      </TableCell>
+                    )}
 
                     <TableCell align="center">{dayHourToStr(hour)}</TableCell>
                     {courts.map((court) => {

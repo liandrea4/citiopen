@@ -24,12 +24,7 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import MenuIcon from "@mui/icons-material/Menu";
 
-import {
-  getLocalStorage,
-  setLocalStorage,
-  useIsMobile,
-  TournamentBanner,
-} from "./Utils";
+import { getLocalStorage, useIsMobile, TournamentBanner } from "./Utils";
 
 const ballkidTabs = [
   { label: "By Name", url: "/" },
@@ -138,11 +133,7 @@ const chairpersonAccountTab = {
   ],
 };
 
-function DesktopNavbarItem(props) {
-  const tab = props?.tab;
-  const useIconButton = props?.useIconButton;
-  const setToken = props?.setToken;
-
+function DesktopNavbarItem({ tab, useIconButton, setToken }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [overButton, setOverButton] = useState(false);
   const [overMenu, setOverMenu] = useState(false);
@@ -155,9 +146,7 @@ function DesktopNavbarItem(props) {
   const handleLogout = () => {
     handleClose();
     setToken("");
-    setLocalStorage("group", "");
-    setLocalStorage("ballkid_id", "");
-    setLocalStorage("username", "");
+    localStorage.clear();
   };
 
   const enterButton = (e) => {
@@ -237,7 +226,7 @@ function DesktopNavbarItem(props) {
   );
 }
 
-function MobileSubtab({ tab, setOpen }) {
+function MobileSubtab({ tab, setOpen, setToken }) {
   const [subtabOpen, setSubtabOpen] = useState(false);
 
   return (
@@ -267,7 +256,14 @@ function MobileSubtab({ tab, setOpen }) {
                 component={Link}
                 to={subtab.url}
                 sx={{ pl: 4 }}
-                onClick={() => setOpen(false)}
+                onClick={
+                  subtab.label !== "Logout"
+                    ? () => setOpen(false)
+                    : () => {
+                        setToken("");
+                        localStorage.clear();
+                      }
+                }
               >
                 <ListItemText primary={subtab.label} />
               </ListItemButton>
@@ -279,7 +275,7 @@ function MobileSubtab({ tab, setOpen }) {
   );
 }
 
-function MobileNavbar({ tabs, accountTab }) {
+function MobileNavbar({ tabs, accountTab, setToken }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -304,19 +300,28 @@ function MobileNavbar({ tabs, accountTab }) {
           <Divider sx={{ my: 1 }} />
 
           {tabs.map((tab) => (
-            <MobileSubtab key={tab.label} tab={tab} setOpen={setOpen} />
+            <MobileSubtab
+              key={tab.label}
+              tab={tab}
+              setOpen={setOpen}
+              setToken={setToken}
+            />
           ))}
 
           <Divider sx={{ my: 1 }} />
 
-          <MobileSubtab tab={accountTab} setOpen={setOpen} />
+          <MobileSubtab
+            tab={accountTab}
+            setOpen={setOpen}
+            setToken={setToken}
+          />
         </Box>
       </Drawer>
     </div>
   );
 }
 
-export default function Navbar(props) {
+export default function Navbar({ isLoggedIn, setToken }) {
   const group = getLocalStorage("group");
   const isMobile = useIsMobile();
 
@@ -342,7 +347,7 @@ export default function Navbar(props) {
 
   return (
     <AppBar position="sticky">
-      {!props.isLoggedIn ? "" : <TournamentBanner />}
+      {!isLoggedIn ? "" : <TournamentBanner />}
       <Toolbar>
         <div className="justify" style={{ height: "100%" }}>
           <div className="sxs">
@@ -360,7 +365,7 @@ export default function Navbar(props) {
               </Typography>
             </Box>
 
-            {!props.isLoggedIn || isMobile ? (
+            {!isLoggedIn || isMobile ? (
               ""
             ) : (
               <div className="sxs">
@@ -375,17 +380,21 @@ export default function Navbar(props) {
             )}
           </div>
 
-          {!props.isLoggedIn ? (
+          {!isLoggedIn ? (
             <Button color="inherit" component={Link} to="/login">
               Login
             </Button>
           ) : isMobile ? (
-            <MobileNavbar tabs={tabs} accountTab={accountTab} />
+            <MobileNavbar
+              tabs={tabs}
+              accountTab={accountTab}
+              setToken={setToken}
+            />
           ) : (
             <DesktopNavbarItem
               tab={accountTab}
               useIconButton={true}
-              setToken={props.setToken}
+              setToken={setToken}
             />
           )}
         </div>

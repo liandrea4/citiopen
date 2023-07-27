@@ -683,13 +683,7 @@ function ActiveOverflowMenu(props) {
   );
 }
 
-function Comments({
-  ballkid,
-  successMsg,
-  errorMsg,
-  setSuccessMsg,
-  setErrorMsg,
-}) {
+function Comments({ ballkid, setSuccessMsg, setErrorMsg }) {
   const [disabled, setDisabled] = useState(true);
   const [comments, setComments] = useState(ballkid.comments);
 
@@ -974,8 +968,6 @@ export default function BallkidPageChairperson(props) {
           ) : (
             <Comments
               ballkid={ballkid}
-              successMsg={successMsg}
-              errorMsg={errorMsg}
               setSuccessMsg={setSuccessMsg}
               setErrorMsg={setErrorMsg}
             />

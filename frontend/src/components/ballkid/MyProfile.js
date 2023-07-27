@@ -121,6 +121,13 @@ export default function MyProfile(props) {
           <Typography variant="body1">
             Years experience: {ballkid.num_years_experience}
           </Typography>
+          <Typography variant="body1">Phone number: {ballkid.phone}</Typography>
+          <Typography variant="body1">
+            Emergency contact name: {ballkid.emergency_name}
+          </Typography>
+          <Typography variant="body1">
+            Emergency contact phone number: {ballkid.emergency_phone}
+          </Typography>
           <Typography variant="body1">
             Preferred position: {ballkid.preferred_position}
           </Typography>

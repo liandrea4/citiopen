@@ -37,6 +37,7 @@ import FinalsTeamsPageChairpersonMobile from "./teams/FinalsTeamsPageChairperson
 import FinalsTeamsPageChairpersonDesktop from "./teams/FinalsTeamsPageChairpersonDesktop";
 import InactiveBallkidList from "./lists/InactiveBallkidList";
 import RateByCurrentTeamsPage from "./ratings/RateByCurrentTeamsPage";
+import FeedbackPage from "./settings/FeedbackPage";
 
 import { useToken, getLocalStorage, useIsMobile } from "./Utils";
 import GamePage from "./settings/GamePage";
@@ -53,6 +54,17 @@ function chairpersonRoutes(isMobile, setToken) {
         element={isMobile ? <CutPageMobile /> : <CutPageDesktop />}
       />
       <Route path="/debug" element={<DebugPage />} />
+      <Route path="/feedback" element={<FeedbackPage />} />
+      <Route
+        path="/finals-teams"
+        element={
+          isMobile ? (
+            <FinalsTeamsPageChairpersonMobile />
+          ) : (
+            <FinalsTeamsPageChairpersonDesktop />
+          )
+        }
+      />
       <Route path="/inactive" element={<InactiveBallkidList />} />
       <Route path="/leaderboards" element={<Leaderboards />} />
       <Route path="/leaderboards/checkin" element={<CheckinLeaderboard />} />
@@ -78,16 +90,6 @@ function chairpersonRoutes(isMobile, setToken) {
           )
         }
       />
-      <Route
-        path="/finals-teams"
-        element={
-          isMobile ? (
-            <FinalsTeamsPageChairpersonMobile />
-          ) : (
-            <FinalsTeamsPageChairpersonDesktop />
-          )
-        }
-      />
       <Route path="/tournament-settings" element={<TournamentSettings />} />
       <Route path="/game" element={<GamePage />} />
       <Route path="*" element={<RouteNotFound />} />
@@ -100,6 +102,7 @@ function captainRoutes(setToken) {
     <Routes>
       <Route exact path="/" element={<BallkidList />} />
       <Route path="/ballkid/:pk" element={<BallkidPageCaptain />} />
+      <Route path="/feedback" element={<FeedbackPage />} />
       <Route path="/finals-teams" element={<FinalsTeamsPage />} />
       <Route path="/login" element={<LoginPage setToken={setToken} />} />
       <Route path="/me" element={<MyProfile />} />
@@ -121,6 +124,7 @@ function ballkidRoutes(setToken) {
     <Routes>
       <Route exact path="/" element={<BallkidList />} />
       <Route path="/ballkid/:pk" element={<BallkidPage />} />
+      <Route path="/feedback" element={<FeedbackPage />} />
       <Route path="/finals-teams" element={<FinalsTeamsPage />} />
       <Route path="/login" element={<LoginPage setToken={setToken} />} />
       <Route path="/me" element={<MyProfile />} />

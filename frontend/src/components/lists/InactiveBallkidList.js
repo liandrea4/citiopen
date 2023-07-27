@@ -158,8 +158,9 @@ export default function InactiveBallkidList(props) {
         <Typography variant="h5" sx={MARGINS}>
           Cut Ballkids
         </Typography>
+        &ensp;
         <Typography variant="h6" sx={MARGINS}>
-          &ensp; ({filterBallkids(cut, searchKeyword, filterGroup).length})
+          ({filterBallkids(cut, searchKeyword, filterGroup).length})
         </Typography>
       </Grid>
 
@@ -174,8 +175,9 @@ export default function InactiveBallkidList(props) {
         <Typography variant="h5" sx={MARGINS}>
           Archived Ballkids
         </Typography>
+        &ensp;
         <Typography variant="h6" sx={MARGINS}>
-          &ensp; ({filterBallkids(archived, searchKeyword, filterGroup).length})
+          ({filterBallkids(archived, searchKeyword, filterGroup).length})
         </Typography>
       </Grid>
 

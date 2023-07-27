@@ -42,9 +42,9 @@ export default function BallkidList(props) {
       <div className="justify">
         <Box className="sxs" sx={{ mb: 1 }}>
           <Typography variant="h4">List by Name</Typography>
+          &ensp;
           <Typography variant="h6">
-            &ensp; (
-            {filterBallkids(ballkids, searchKeyword, filterGroup).length})
+            ({filterBallkids(ballkids, searchKeyword, filterGroup).length})
           </Typography>
           &thinsp;
           <HelpIcon

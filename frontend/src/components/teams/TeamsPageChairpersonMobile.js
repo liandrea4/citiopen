@@ -96,9 +96,9 @@ export function UnassignedMobile({
           <Typography variant="h5" sx={MARGINS}>
             Unassigned
           </Typography>
+          &ensp;
           <Typography variant="h6" sx={MARGINS}>
-            &ensp; (
-            {filterBallkids(unassigned, searchKeyword, filterGroup).length})
+            ({filterBallkids(unassigned, searchKeyword, filterGroup).length})
           </Typography>
         </div>
 

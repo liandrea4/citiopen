@@ -159,9 +159,9 @@ export default function CheckinPage(props) {
           <Typography variant="h5" sx={MARGINS}>
             Checked In
           </Typography>
+          &ensp;
           <Typography variant="h6" sx={MARGINS}>
-            &ensp; (
-            {filterBallkids(checkedIn, searchKeyword, filterGroup).length})
+            ({filterBallkids(checkedIn, searchKeyword, filterGroup).length})
           </Typography>
         </Grid>
 
@@ -183,9 +183,9 @@ export default function CheckinPage(props) {
         <Typography variant="h5" sx={MARGINS}>
           Checked Out
         </Typography>
+        &ensp;
         <Typography variant="h6" sx={MARGINS}>
-          &ensp; (
-          {filterBallkids(checkedOut, searchKeyword, filterGroup).length})
+          ({filterBallkids(checkedOut, searchKeyword, filterGroup).length})
         </Typography>
       </Grid>
 

@@ -74,9 +74,8 @@ function CutStatusSection({ section, active, setUpdated }) {
           <div className="justify">
             <div className="sxs">
               <Typography variant="h6">{section}</Typography>
-              <Typography variant="subtitle1">
-                &ensp; ({active.length})
-              </Typography>
+              &ensp;
+              <Typography variant="subtitle1">({active.length})</Typography>
             </div>
             <Button
               size="small"
@@ -223,8 +222,9 @@ function ActiveSection({ active, setUpdated }) {
         <Typography variant="h5" sx={MARGINS}>
           Active Ballkids
         </Typography>
+        &ensp;
         <Typography variant="h6" sx={MARGINS}>
-          &ensp; ({filtered.length})
+          ({filtered.length})
         </Typography>
       </div>
 

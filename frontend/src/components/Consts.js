@@ -29,7 +29,7 @@ export const ICON_DICT = {
   supervet: <Square fontSize="small" sx={{ color: "info.main" }} />,
   outOfTownRookie: <Circle fontSize="small" sx={{ color: "error.main" }} />,
   back: <EmojiPeople sx={{ color: "primary.main" }} />,
-  net: <Grid4x4 sx={{ color: "gray" }} fontSize="small" />,
+  net: <Grid4x4 fontSize="small" sx={{ color: "gray" }} />,
 };
 
 export const TOOLTIP_DICT = {

@@ -13,7 +13,7 @@ import {
   BallkidCard,
   HelpIcon,
 } from "../Utils";
-import { list } from "../HelpMessages";
+import { list, listNonchairperson } from "../HelpMessages";
 
 export default function BallkidList(props) {
   const [ballkids, setBallkids] = useState([]);
@@ -42,10 +42,15 @@ export default function BallkidList(props) {
             {filterBallkids(ballkids, searchKeyword, filterGroup).length})
           </Typography>
           &thinsp;
-          <HelpIcon page="List By Name" message={list} />
+          <HelpIcon
+            page="List By Name"
+            message={group === "chairperson" ? list : listNonchairperson}
+          />
         </Box>
+
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>
+
       {ballkids.length === 0 ? (
         <Typography>There are no ballkids to show.</Typography>
       ) : (

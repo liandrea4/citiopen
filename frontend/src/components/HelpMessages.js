@@ -15,6 +15,17 @@ export const list = (
   </DialogContentText>
 );
 
+export const listNonchairperson = (
+  <DialogContentText>
+    This page lists all active, non-cut ballkids by name.
+    <br /> <br />
+    Ballkids are in alphabetical order of (last name, first name). You can also
+    search by name and/or filter to various designations (e.g. captain,
+    chairperson, back, net). To view pictures, view the list in Grid mode (as
+    opposed to List mode).
+  </DialogContentText>
+);
+
 export const checkin = (
   <DialogContentText>
     This page allows you to check in and check out ballkids.
@@ -113,6 +124,17 @@ export const teams = (
   </DialogContentText>
 );
 
+export const teamsNonchairperson = (
+  <DialogContentText>
+    This page allows you to view current teams.
+    <br /> <br />
+    Teams that are currently on court will be highlighted green, with the
+    current court assignment listed. Teams that are not currently on court will
+    indicate their next upcoming court assignment, or "No more shifts" if they
+    do not have any more upcoming shifts.
+  </DialogContentText>
+);
+
 export const finalsTeams = (
   <DialogContentText>
     This page allows you to create finals teams and control whether or not
@@ -146,6 +168,12 @@ export const finalsTeams = (
   </DialogContentText>
 );
 
+export const finalsTeamsNonchairperson = (
+  <DialogContentText>
+    This page allows you to view finals teams.
+  </DialogContentText>
+);
+
 export const schedule = (
   <DialogContentText>
     This page displays the schedule for the selected date.
@@ -170,11 +198,23 @@ export const schedule = (
     the table; this will add or remove an hour at the end of the current
     schedule.
     <br /> <br />
+    Captain and court time analytics are based on this schedule. Try to keep it
+    accurate! Shifts are assumed to last the full hour. If a shift ends early
+    (due to a not before, no more matches, etc.), you can update the end time in
+    the Debug Page to keep analytics fully accurate.
+    <br /> <br />
     The schedule can be shifted up or down by 1 hour increments. You need to be
     in view mode (not edit mode) to be able to shift the schedule.
     <br /> <br />
     The schedule can also be deleted for the day. This enables you to recreate a
     default schedule with inputted parameters.
+  </DialogContentText>
+);
+
+export const scheduleNonchairperson = (
+  <DialogContentText>
+    This page displays the schedule for the selected date. Changing the selected
+    date automatically fetches and displays the schedule for the new date.
   </DialogContentText>
 );
 
@@ -187,6 +227,22 @@ export const rateByName = (
     whom you have already rated will be indicated by a checkmark and an outlined
     (as opposed to filled in) "Give Rating" button. The total number of ratings
     the ballkid has received (from anyone) is listed as well.
+    <br /> <br />
+    In order to only show ballkids who you have not yet rated, toggle the "Show
+    All Ballkids / Show Ballkids to Rate" toggle at the top of the page. In
+    order to only show ballkids who are on your currently assigned team, toggle
+    the "Show All Teams / Show My Team Only" toggle at the top of the page.
+  </DialogContentText>
+);
+
+export const rateByNameNonchairperson = (
+  <DialogContentText>
+    This page allows you to submit ratings for ballkids by name.
+    <br /> <br />
+    As on the List by Name page, ballkids are listed alphabetically by (last
+    name, first name). Ratings can be submitted for any ballkid, but ballkids
+    whom you have already rated will be indicated by a checkmark and an outlined
+    (as opposed to filled in) "Give Rating" button.
     <br /> <br />
     In order to only show ballkids who you have not yet rated, toggle the "Show
     All Ballkids / Show Ballkids to Rate" toggle at the top of the page. In
@@ -269,6 +325,20 @@ export const viewMyRatings = (
     <br /> <br />
     Individual ratings can be delete using the Trash icon in the "Delete"
     column. Be careful with this action as it cannot be undone.
+  </DialogContentText>
+);
+
+export const viewMyRatingsNonchairperson = (
+  <DialogContentText>
+    This page allows you to view all of YOUR submitted ratings.
+    <br /> <br />
+    Ratings are listed alphabetically by: ratee name (last name, first name),
+    followed by descending date. Only ratings given during the current year are
+    listed.
+    <br /> <br />
+    Columns in the ratings table can be filtered, sorted, and hidden. Hover over
+    the column heading, click the three-dot menu, and filter/sort/hide
+    accordingly. The table's data can also be exported.
   </DialogContentText>
 );
 

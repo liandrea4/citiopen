@@ -17,7 +17,7 @@ import {
   setLocalStorage,
   HelpIcon,
 } from "../Utils";
-import { rateByName } from "../HelpMessages";
+import { rateByName, rateByNameNonchairperson } from "../HelpMessages";
 
 function getBallkidsToRender(ballkids, showUnrated, showTeam, myTeam) {
   const pk = getLocalStorage("ballkid_id");
@@ -110,12 +110,13 @@ export default function RateByNamePage(props) {
   const [ballkids, setBallkids] = useState([]);
   const [myTeam, setMyTeam] = useState();
 
+  const isChairperson = getLocalStorage("group") === "chairperson";
+
   const [showUnrated, setShowUnrated] = useState(
     getLocalStorage("showUnrated") ?? false
   );
   const [showTeam, setShowTeam] = useState(
-    getLocalStorage("showTeam") ??
-      (getLocalStorage("group") === "chairperson" ? false : true)
+    getLocalStorage("showTeam") ?? (isChairperson ? false : true)
   );
   const [updated, setUpdated] = useState(false);
 
@@ -157,7 +158,10 @@ export default function RateByNamePage(props) {
             )
           </Typography>
           &thinsp;
-          <HelpIcon page="Rate by Name" message={rateByName} />
+          <HelpIcon
+            page="Rate by Name"
+            message={isChairperson ? rateByName : rateByNameNonchairperson}
+          />
         </Box>
         <LayoutButtons gridLayout={gridLayout} setGridLayout={setGridLayout} />
       </div>

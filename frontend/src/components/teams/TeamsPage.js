@@ -11,8 +11,11 @@ import {
   getAuthHeader,
   isCurrentHour,
   BallkidAndIcon,
+  HelpIcon,
 } from "../Utils";
 import { ON_COURT_GREEN } from "../Consts";
+import { Box } from "@mui/material";
+import { teamsNonchairperson } from "../HelpMessages";
 
 function Team({ team, assigned, nextShifts }) {
   const positions = ["Net", "Back"];
@@ -103,9 +106,12 @@ export default function TeamsPage(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Current Teams
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Current Teams</Typography>
+        &thinsp;
+        <HelpIcon page="Teams" message={teamsNonchairperson} />
+      </Box>
+
       {assigned.length > 0 && showTeams ? (
         <Grid container spacing={2}>
           {teams.map((team) => (

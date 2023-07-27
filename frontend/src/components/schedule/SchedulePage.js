@@ -9,7 +9,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { ScheduleTable } from "./ScheduleTable";
-import { getAuthHeader, getToday } from "../Utils";
+import { HelpIcon, getAuthHeader, getToday } from "../Utils";
+import { scheduleNonchairperson } from "../HelpMessages";
 
 export default function SchedulePage(props) {
   const [shifts, setShifts] = useState([]);
@@ -23,9 +24,12 @@ export default function SchedulePage(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Schedule
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Schedule</Typography>
+        &thinsp;
+        <HelpIcon page="Schedule" message={scheduleNonchairperson} />
+      </Box>
+
       <Box className="sxs" sx={{ mb: 2 }}>
         <Typography variant="body1">Showing schedule for: &thinsp;</Typography>
         <LocalizationProvider dateAdapter={AdapterLuxon}>

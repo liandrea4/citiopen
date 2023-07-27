@@ -5,13 +5,14 @@ import Box from "@mui/material/Box";
 
 import { HelpIcon, getAuthHeader, getLocalStorage } from "../Utils";
 import RatingsGrid from "./RatingsGrid";
-import { viewMyRatings } from "../HelpMessages";
+import { viewMyRatings, viewMyRatingsNonchairperson } from "../HelpMessages";
 
 export default function MyRatingsPage(props) {
   const [ratings, setRatings] = useState([]);
   const [updated, setUpdated] = useState(false);
 
   const ballkidId = getLocalStorage("ballkid_id");
+  const group = getLocalStorage("group");
 
   useEffect(() => {
     fetch(`/api/my-ratings/${ballkidId}`, { headers: getAuthHeader() })
@@ -25,7 +26,14 @@ export default function MyRatingsPage(props) {
       <Box className="sxs" sx={{ mb: 1 }}>
         <Typography variant="h4">View My Ratings</Typography>
         &thinsp;
-        <HelpIcon page="View My Ratings" message={viewMyRatings} />
+        <HelpIcon
+          page="View My Ratings"
+          message={
+            group === "chairperson"
+              ? viewMyRatings
+              : viewMyRatingsNonchairperson
+          }
+        />
       </Box>
 
       <RatingsGrid ratings={ratings} setUpdated={setUpdated} />

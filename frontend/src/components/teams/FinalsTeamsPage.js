@@ -6,8 +6,10 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
 
-import { getAuthHeader, BallkidAndIcon } from "../Utils";
+import { getAuthHeader, BallkidAndIcon, HelpIcon } from "../Utils";
 import { MATCH_TYPES } from "../Consts";
+import { Box } from "@mui/material";
+import { finalsTeamsNonchairperson } from "../HelpMessages";
 
 function Team({ team, assigned }) {
   const positions = ["Net", "Back"];
@@ -87,9 +89,12 @@ export default function FinalsTeamsPage(props) {
 
   return (
     <div className="page">
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Finals Teams
-      </Typography>
+      <Box className="sxs" sx={{ mb: 1 }}>
+        <Typography variant="h4">Finals Teams</Typography>
+        &thinsp;
+        <HelpIcon page="Finals Teams" message={finalsTeamsNonchairperson} />
+      </Box>
+
       {assigned.length > 0 && showFinalsTeams ? (
         <Grid container spacing={2}>
           {teams.map((team) => (

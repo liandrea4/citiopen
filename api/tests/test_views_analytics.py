@@ -33,16 +33,16 @@ class TestGetFinalsHistory(APITestCase):
 
     def test_mult_ballkids_mult_histories(self):
         history1 = FinalsHistory.objects.create(
-            ballkid=self.ballkid1, year=2023, match_type=MATCH_TYPE.WD
+            ballkid=self.ballkid1, match_type=MATCH_TYPE.MD, count=1, years=[2022]
         )
         history2 = FinalsHistory.objects.create(
-            ballkid=self.ballkid1, year=2022, match_type=MATCH_TYPE.MS
+            ballkid=self.ballkid1, match_type=MATCH_TYPE.MS, count=2, years=[2020, 2021]
         )
         history3 = FinalsHistory.objects.create(
-            ballkid=self.ballkid2, year=2023, match_type=MATCH_TYPE.MD
+            ballkid=self.ballkid2, match_type=MATCH_TYPE.MD, count=1, years=[2022]
         )
         history4 = FinalsHistory.objects.create(
-            ballkid=self.ballkid2, year=2020, match_type=MATCH_TYPE.WS
+            ballkid=self.ballkid2, match_type=MATCH_TYPE.WS, count=1, years=[2022]
         )
 
         response = self.client.get(
@@ -50,29 +50,6 @@ class TestGetFinalsHistory(APITestCase):
             format="json",
         )
         serializer = FinalsHistorySerializer([history1, history2], many=True)
-
-        self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertEqual(serializer.data, response.data)
-
-    def test_mult_ballkids_mult_histories_in_order(self):
-        history1 = FinalsHistory.objects.create(
-            ballkid=self.ballkid1, year=2023, match_type=MATCH_TYPE.WD
-        )
-        history2 = FinalsHistory.objects.create(
-            ballkid=self.ballkid1, year=2022, match_type=MATCH_TYPE.MS
-        )
-        history3 = FinalsHistory.objects.create(
-            ballkid=self.ballkid2, year=2018, match_type=MATCH_TYPE.MD
-        )
-        history4 = FinalsHistory.objects.create(
-            ballkid=self.ballkid2, year=2020, match_type=MATCH_TYPE.WS
-        )
-
-        response = self.client.get(
-            reverse("get-finals-history", kwargs={"pk": self.ballkid2.id}),
-            format="json",
-        )
-        serializer = FinalsHistorySerializer([history4, history3], many=True)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)

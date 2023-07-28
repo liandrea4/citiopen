@@ -162,6 +162,7 @@ debug_urls = [
     path("bulk-create-signups", BulkCreateSignups.as_view(), name="bulk-create-signups"),
     path("bulk-create-ratings", BulkCreateRatings.as_view(), name="bulk-create-ratings"),
     path("bulk-create-finals", BulkCreateFinals.as_view(), name="bulk-create-finals"),
+    path("bulk-create-cuts", BulkCreateCuts.as_view(), name="bulk-create-cuts"),
 ]
 
 urlpatterns = (

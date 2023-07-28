@@ -441,6 +441,51 @@ class BulkCreateFinals(APIView):
             {"Success": f"Bulk created {len(finals)} finals"},
             status=status.HTTP_200_OK,
         )
+    
+class BulkCreateCuts(APIView):
+    permission_classes = [IsChairperson]
+
+    def post(self, request):
+        day_to_date = {
+            'Monday' : datetime(2022, 8, 1), 
+            'Tuesday' : datetime(2022, 8, 2), 
+            'Wednesday' : datetime(2022, 8, 3), 
+            'Thursday' : datetime(2022, 8, 4), 
+            'Friday' : datetime(2022, 8, 5), 
+            'Saturday' : datetime(2022, 8, 6), 
+        }
+        
+        cuts = []
+
+        file = request.FILES["file"]
+        reader = csv.DictReader(io.StringIO(file.read().decode("utf-8")))
+
+        for line in reader:
+            first_name = line["First Name"]
+            last_name = line["Last Name"]
+            try:
+                ballkid = Ballkid.objects.get(first_name=first_name, last_name=last_name)
+            except Exception:
+                continue
+
+            day = line['Last Day']
+            if day == '': 
+                continue
+
+            cut = CutHistory(
+                ballkid=ballkid,
+                year=2022,
+                furthest_day=day,
+                furthest_date = day_to_date[day]
+            )
+            cuts.append(cut)
+
+        CutHistory.objects.bulk_create(cuts)
+
+        return Response(
+            {"Success": f"Bulk created {len(cuts)} cuts"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class DownloadData(APIView):

@@ -1300,6 +1300,7 @@ export default function DebugPage(props) {
     "Bulk Create Signups": <BulkCreation type="signups" />,
     "Bulk Create Ratings": <BulkCreation type="ratings" />,
     "Bulk Create Finals": <BulkCreation type="finals" />,
+    "Bulk Create Cuts": <BulkCreation type="cuts" />,
   };
 
   return (

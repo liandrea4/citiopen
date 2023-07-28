@@ -277,61 +277,64 @@ export function renderBallkidFinalsHistory(finals) {
       <Typography variant="h6" sx={MARGINS}>
         Previous Years' Finals:
       </Typography>
-
-      <TableContainer>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell align="center">Match Type</TableCell>
-              <TableCell align="center">Count (Since 2013)</TableCell>
-              <TableCell align="center">Year(s)</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {finals.map((final) => (
-              <TableRow key={final.id}>
-                <TableCell align="center">{final.match_type}</TableCell>
-
-                <TableCell align="center">{final.count}</TableCell>
-                <TableCell align="center">{final.years.join(", ")}</TableCell>
+      {finals.length === 0 ? (
+        <Typography>No finals history to show.</Typography>
+      ) : (
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell align="center">Match Type</TableCell>
+                <TableCell align="center">Count (Since 2013)</TableCell>
+                <TableCell align="center">Year(s)</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {finals.map((final) => (
+                <TableRow key={final.id}>
+                  <TableCell align="center">{final.match_type}</TableCell>
+
+                  <TableCell align="center">{final.count}</TableCell>
+                  <TableCell align="center">{final.years.join(", ")}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Grid>
   );
 }
 
 export function renderBallkidCutHistory(cuts) {
+  console.log(cuts);
   return (
     <Grid item xs={12} md={6.5}>
       <Typography variant="h6" sx={MARGINS}>
-        Cut History:
+        Previous Years' Cuts:
       </Typography>
-
-      <TableContainer>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell align="center">Year</TableCell>
-              <TableCell align="center">Furthest Day</TableCell>
-              <TableCell align="center">Self-cut?</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {cuts.map((cut) => (
-              <TableRow key={cut.id}>
-                <TableCell align="center">{cut.year}</TableCell>
-                <TableCell align="center">{cut.furthest_day}</TableCell>
-                <TableCell align="center">
-                  {cut.self_cut ? "Yes" : "No"}
-                </TableCell>
+      {cuts.length === 0 ? (
+        <Typography>No cut history to show.</Typography>
+      ) : (
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell align="center">Year</TableCell>
+                <TableCell align="center">Furthest Day</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {cuts.map((cut) => (
+                <TableRow key={cut.id}>
+                  <TableCell align="center">{cut.year}</TableCell>
+                  <TableCell align="center">{cut.furthest_day}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Grid>
   );
 }
@@ -986,10 +989,7 @@ export default function BallkidPageChairperson(props) {
 
     fetch(`/api/get-finals-history/${pk}`, { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => {
-        setFinals(data);
-        console.log(data);
-      });
+      .then((data) => setFinals(data));
 
     fetch(`/api/get-cut-history/${pk}`, { headers: getAuthHeader() })
       .then((response) => response.json())

@@ -37,6 +37,7 @@ import Help from "@mui/icons-material/Help";
 import RatingDialog from "./ratings/RatingDialog";
 import { END_DATE, START_DATE, ICON_DICT, TOOLTIP_DICT } from "./Consts";
 import { MenuItem, Tooltip } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton/LoadingButton";
 
 export function Icons({ ballkid, margin, isTeamsPage = false }) {
   const group = getLocalStorage("group");
@@ -379,6 +380,8 @@ export function ConfirmDialog({
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
+  const [loading, setLoading] = useState(false);
+
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
       <DialogTitle>Confirm</DialogTitle>
@@ -395,10 +398,12 @@ export function ConfirmDialog({
 
       <DialogActions>
         <Button onClick={() => setOpen(false)}>Cancel</Button>
-        <Button
+        <LoadingButton
+          loading={loading}
           variant="contained"
           color="error"
-          onClick={() =>
+          onClick={() => {
+            setLoading(true);
             fetch(url, {
               method: method,
               headers: getAuthHeader(),
@@ -414,11 +419,12 @@ export function ConfirmDialog({
               } else {
                 setErrorMsg("Error.");
               }
-            })
-          }
+              setLoading(false);
+            });
+          }}
         >
           Confirm
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );

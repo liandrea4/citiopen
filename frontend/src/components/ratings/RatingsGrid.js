@@ -18,7 +18,12 @@ import Rating from "@mui/material/Rating";
 import Delete from "@mui/icons-material/Delete";
 
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { getLocalStorage, getAuthHeader, Alerts } from "../Utils";
+import {
+  getLocalStorage,
+  getAuthHeader,
+  Alerts,
+  ConfirmDialog,
+} from "../Utils";
 
 export default function RatingsGrid({ ratings, setUpdated }) {
   const [open, setOpen] = useState(false);
@@ -316,50 +321,17 @@ export default function RatingsGrid({ ratings, setUpdated }) {
 
   return (
     <div>
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>{"Confirm Rating Deletion"}</DialogTitle>
-        <DialogContent>
-          <Alerts
-            successMsg={successMsg}
-            errorMsg={errorMsg}
-            setSuccessMsg={setSuccessMsg}
-            setErrorMsg={setErrorMsg}
-          />
-
-          <DialogContentText>
-            Deleting a rating permanently erases all content in the rating,
+      <ConfirmDialog
+        message="Deleting a rating permanently erases all content in the rating,
             including the overall score, scores in each of the rating
-            subcategories, and all comments. This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() =>
-              fetch("/api/delete-rating/" + deleteRatingId, {
-                method: "DELETE",
-                headers: getAuthHeader(),
-              }).then((response) => {
-                if (response.ok) {
-                  setSuccessMsg("Rating deleted!");
-                  setTimeout(() => {
-                    setDeleteRatingId(null);
-                    setOpen(false);
-                    setSuccessMsg("");
-                    setUpdated(true);
-                  }, 2500);
-                } else {
-                  setErrorMsg("Error deleting rating.");
-                }
-              })
-            }
-          >
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
+            subcategories, and all comments. This action cannot be undone."
+        url={`/api/delete-rating/${deleteRatingId}`}
+        body={{}}
+        open={open}
+        setOpen={setOpen}
+        setUpdated={setUpdated}
+        method="DELETE"
+      />
 
       <div style={{ height: 500 }}>
         <DataGrid

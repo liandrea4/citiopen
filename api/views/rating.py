@@ -344,10 +344,6 @@ class CreateRating(APIView):
 
             logger.info(f"[CreateRating] Created rating {rating}")
 
-            # Update calibration parameters
-            cp, _, _ = calibrate(Rating.objects.all())
-            save_calibration_parameters(cp)
-
             return Response(RatingSerializer(rating).data)
 
         logger.warning(

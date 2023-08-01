@@ -48,11 +48,17 @@ export function RatingAndLabel({ label, rating, setRating }) {
   );
 }
 
-export default function RatingDialog({ open, setOpen, ballkid, setUpdated }) {
+export default function RatingDialog({
+  open,
+  setOpen,
+  ballkid,
+  setUpdated,
+  inputDate = null,
+}) {
   const raterId = getLocalStorage("ballkid_id");
   const isMobile = useIsMobile();
 
-  const [date, setDate] = useState(getToday());
+  const [date, setDate] = useState(inputDate ?? getToday());
   const [rating, setRating] = useState(null);
   const [comments, setComments] = useState("");
   const [athleticismRating, setAthleticismRating] = useState(null);

@@ -14,11 +14,13 @@ import {
   setLocalStorage,
   HelpIcon,
   TournamentBanner,
+  getToday,
+  getDay,
 } from "../Utils";
 import { MARGINS } from "../Consts";
 import { rateByPastTeam } from "../HelpMessages";
 
-function renderBallkid(ballkid, gridLayout, setUpdated) {
+function renderBallkid(ballkid, gridLayout, setUpdated, date = null) {
   return ballkid === undefined || ballkid === null ? (
     ""
   ) : (
@@ -35,7 +37,11 @@ function renderBallkid(ballkid, gridLayout, setUpdated) {
         ballkid={ballkid}
         renderAdditional={
           <Box textAlign="center" sx={{ mt: gridLayout ? 1 : 0 }}>
-            <RatingButton ballkid={ballkid} setUpdated={setUpdated} />
+            <RatingButton
+              ballkid={ballkid}
+              setUpdated={setUpdated}
+              date={date}
+            />
           </Box>
         }
       />
@@ -115,7 +121,8 @@ export default function RateByPastTeamPage(props) {
                     (ballkid) => ballkid.id === ballkidId
                   ),
                   gridLayout,
-                  setUpdated
+                  setUpdated,
+                  getDay(date)
                 )
               )}
             </Grid>

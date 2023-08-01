@@ -127,7 +127,7 @@ export function Alerts({ successMsg, errorMsg, setSuccessMsg, setErrorMsg }) {
   );
 }
 
-export function RatingButton({ ballkid, setUpdated, isMobile }) {
+export function RatingButton({ ballkid, setUpdated, isMobile, date = null }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -137,6 +137,7 @@ export function RatingButton({ ballkid, setUpdated, isMobile }) {
         setOpen={setOpen}
         ballkid={ballkid}
         setUpdated={setUpdated}
+        inputDate={date}
       />
 
       <Button
@@ -704,6 +705,17 @@ export function getToday(format = "slash") {
   } else if (format === "hyphen") {
     return `${yyyy}-${mm}-${dd}`;
   }
+}
+
+// Returns today as a string of the format:
+// slash: [month]/[day]/[year]
+// hyphen: [year]-[month]-[day]
+// No other formats are recognized.
+export function getDay(dateStr) {
+  const date = new Date(`${dateStr.slice(5)}, 2023`);
+  const dd = String(date.getDate());
+  const mm = String(date.getMonth() + 1); //January is 0!
+  return `${mm}/${dd}/2023`;
 }
 
 export function getLocalStorage(key) {

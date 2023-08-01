@@ -457,7 +457,7 @@ class CalibratedRatings(APIView):
         postprocessed = sorted(
             postprocessed,
             key=lambda k: (
-                k["ratee_name"].split(" ")[1],
+                k["ratee_name"].split(" ")[-1],
                 k["ratee_name"].split(" ")[0],
             ),
         )

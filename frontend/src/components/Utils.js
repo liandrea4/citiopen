@@ -694,8 +694,12 @@ export function isCurrentHour(hour) {
 // slash: [month]/[day]/[year]
 // hyphen: [year]-[month]-[day]
 // No other formats are recognized.
-export function getToday(format = "slash") {
-  const today = new Date();
+export function getToday(format = "slash", isForRating = false) {
+  var today = new Date();
+  if (isForRating && today.getHours() <= 10) {
+    today.setDate(today.getDate() - 1);
+  }
+
   const dd = String(today.getDate()).padStart(2, "0");
   const mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
   const yyyy = today.getFullYear();
@@ -707,10 +711,8 @@ export function getToday(format = "slash") {
   }
 }
 
-// Returns today as a string of the format:
-// slash: [month]/[day]/[year]
-// hyphen: [year]-[month]-[day]
-// No other formats are recognized.
+// Returns date in the format: [week abbrev], [month abbrev] [day]
+//  as a string of the format: [month]/[day]/[year]
 export function getDay(dateStr) {
   const date = new Date(`${dateStr.slice(5)}, 2023`);
   const dd = String(date.getDate());

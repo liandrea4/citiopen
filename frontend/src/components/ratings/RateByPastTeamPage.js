@@ -14,7 +14,6 @@ import {
   setLocalStorage,
   HelpIcon,
   TournamentBanner,
-  getToday,
   getDay,
 } from "../Utils";
 import { MARGINS } from "../Consts";

@@ -58,7 +58,7 @@ export default function RatingDialog({
   const raterId = getLocalStorage("ballkid_id");
   const isMobile = useIsMobile();
 
-  const [date, setDate] = useState(inputDate ?? getToday());
+  const [date, setDate] = useState(inputDate ?? getToday("slash", true));
   const [rating, setRating] = useState(null);
   const [comments, setComments] = useState("");
   const [athleticismRating, setAthleticismRating] = useState(null);

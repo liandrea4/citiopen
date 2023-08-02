@@ -79,6 +79,9 @@ class Ballkid(models.Model):
     finals_position = models.CharField(
         max_length=10, choices=POSITION.choices, default=POSITION.B
     )
+    last_day = models.CharField(
+        max_length=10, choices=DAY_OF_WEEK.choices, null=True, blank=True
+    )
     checkout_comments = models.TextField(null=True, blank=True)
     schedule_comments = models.TextField(null=True, blank=True)
     comments = models.TextField(default="", blank=True)

@@ -55,24 +55,105 @@ function renderDownloadButton(setSuccessMsg, setErrorMsg) {
   );
 }
 
-function SetBanner({ tournament, setSuccessMsg, setErrorMsg }) {
-  const [disabled, setDisabled] = useState(true);
-  const [savedBanner1, setSavedBanner1] = useState(tournament.banner1);
-  const [savedBanner2, setSavedBanner2] = useState(tournament.banner2);
-  const [savedBanner3, setSavedBanner3] = useState(tournament.banner3);
-  const [banner1, setBanner1] = useState(tournament.banner1);
-  const [banner2, setBanner2] = useState(tournament.banner2);
-  const [banner3, setBanner3] = useState(tournament.banner3);
+function Banner({
+  index,
+  tournament,
+  disabled,
+  setDisabled,
+  bannerInput,
+  setSuccessMsg,
+  setErrorMsg,
+  setUpdated,
+}) {
+  const startBanner =
+    index === 1
+      ? tournament.banner1
+      : index === 2
+      ? tournament.banner2
+      : tournament.banner3;
 
-  const bannerToSetBannerDict = {
-    banner1: setBanner1,
-    banner2: setBanner2,
-    banner3: setBanner3,
-  };
+  const [banner, setBanner] = useState(startBanner);
+  const [savedBanner, setSavedBanner] = useState(startBanner);
+
+  return (
+    <Box className="sxs">
+      <TextField
+        variant="standard"
+        value={banner}
+        style={{ width: "90%" }}
+        disabled={disabled}
+        inputRef={bannerInput}
+        sx={{ mx: 2 }}
+        multiline
+        onChange={(e) => setBanner(e.target.value)}
+      />
+      <Button
+        size="small"
+        onClick={() => {
+          const bannerDict =
+            index === 1
+              ? { banner1: banner ?? "" }
+              : index === 2
+              ? { banner2: banner ?? "" }
+              : { banner3: banner ?? "" };
+
+          fetch("/api/get-tournament", {
+            method: "PATCH",
+            headers: getAuthHeader(),
+            body: JSON.stringify({
+              time: new Date().toLocaleString(),
+              ...bannerDict,
+            }),
+          }).then((response) => {
+            if (response.ok) {
+              setDisabled(true);
+              setSavedBanner(banner);
+              setSuccessMsg(
+                "Banner updated for all ballkids and captains! Refresh page to view updated banners."
+              );
+              setUpdated(true);
+            } else {
+              setErrorMsg("Error updating banner.");
+            }
+          });
+        }}
+      >
+        Publish
+      </Button>
+
+      <Button
+        size="small"
+        onClick={() => {
+          setDisabled(true);
+          setBanner(savedBanner);
+        }}
+      >
+        Cancel
+      </Button>
+    </Box>
+  );
+}
+
+function BannerSection({ setSuccessMsg, setErrorMsg }) {
+  const [tournament, setTournament] = useState();
+  const [disabled, setDisabled] = useState(true);
+  const [updated, setUpdated] = useState(false);
 
   const bannerInput = useRef(null);
 
-  return (
+  useEffect(() => {
+    fetch("/api/get-tournament", {
+      method: "GET",
+      headers: getAuthHeader(),
+    })
+      .then((response) => response.json())
+      .then((data) => setTournament(data))
+      .then(() => setUpdated(false));
+  }, [updated]);
+
+  return tournament === undefined ? (
+    ""
+  ) : (
     <Grid item xs={12} className="justify">
       <div className="sxs">
         <Typography variant="subtitle1">Site-wide banner</Typography>
@@ -88,77 +169,32 @@ function SetBanner({ tournament, setSuccessMsg, setErrorMsg }) {
           Edit
         </Button>
       </div>
-      {disabled ? (
-        <Box style={{ width: "70%" }} sx={{ ml: 2 }}>
-          {[banner1, banner2, banner3].map((banner, index) => (
-            <Typography color="gray" key={`disabled${index}`}>
-              {banner}
+
+      <Box style={{ width: "70%" }} sx={{ ml: 2 }}>
+        {[1, 2, 3].map((index) =>
+          disabled ? (
+            <Typography key={`disabled-${index}`} color="gray">
+              {index === 1
+                ? tournament.banner1
+                : index === 2
+                ? tournament.banner2
+                : tournament.banner3}
             </Typography>
-          ))}
-        </Box>
-      ) : (
-        <Box className="sxs" style={{ width: "70%" }}>
-          <Box>
-            {[banner1, banner2, banner3].map((banner, index) => (
-              <TextField
-                key={`undisabled${index}`}
-                variant="standard"
-                value={banner}
-                style={{ width: "90%" }}
-                disabled={disabled}
-                inputRef={index === 0 ? bannerInput : null}
-                sx={{ mx: 2 }}
-                multiline
-                onChange={(e) =>
-                  bannerToSetBannerDict[`banner${index + 1}`](e.target.value)
-                }
-              />
-            ))}
-          </Box>
-
-          <Button
-            size="small"
-            onClick={() =>
-              fetch("/api/get-tournament", {
-                method: "PATCH",
-                headers: getAuthHeader(),
-                body: JSON.stringify({
-                  banner1: banner1 ?? "",
-                  banner2: banner2 ?? "",
-                  banner3: banner3 ?? "",
-                }),
-              }).then((response) => {
-                if (response.ok) {
-                  setDisabled(true);
-                  setSavedBanner1(banner1);
-                  setSavedBanner2(banner2);
-                  setSavedBanner3(banner3);
-
-                  setSuccessMsg(
-                    "Banner updated for all ballkids and captains! Refresh page to view updated banner state."
-                  );
-                } else {
-                  setErrorMsg("Error updating banner.");
-                }
-              })
-            }
-          >
-            Publish
-          </Button>
-
-          <Button
-            size="small"
-            onClick={() => {
-              setDisabled(true);
-              setBanner1(savedBanner1);
-              setBanner2(savedBanner2);
-              setBanner3(savedBanner3);
-            }}
-          >
-            Cancel
-          </Button>
-        </Box>
-      )}
+          ) : (
+            <Banner
+              key={`editable-${index}`}
+              index={index}
+              tournament={tournament}
+              disabled={disabled}
+              setDisabled={setDisabled}
+              bannerInput={bannerInput}
+              setSuccessMsg={setSuccessMsg}
+              setErrorMsg={setErrorMsg}
+              setUpdated={setUpdated}
+            />
+          )
+        )}
+      </Box>
     </Grid>
   );
 }
@@ -198,7 +234,7 @@ export default function TournamentSettings(props) {
       </Box>
 
       <Grid container spacing={2} sx={{ pr: 2 }}>
-        <SetBanner
+        <BannerSection
           tournament={tournament}
           setSuccessMsg={setSuccessMsg}
           setErrorMsg={setErrorMsg}

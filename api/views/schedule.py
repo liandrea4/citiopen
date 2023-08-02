@@ -276,16 +276,25 @@ class GetTournament(APIView):
     def patch(self, request, format=None):
         tournament = Tournament.objects.get(year=2023)
 
+        if "time" in request.data:
+            timestamp = datetime.strptime(
+                request.data["time"],
+                f"{SLASH_MONTH_DAY_YEAR_FORMAT_STR}, {HOUR_MINUTE_SECOND_FORMAT_STR}",
+            )
+
         if "show_teams" in request.data:
             tournament.show_teams = request.data["show_teams"]
         if "show_finals_teams" in request.data:
             tournament.show_finals_teams = request.data["show_finals_teams"]
         if "banner1" in request.data:
             tournament.banner1 = request.data["banner1"]
+            tournament.banner1_timestamp = timestamp
         if "banner2" in request.data:
             tournament.banner2 = request.data["banner2"]
+            tournament.banner2_timestamp = timestamp
         if "banner3" in request.data:
             tournament.banner3 = request.data["banner3"]
+            tournament.banner3_timestamp = timestamp
 
         tournament.save()
 

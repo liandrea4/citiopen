@@ -212,6 +212,7 @@ export function SearchAndFilter({
 
 export function TournamentBanner() {
   const [banners, setBanners] = useState([]);
+  const [timestamps, setTimestamps] = useState([]);
   const [open1, setOpen1] = useState(true);
   const [open2, setOpen2] = useState(true);
   const [open3, setOpen3] = useState(true);
@@ -228,10 +229,22 @@ export function TournamentBanner() {
       headers: getAuthHeader(),
     })
       .then((response) => response.json())
-      .then((data) => setBanners([data.banner1, data.banner2, data.banner3]));
+      .then((data) => {
+        setBanners([data.banner1, data.banner2, data.banner3]);
+        setTimestamps([
+          data.banner1_timestamp,
+          data.banner2_timestamp,
+          data.banner3_timestamp,
+        ]);
+      });
   }, []);
 
-  return (
+  return banners === undefined ||
+    timestamps === undefined ||
+    banners === null ||
+    timestamps === null ? (
+    ""
+  ) : (
     <Box
       style={{
         position: "fixed",
@@ -253,7 +266,7 @@ export function TournamentBanner() {
               onClose={() => openSetOpenList[index][1](false)}
               sx={{ mt: 0.5 }}
             >
-              {banner}
+              {`[${dayHourToStr(timestamps[index], true)}] ${banner}`}
             </Alert>
           </Collapse>
         )
@@ -581,11 +594,20 @@ export function filterBallkids(ballkids, searchKeyword, filterGroup) {
 // Converts a time of format
 // [year]-[month]-[day]T[24hour]:[minute]:[seconds]
 // into [12hour][am/pm]
-export function dayHourToStr(day_hour) {
-  const military_hour = parseInt(day_hour.slice(11, 13));
+export function dayHourToStr(dayHour, showMinutes = false) {
+  if (dayHour === null || dayHour === undefined) {
+    return "";
+  }
+
+  const military_hour = parseInt(dayHour.slice(11, 13));
   const suffix = military_hour >= 12 ? "pm" : "am";
   const hour = ((military_hour + 11) % 12) + 1;
-  return hour + suffix;
+
+  const minutes = dayHour.slice(14, 16);
+  if (showMinutes) {
+    return `${hour}:${minutes}${suffix}`;
+  }
+  return `${hour}${suffix}`;
 }
 
 export function getDays() {

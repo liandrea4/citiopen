@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
 
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
 import Table from "@mui/material/Table";
 import TableContainer from "@mui/material/TableContainer";
 import TableBody from "@mui/material/TableBody";
@@ -16,161 +12,22 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 
-import Clear from "@mui/icons-material/Clear";
-import Dangerous from "@mui/icons-material/Dangerous";
-
 import {
   filterBallkids,
   getAuthHeader,
   SearchAndFilter,
-  ConfirmDialog,
   DraggableBallkidAndIcon,
   HelpIcon,
   Alerts,
   TournamentBanner,
 } from "../Utils";
-import { renderCopyButtons } from "./CutPageDesktop";
-import { CUT_STATUSES, MARGINS, POSITIONS } from "../Consts";
+import {
+  SelfCutCard,
+  renderCopyButtons,
+  CutStatusSection,
+} from "./CutPageDesktop";
+import { CUT_STATUSES, MARGINS } from "../Consts";
 import { cut } from "../HelpMessages";
-
-function CutStatusSection({ section, active, setUpdated }) {
-  const [open, setOpen] = useState(false);
-
-  const shouldCut = section.includes("Cut") ? true : false;
-  const cutAllStr = section.includes("Cut") ? "Cut All" : "Keep All";
-  const cutAllColor = section.includes("Cut") ? "error" : "success";
-  const cutAllVariant = section.includes("Cut") ? "contained" : "outlined";
-
-  return (
-    <Grid item xs={12} sm={6} md={4} lg={3} xl={2}>
-      <ConfirmDialog
-        message={`You are about to cut all ${active.length} ballkid${
-          active.length > 1 ? "s" : ""
-        }. This will be publicly visible to all ballkids and captains.`}
-        url={"/api/cut-all"}
-        body={{
-          cut_status: section,
-          should_cut: true,
-        }}
-        open={open}
-        setOpen={setOpen}
-        setUpdated={setUpdated}
-      />
-
-      <Card sx={{ mb: 1 }} elevation={1}>
-        <CardContent>
-          <div className="justify">
-            <div className="sxs">
-              <Typography variant="h6">{section}</Typography>
-              &ensp;
-              <Typography variant="subtitle1">({active.length})</Typography>
-            </div>
-            <Button
-              size="small"
-              color={cutAllColor}
-              variant={cutAllVariant}
-              onClick={(e) => {
-                shouldCut
-                  ? setOpen(true)
-                  : fetch("/api/cut-all", {
-                      method: "PATCH",
-                      headers: getAuthHeader(),
-                      body: JSON.stringify({
-                        cut_status: section,
-                        should_cut: shouldCut,
-                      }),
-                    })
-                      .then((response) => response.json())
-                      .then(() => setUpdated(true));
-              }}
-            >
-              {cutAllStr}
-            </Button>
-          </div>
-
-          {POSITIONS.map((position) => (
-            <div key={position}>
-              <Divider sx={{ mt: 1, mb: 1 }} />
-              <div className="sxs">
-                <Typography variant="subtitle1">{position}s</Typography>
-                <Typography variant="subtitle2" sx={{ ml: 1 }}>
-                  (
-                  {
-                    active.filter((ballkid) => ballkid.position === position)
-                      .length
-                  }
-                  )
-                </Typography>
-              </div>
-              {renderBallkidsInSection(active, section, position, setUpdated)}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </Grid>
-  );
-}
-
-function renderBallkidsInSection(active, section, position, setUpdated) {
-  return (
-    <div>
-      {active.map((ballkid) =>
-        ballkid.cut_status === section && ballkid.position === position ? (
-          <div key={`ballkid${ballkid.id}`} className="justify">
-            {<DraggableBallkidAndIcon ballkid={ballkid} />}
-            <div className="sxs">
-              {!section.includes("Cut") ? (
-                ""
-              ) : (
-                <IconButton
-                  variant="outlined"
-                  label="Cut"
-                  color="error"
-                  size="small"
-                  onClick={(e) => {
-                    fetch("/api/update-ballkid", {
-                      method: "PATCH",
-                      headers: getAuthHeader(),
-                      body: JSON.stringify({
-                        first_name: ballkid.first_name,
-                        last_name: ballkid.last_name,
-                        is_cut: true,
-                      }),
-                    })
-                      .then((response) => response.json())
-                      .then(() => setUpdated(true));
-                  }}
-                >
-                  <Dangerous />
-                </IconButton>
-              )}
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  fetch("/api/update-ballkid", {
-                    method: "PATCH",
-                    headers: getAuthHeader(),
-                    body: JSON.stringify({
-                      first_name: ballkid.first_name,
-                      last_name: ballkid.last_name,
-                      cut_status: "",
-                    }),
-                  })
-                    .then((response) => response.json())
-                    .then(() => setUpdated(true));
-                }}
-              >
-                <Clear />
-              </IconButton>
-            </div>
-          </div>
-        ) : (
-          ""
-        )
-      )}
-    </div>
-  );
-}
 
 function renderAssignCutButton(ballkid, section, setUpdated) {
   var color;
@@ -269,7 +126,7 @@ function ActiveSection({ active, sections, setUpdated }) {
   );
 }
 
-export default function CutPageMobile(props) {
+export default function CutPageMobile() {
   const [active, setActive] = useState([]);
   const [emails, setEmails] = useState([]);
 
@@ -322,6 +179,8 @@ export default function CutPageMobile(props) {
             setUpdated={setUpdated}
           />
         ))}
+
+        <SelfCutCard setUpdated={setUpdated} />
       </Grid>
 
       <SearchAndFilter

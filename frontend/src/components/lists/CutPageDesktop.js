@@ -10,8 +10,9 @@ import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
+import Tooltip from "@mui/material/Tooltip";
 
-import Clear from "@mui/icons-material/Clear";
+import RemoveCircleOutline from "@mui/icons-material/RemoveCircleOutline";
 import Dangerous from "@mui/icons-material/Dangerous";
 
 import {
@@ -27,7 +28,7 @@ import {
 import { CUT_STATUSES, MARGINS, POSITIONS } from "../Consts";
 import { cut } from "../HelpMessages";
 
-function CutStatusSection({ section, active, setUpdated }) {
+export function CutStatusSection({ section, active, setUpdated }) {
   const [open, setOpen] = useState(false);
 
   const shouldCut = section.includes("Cut") ? true : false;
@@ -113,7 +114,12 @@ function CutStatusSection({ section, active, setUpdated }) {
                   )
                 </Typography>
               </div>
-              {renderBallkidsInSection(active, section, position, setUpdated)}
+              {renderBallkidsInSection(
+                active.filter((ballkid) => ballkid.cut_status === section),
+                section,
+                position,
+                setUpdated
+              )}
             </div>
           ))}
         </CardContent>
@@ -122,57 +128,65 @@ function CutStatusSection({ section, active, setUpdated }) {
   );
 }
 
-function renderBallkidsInSection(active, section, position, setUpdated) {
+export function renderBallkidsInSection(active, section, position, setUpdated) {
   return (
     <div>
       {active.map((ballkid) =>
-        ballkid.cut_status === section && ballkid.position === position ? (
+        ballkid.position === position ? (
           <div key={`ballkid${ballkid.id}`} className="justify">
             {<DraggableBallkidAndIcon ballkid={ballkid} />}
             <div className="sxs">
+              {section === "Self-Cut" ? (
+                ""
+              ) : (
+                <Tooltip title="Uncategorize">
+                  <IconButton
+                    size="small"
+                    sx={{ p: 0.5 }}
+                    onClick={(e) => {
+                      fetch("/api/update-ballkid", {
+                        method: "PATCH",
+                        headers: getAuthHeader(),
+                        body: JSON.stringify({
+                          first_name: ballkid.first_name,
+                          last_name: ballkid.last_name,
+                          cut_status: "",
+                        }),
+                      })
+                        .then((response) => response.json())
+                        .then(() => setUpdated(true));
+                    }}
+                  >
+                    <RemoveCircleOutline color="primary" />
+                  </IconButton>
+                </Tooltip>
+              )}
+
               {!section.includes("Cut") ? (
                 ""
               ) : (
-                <IconButton
-                  variant="outlined"
-                  label="Cut"
-                  color="error"
-                  size="small"
-                  onClick={(e) => {
-                    fetch("/api/update-ballkid", {
-                      method: "PATCH",
-                      headers: getAuthHeader(),
-                      body: JSON.stringify({
-                        first_name: ballkid.first_name,
-                        last_name: ballkid.last_name,
-                        is_cut: true,
-                      }),
-                    })
-                      .then((response) => response.json())
-                      .then(() => setUpdated(true));
-                  }}
-                >
-                  <Dangerous />
-                </IconButton>
+                <Tooltip title="Cut">
+                  <IconButton
+                    size="small"
+                    sx={{ p: 0.5 }}
+                    onClick={(e) => {
+                      fetch("/api/update-ballkid", {
+                        method: "PATCH",
+                        headers: getAuthHeader(),
+                        body: JSON.stringify({
+                          first_name: ballkid.first_name,
+                          last_name: ballkid.last_name,
+                          is_cut: true,
+                        }),
+                      })
+                        .then((response) => response.json())
+                        .then(() => setUpdated(true));
+                    }}
+                  >
+                    <Dangerous color="error" />
+                  </IconButton>
+                </Tooltip>
               )}
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  fetch("/api/update-ballkid", {
-                    method: "PATCH",
-                    headers: getAuthHeader(),
-                    body: JSON.stringify({
-                      first_name: ballkid.first_name,
-                      last_name: ballkid.last_name,
-                      cut_status: "",
-                    }),
-                  })
-                    .then((response) => response.json())
-                    .then(() => setUpdated(true));
-                }}
-              >
-                <Clear />
-              </IconButton>
             </div>
           </div>
         ) : (
@@ -307,8 +321,15 @@ export function renderCopyButtons(active, emails, setSuccessMsg) {
   );
 }
 
-function SelfCutCard({ active, setUpdated }) {
+export function SelfCutCard({ setUpdated }) {
+  const [selfCut, setSelfCut] = useState([]);
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/self-cut-list", { headers: getAuthHeader() })
+      .then((response) => response.json())
+      .then((data) => setSelfCut(data));
+  }, []);
 
   const [{ isOver }, dropRef] = useDrop({
     accept: "ballkid",
@@ -329,8 +350,8 @@ function SelfCutCard({ active, setUpdated }) {
   return (
     <Grid item xs={12} sm={12} md={6} lg={6} xl={3} ref={dropRef}>
       <ConfirmDialog
-        message={`You are about to cut all ${active.length} ballkid${
-          active.length > 1 ? "s" : ""
+        message={`You are about to cut all ${selfCut.length} ballkid${
+          selfCut.length > 1 ? "s" : ""
         }. This will be publicly visible to all ballkids and captains.`}
         url={"/api/cut-all"}
         body={{
@@ -348,7 +369,7 @@ function SelfCutCard({ active, setUpdated }) {
             <div className="sxs">
               <Typography variant="h6">Self-Cut</Typography>
               &ensp;
-              <Typography variant="subtitle1">({active.length})</Typography>
+              <Typography variant="subtitle1">({selfCut.length})</Typography>
             </div>
 
             <Button
@@ -369,15 +390,15 @@ function SelfCutCard({ active, setUpdated }) {
                 <Typography variant="subtitle2" sx={{ ml: 1 }}>
                   (
                   {
-                    active.filter((ballkid) => ballkid.position === position)
+                    selfCut.filter((ballkid) => ballkid.position === position)
                       .length
                   }
                   )
                 </Typography>
               </div>
               {renderBallkidsInSection(
-                active,
-                "Possibly Cut",
+                selfCut,
+                "Self-Cut",
                 position,
                 setUpdated
               )}
@@ -407,7 +428,9 @@ export default function CutPageDesktop(props) {
 
     fetch("/api/list", { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => setBallkids(data));
+      .then((data) =>
+        setBallkids(data.filter((ballkid) => !ballkid.is_chairperson))
+      );
 
     fetch("/api/all-emails", { headers: getAuthHeader() })
       .then((response) => response.json())
@@ -457,7 +480,7 @@ export default function CutPageDesktop(props) {
               />
             ))}
 
-            {/* <SelfCutCard active={active} setUpdated={setUpdated} /> */}
+            <SelfCutCard setUpdated={setUpdated} />
           </Grid>
         </Grid>
 

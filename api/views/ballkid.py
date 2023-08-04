@@ -400,6 +400,34 @@ class AllEmailsList(APIView):
         return Response({"emails": emails}, status=status.HTTP_200_OK)
 
 
+class SelfCutList(generics.ListAPIView):
+    serializer_class = BallkidSerializer
+    permission_classes = [IsChairperson]
+
+    def get_queryset(self):
+        ballkids = Ballkid.objects.filter(is_active=True)
+        for ballkid in ballkids:
+            if ballkid.schedule_comments:
+                try:
+                    datetime.strptime(ballkid.schedule_comments.strip(), "%A")
+
+                    logger.info(
+                        f"[SelfCutList] Updating ballkid {ballkid} with last_day {ballkid.last_day} to {ballkid.schedule_comments}"
+                    )
+                    ballkid.last_day = ballkid.schedule_comments.strip()
+                    ballkid.save()
+
+                except Exception as e:
+                    logger.warn(
+                        f"[SelfCutList] Error {e} when updating ballkid {ballkid} with schedule comments {ballkid.schedule_comments}"
+                    )
+
+        current_day = datetime.strftime((datetime.now() - timedelta(hours=10)), "%A")
+        return Ballkid.objects.filter(
+            is_active=True, is_cut=False, last_day=current_day
+        ).order_by("last_name", "first_name")
+
+
 class BallkidsSortedList(generics.ListAPIView):
     serializer_class = BallkidSerializer
     permission_classes = [IsAuthenticated]

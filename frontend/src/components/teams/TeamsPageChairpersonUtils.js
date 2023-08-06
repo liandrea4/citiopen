@@ -351,7 +351,7 @@ export function Header() {
     })
       .then((response) => response.json())
       .then((data) => setTournament(data));
-  });
+  }, []);
 
   return tournament === null || tournament === undefined ? (
     ""

@@ -39,7 +39,13 @@ import Check from "@mui/icons-material/Check";
 import Help from "@mui/icons-material/Help";
 
 import RatingDialog from "./ratings/RatingDialog";
-import { END_DATE, START_DATE, ICON_DICT, TOOLTIP_DICT } from "./Consts";
+import {
+  END_DATE,
+  START_DATE,
+  ICON_DICT,
+  TOOLTIP_DICT,
+  NUM_RATINGS_WARNING_THRESHOLD,
+} from "./Consts";
 
 export function Icons({ ballkid, margin, isTeamsPage = false }) {
   const group = getLocalStorage("group");
@@ -587,10 +593,27 @@ export function CommentsText({ comments, commentType, gridLayout = false }) {
       ) : (
         <Typography
           sx={{ mx: 0.5, px: 0.5, my: 0.1 }}
-          bgcolor="orange"
+          bgcolor="lightgreen"
           variant="body2"
         >
           {comments}
+        </Typography>
+      );
+
+    case "rank":
+      console.log(comments[1]);
+      return comments.length !== 2 ? (
+        ""
+      ) : (
+        <Typography
+          sx={{ mx: 0.5, px: 0.5, my: 0.1 }}
+          bgcolor={comments[1] <= NUM_RATINGS_WARNING_THRESHOLD ? "" : "pink"}
+          color={
+            comments[1] <= NUM_RATINGS_WARNING_THRESHOLD ? "gray" : "black"
+          }
+          variant="body2"
+        >
+          {comments[0]}
         </Typography>
       );
 

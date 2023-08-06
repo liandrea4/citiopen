@@ -27,6 +27,7 @@ class BallkidSerializer(serializers.ModelSerializer):
     # Other fields
     have_rated = serializers.IntegerField(required=False)
     self_cut = serializers.BooleanField(required=False)
+    rank = serializers.IntegerField(required=False)
 
     class Meta:
         model = Ballkid

@@ -13,7 +13,7 @@ from django.db.models import (
     StdDev,
     Exists,
 )
-from django.db.models.functions import TruncDay, Coalesce
+from django.db.models.functions import TruncDay, Coalesce, DenseRank
 from django.shortcuts import get_object_or_404
 
 from api.models.ballkid import *
@@ -383,8 +383,23 @@ class AllBallkidsSortedList(generics.ListAPIView):
     permission_classes = [IsChairperson]
 
     def get_queryset(self):
-        return Ballkid.objects.filter(is_active=True, is_chairperson=False).order_by(
-            "is_captain", "num_years_experience", "last_name", "first_name"
+        return (
+            Ballkid.objects.annotate(
+                num_ratings=Count(
+                    "ratee", filter=Q(ratee__date__year=get_current_year())
+                ),
+                calibrated_avg=Coalesce(
+                    F("calibrationparams__ratee_calibrated_avg"), 0.0
+                ),
+                rank=models.Window(
+                    expression=DenseRank(),
+                    order_by=Coalesce(
+                        F("calibrationparams__ratee_calibrated_avg"), 0.0
+                    ).desc(),
+                ),
+            )
+            .filter(is_active=True, is_chairperson=False, is_cut=False)
+            .order_by("is_captain", "num_years_experience", "last_name", "first_name")
         )
 
 
@@ -393,8 +408,7 @@ class AllEmailsList(APIView):
 
     def get(self, request):
         emails = Ballkid.objects.filter(
-            is_active=True,
-            is_chairperson=False, is_cut=False
+            is_active=True, is_chairperson=False, is_cut=False
         ).values_list("user__email", flat=True)
         return Response({"emails": emails}, status=status.HTTP_200_OK)
 

@@ -142,6 +142,11 @@ export function renderBallkidsInSection(active, section, position, setUpdated) {
               <DraggableBallkidAndIcon ballkid={ballkid} />
 
               <CommentsText
+                comments={[ballkid.rank, ballkid.num_ratings]}
+                commentType={"rank"}
+              />
+
+              <CommentsText
                 comments={ballkid.num_years_experience}
                 commentType={"num_years_experience"}
               />
@@ -277,6 +282,12 @@ function ActiveSection({ active, setUpdated }) {
                 {sliced.map((ballkid) => (
                   <Grid key={ballkid.id} item sx={{ px: 1 }} className="sxs">
                     <DraggableBallkidAndIcon ballkid={ballkid} />
+
+                    <CommentsText
+                      comments={[ballkid.rank, ballkid.num_ratings]}
+                      commentType={"rank"}
+                    />
+
                     <CommentsText
                       comments={ballkid.num_years_experience}
                       commentType={"num_years_experience"}
@@ -292,7 +303,7 @@ function ActiveSection({ active, setUpdated }) {
   );
 }
 
-export function renderCopyButtons(ballkids, emails, setSuccessMsg) {
+export function renderCopyButtons(active, emails, setSuccessMsg) {
   return (
     <Box>
       <Box sx={{ my: 0.2 }}>
@@ -300,7 +311,7 @@ export function renderCopyButtons(ballkids, emails, setSuccessMsg) {
           size="small"
           variant="outlined"
           onClick={() => {
-            const names = ballkids
+            const names = active
               .filter(
                 (ballkid) =>
                   ballkid.cut_status === "Definitely Keep" ||
@@ -411,7 +422,6 @@ export function SelfCutCard({ updated, setUpdated }) {
 
 export default function CutPageDesktop(props) {
   const [active, setActive] = useState([]);
-  const [ballkids, setBallkids] = useState([]);
   const [emails, setEmails] = useState([]);
   const [updated, setUpdated] = useState(false);
 
@@ -423,13 +433,10 @@ export default function CutPageDesktop(props) {
   useEffect(() => {
     fetch("/api/all-sorted-list", { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => setActive(data.filter((ballkid) => !ballkid.is_cut)));
-
-    fetch("/api/list", { headers: getAuthHeader() })
-      .then((response) => response.json())
-      .then((data) =>
-        setBallkids(data.filter((ballkid) => !ballkid.is_chairperson))
-      );
+      .then((data) => {
+        setActive(data.filter((ballkid) => !ballkid.is_cut));
+        console.log(data);
+      });
 
     fetch("/api/all-emails", { headers: getAuthHeader() })
       .then((response) => response.json())
@@ -464,7 +471,7 @@ export default function CutPageDesktop(props) {
               <HelpIcon page="Cut" message={cut} />
             </Box>
 
-            {renderCopyButtons(ballkids, emails, setSuccessMsg)}
+            {renderCopyButtons(active, emails, setSuccessMsg)}
           </Box>
 
           <Grid container spacing={2}>

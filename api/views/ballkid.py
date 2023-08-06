@@ -353,30 +353,13 @@ class BallkidsList(generics.ListAPIView):
 
     def get_queryset(self):
         pk = self.kwargs.get("pk")
-        ballkids = Ballkid.objects.filter(is_active=True, is_cut=False).order_by(
+        ballkids = Ballkid.objects.filter(is_active=True).order_by(
             "last_name", "first_name"
         )
 
         queryset = ballkids if not pk else annotate_ratings(ballkids, pk)
         logger.info(f"[BallkidsList] pk: {pk}; ballkids: {queryset}")
         return queryset
-
-
-class AllBallkidsList(generics.ListAPIView):
-    serializer_class = BallkidSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        pk = self.kwargs.get("pk")
-
-        ballkids = Ballkid.objects.filter(is_active=True).order_by(
-            "last_name", "first_name"
-        )
-
-        queryset = ballkids if not pk else annotate_ratings(ballkids, pk)
-        logger.info(f"[AllBallkidsList] pk: {pk}; ballkids: {queryset}")
-        return queryset
-
 
 
 class AllEmailsList(APIView):

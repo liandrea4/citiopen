@@ -236,9 +236,17 @@ export default function CheckinPage(props) {
     fetch("/api/list", { headers: getAuthHeader() })
       .then((response) => response.json())
       .then((data) => {
-        setCheckedIn(data.filter((ballkid) => ballkid.is_checked_in === true));
+        setCheckedIn(
+          data.filter(
+            (ballkid) =>
+              ballkid.is_checked_in === true && ballkid.is_cut === false
+          )
+        );
         setCheckedOut(
-          data.filter((ballkid) => ballkid.is_checked_in === false)
+          data.filter(
+            (ballkid) =>
+              ballkid.is_checked_in === false && ballkid.is_cut === false
+          )
         );
       })
       .then(() => setUpdated(false));

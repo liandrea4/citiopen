@@ -63,7 +63,7 @@ export default function RateByPastTeamPage(props) {
   const pk = getLocalStorage("ballkid_id");
 
   useEffect(() => {
-    fetch("/api/all-list/" + pk, { headers: getAuthHeader() })
+    fetch("/api/list/" + pk, { headers: getAuthHeader() })
       .then((response) => response.json())
       .then((data) => {
         setBallkids(data);

@@ -31,7 +31,9 @@ export default function BallkidList(props) {
   useEffect(() => {
     fetch("/api/list", { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => setBallkids(data));
+      .then((data) =>
+        setBallkids(data.filter((ballkid) => ballkid.is_cut === false))
+      );
   }, []);
 
   return (

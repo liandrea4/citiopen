@@ -1250,7 +1250,7 @@ export default function DebugPage(props) {
   const [captains, setCaptains] = useState([]);
 
   useEffect(() => {
-    fetch("/api/all-list", { headers: getAuthHeader() })
+    fetch("/api/list", { headers: getAuthHeader() })
       .then((response) => response.json())
       .then((data) => {
         setBallkids(data);

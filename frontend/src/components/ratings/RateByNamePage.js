@@ -133,7 +133,7 @@ export default function RateByNamePage(props) {
     })
       .then((response) => response.json())
       .then((data) => {
-        setBallkids(data);
+        setBallkids(data.filter((ballkid) => ballkid.is_cut === false));
         setMyTeam(data.filter((ballkid) => ballkid.id === pk)[0]?.current_team);
       })
       .then(() => setUpdated(false));

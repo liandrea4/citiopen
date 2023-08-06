@@ -8,8 +8,6 @@ from api.views.debug import *
 ballkid_urls = [
     path("list", BallkidsList.as_view(), name="list"),
     path("list/<int:pk>", BallkidsList.as_view(), name="list-ratings"),
-    path("all-list", AllBallkidsList.as_view(), name="all-list"),
-    path("all-list/<int:pk>", AllBallkidsList.as_view(), name="all-list-ratings"),
     path("all-emails", AllEmailsList.as_view(), name="all-emails"),
     path("sorted-list", BallkidsSortedList.as_view(), name="sorted-list"),
     path(

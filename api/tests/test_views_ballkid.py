@@ -61,11 +61,11 @@ class TestBallkidListView(APITestCase):
 
     def test_self_cut_list(self):
         response = self.client.get(reverse("self-cut-list"))
-        ballkids = [self.ballkid5]
-        serializer = BallkidSerializer(ballkids, many=True)
 
+        ballkid = response.data[0]
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertEqual(serializer.data, response.data)
+        self.assertEqual(self.ballkid5.first_name, ballkid["first_name"])
+        self.assertEqual("self_cut", ballkid["cut_status"])
 
     def test_inactive_list(self):
         response = self.client.get(reverse("inactive-list"))

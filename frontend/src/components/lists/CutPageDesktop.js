@@ -282,10 +282,10 @@ function ActiveSection({ active, setUpdated }) {
                       key={sliced[0].id}
                       direction="column"
                       xs={12}
-                      sm={6}
+                      sm={12}
                       md={6}
                       lg={6}
-                      xl={4}
+                      xl={6}
                     >
                       {sliced.map((ballkid) => (
                         <Grid key={ballkid.id} item sx={{ px: 1 }}>
@@ -465,8 +465,8 @@ export default function CutPageDesktop(props) {
           item
           sm={6}
           md={7}
-          lg={8}
-          xl={9}
+          lg={7}
+          xl={8}
           style={{ maxHeight: "85vh", overflow: "auto" }}
         >
           <Box className="justify-top">
@@ -499,8 +499,8 @@ export default function CutPageDesktop(props) {
           item
           sm={6}
           md={5}
-          lg={4}
-          xl={3}
+          lg={5}
+          xl={4}
           style={{ maxHeight: "85vh", overflow: "auto" }}
         >
           <ActiveSection

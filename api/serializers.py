@@ -109,6 +109,8 @@ class RatingSerializer(serializers.ModelSerializer):
 
 
 class CalibrationParamsSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=60, required=False)
+
     class Meta:
         model = CalibrationParams
         fields = "__all__"

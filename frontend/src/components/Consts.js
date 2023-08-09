@@ -52,3 +52,15 @@ export const NUM_RATERS_WARNING_THRESHOLD = 3;
 // Note that these dates are 0-indexed!!
 export const START_DATE = new Date(2023, 6, 29);
 export const END_DATE = new Date(2023, 7, 6);
+
+export const CHART_COLORS = [
+  "#e60049",
+  "#0bb4ff",
+  "#50e991",
+  "#e6d800",
+  "#9b19f5",
+  "#ffa300",
+  "#dc0ab4",
+  "#b3d4ff",
+  "#00bfa0",
+];

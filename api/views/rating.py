@@ -501,14 +501,34 @@ class CalibratedRatings(APIView):
         return Response(RatingSerializer(postprocessed, many=True).data, status=s)
 
 
-class GetCalibrationParams(generics.RetrieveAPIView):
+class GetCalibrationParamsBallkid(generics.RetrieveAPIView):
     permission_classes = [IsChairpersonOrSelf]
     serializer_class = CalibrationParamsSerializer
 
     def get_object(self):
         pk = self.kwargs["pk"]
         params, created = CalibrationParams.objects.get_or_create(ballkid_id=pk)
-        logger.info(f"[GetCalibrationParams] params {params} for ballkid_id {pk}")
+        logger.info(f"[GetCalibrationParamsBallkid] params {params} for ballkid_id {pk}")
+        return params
+
+
+class GetCalibrationParams(generics.ListAPIView):
+    permission_classes = [IsChairperson]
+    serializer_class = CalibrationParamsSerializer
+
+    def get_queryset(self):
+        params = (
+            CalibrationParams.objects.filter(
+                Q(ballkid__is_captain=True) | Q(ballkid__is_chairperson=True)
+            )
+            .exclude(rater_offset__isnull=True, rater_scale__isnull=True)
+            .annotate(
+                name=Concat("ballkid__first_name", Value(" "), "ballkid__last_name"),
+            )
+            .order_by("ballkid__last_name", "ballkid__first_name")
+        )
+
+        logger.info(f"[GetCalibrationParams] params {params} ")
         return params
 
 

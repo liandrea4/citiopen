@@ -120,6 +120,11 @@ rating_urls = [
     path("my-ratings/<int:pk>", MyRatings.as_view(), name="my-ratings"),
     path(
         "calibration-parameters/<int:pk>",
+        GetCalibrationParamsBallkid.as_view(),
+        name="calibration-parameters-ballkid",
+    ),
+    path(
+        "calibration-parameters",
         GetCalibrationParams.as_view(),
         name="calibration-parameters",
     ),

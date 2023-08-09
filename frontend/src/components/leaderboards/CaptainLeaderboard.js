@@ -3,6 +3,12 @@ import React, { useState, useEffect } from "react";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import CircularProgress from "@mui/material/CircularProgress";
+import Select from "@mui/material/Select";
+import Box from "@mui/material/Box";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Chip from "@mui/material/Chip";
 
 import { DataGrid } from "@mui/x-data-grid";
 
@@ -12,9 +18,176 @@ import {
   TournamentBanner,
   getAuthHeader,
 } from "../Utils";
-import { Box } from "@mui/material";
 import { ratingsCaptainLeaderboard } from "../HelpMessages";
-import { DATA_GRID_HEIGHT } from "../Consts";
+import { CHART_COLORS, DATA_GRID_HEIGHT, MARGINS } from "../Consts";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Scatter } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+function RaterParamsChart() {
+  const [params, setParams] = useState();
+  const [average, setAverage] = useState();
+
+  const [selected, setSelected] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/calibration-parameters", { headers: getAuthHeader() })
+      .then((response) => response.json())
+      .then((data) => {
+        setParams(data);
+        console.log(data);
+      });
+
+    fetch("/api/average-calibration-parameters", { headers: getAuthHeader() })
+      .then((response) => response.json())
+      .then((data) => setAverage(data));
+  }, []);
+
+  const options = {
+    responsive: true,
+    showLine: true,
+    pointStyle: false,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: false,
+        text: "Rater Parameters",
+      },
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: "Raw Rating (stars)",
+        },
+        min: 0.5,
+        max: 5,
+      },
+      y: {
+        title: {
+          display: true,
+          text: "Calibrated Rating (stars)",
+        },
+        min: 0.5,
+        max: 5,
+      },
+    },
+  };
+
+  const captainData = selected.map((name, index) => {
+    const rater = params.filter((obj) => obj["name"] === name)[0];
+    const scale = rater.rater_scale;
+    const offset = rater.rater_offset;
+
+    return {
+      label: name,
+      data: [
+        { x: 0.5, y: scale * 0.5 + offset },
+        { x: 5, y: scale * 5 + offset },
+      ],
+      borderColor: CHART_COLORS[index % CHART_COLORS.length],
+      backgroundColor: `${CHART_COLORS[index % CHART_COLORS.length]}50`,
+    };
+  });
+
+  const data = {
+    datasets: [
+      ...captainData,
+      {
+        label: "Average",
+        data: [
+          {
+            x: 0.5,
+            y: average?.rater_scale__avg * 0.5 + average?.rater_offset__avg,
+          },
+          {
+            x: 5,
+            y: average?.rater_scale__avg * 5 + average?.rater_offset__avg,
+          },
+        ],
+        borderDash: [10, 5],
+        borderColor: "#000000",
+        backgroundColor: "#00000050",
+      },
+      {
+        label: "Ideal",
+        data: [
+          { x: 0.5, y: 0.5 },
+          { x: 5, y: 5 },
+        ],
+        borderDash: [4, 4],
+        borderColor: "#000000",
+        backgroundColor: "#00000050",
+      },
+    ],
+  };
+
+  return params === undefined || params === null ? (
+    ""
+  ) : (
+    <div>
+      <Typography variant="h6" sx={MARGINS}>
+        Rater Parameters Comparison Chart
+      </Typography>
+      <FormControl sx={{ mb: 2, width: 500 }}>
+        <InputLabel>Select Raters to Compare...</InputLabel>
+        <Select
+          multiple
+          variant="standard"
+          label="Select Raters to View"
+          value={selected}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSelected(typeof val === "string" ? val.split(",") : val);
+          }}
+          renderValue={(names) => (
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+              {names.map((name) => (
+                <Chip key={name} label={name} />
+              ))}
+            </Box>
+          )}
+          MenuProps={{
+            PaperProps: {
+              style: {
+                maxHeight: 48 * 4.5 + 8,
+                width: 250,
+              },
+            },
+          }}
+        >
+          {params.map((param) => (
+            <MenuItem key={param.id} value={param.name}>
+              {param.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <Scatter options={options} data={data} />;
+    </div>
+  );
+}
 
 export default function CaptainLeaderboard(props) {
   const [ballkids, setBallkids] = useState([]);
@@ -132,6 +305,8 @@ export default function CaptainLeaderboard(props) {
             </Link>
             .
           </Typography>
+
+          <RaterParamsChart />
         </div>
       )}
     </div>

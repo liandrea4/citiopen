@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import { DataGrid } from "@mui/x-data-grid";
 
@@ -17,11 +18,13 @@ import { DATA_GRID_HEIGHT } from "../Consts";
 
 export default function CaptainLeaderboard(props) {
   const [ballkids, setBallkids] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/get-captain-leaderboard", { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => setBallkids(data));
+      .then((data) => setBallkids(data))
+      .then(() => setLoading(false));
   }, []);
 
   const columns = [
@@ -107,24 +110,30 @@ export default function CaptainLeaderboard(props) {
         />
       </Box>
 
-      <div style={{ height: DATA_GRID_HEIGHT }}>
-        <DataGrid columns={columns} rows={rows} density="compact" />
-      </div>
+      {loading ? (
+        <CircularProgress className="center" size={30} />
+      ) : (
+        <div>
+          <div style={{ height: DATA_GRID_HEIGHT }}>
+            <DataGrid columns={columns} rows={rows} density="compact" />
+          </div>
 
-      <Typography variant="body1" mt={2}>
-        Note: Average is the average of all the ratings submitted (NOT received)
-        by this captain/chairperson. Likewise for standard deviation.
-        Calibration scale and offset are calculated for each rater based on
-        their ratings submitted in 2022 and 2023 by the calibration method
-        described{" "}
-        <Link
-          target="_blank"
-          href="https://github.com/jtiosue/rcal/blob/master/report/review_calibration.pdf"
-        >
-          here
-        </Link>
-        .
-      </Typography>
+          <Typography variant="body1" mt={2}>
+            Note: Average is the average of all the ratings submitted (NOT
+            received) by this captain/chairperson. Likewise for standard
+            deviation. Calibration scale and offset are calculated for each
+            rater based on their ratings submitted in 2022 and 2023 by the
+            calibration method described{" "}
+            <Link
+              target="_blank"
+              href="https://github.com/jtiosue/rcal/blob/master/report/review_calibration.pdf"
+            >
+              here
+            </Link>
+            .
+          </Typography>
+        </div>
+      )}
     </div>
   );
 }

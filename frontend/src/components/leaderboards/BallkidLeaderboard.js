@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 
 import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import { DataGrid } from "@mui/x-data-grid";
 
@@ -10,17 +12,18 @@ import {
   TournamentBanner,
   getAuthHeader,
 } from "../Utils";
-import { Box } from "@mui/material";
 import { ratingsBallkidLeaderboard } from "../HelpMessages";
 import { DATA_GRID_HEIGHT } from "../Consts";
 
 export default function BallkidLeaderboard(props) {
   const [ballkids, setBallkids] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/get-ballkid-leaderboard", { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => setBallkids(data));
+      .then((data) => setBallkids(data))
+      .then(() => setLoading(false));
   }, []);
 
   const columns = [
@@ -91,10 +94,13 @@ export default function BallkidLeaderboard(props) {
           message={ratingsBallkidLeaderboard}
         />
       </Box>
-
-      <div style={{ height: DATA_GRID_HEIGHT }}>
-        <DataGrid columns={columns} rows={rows} density="compact" />
-      </div>
+      {loading ? (
+        <CircularProgress className="center" size={30} />
+      ) : (
+        <div style={{ height: DATA_GRID_HEIGHT }}>
+          <DataGrid columns={columns} rows={rows} density="compact" />
+        </div>
+      )}
     </div>
   );
 }

@@ -530,6 +530,7 @@ export function DraggableBallkidAndIcon({ ballkid, type = "" }) {
       return base;
   }
 }
+
 export function BallkidAndIcon({ ballkid }) {
   return (
     <div className="sxs">

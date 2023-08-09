@@ -392,9 +392,9 @@ class SelfCutList(generics.ListAPIView):
         ballkids = Ballkid.objects.filter(
             is_active=True, is_cut=False, last_day=current_day
         ).order_by("last_name", "first_name")
-        
-        for ballkid in ballkids: 
-            ballkid.cut_status = 'self_cut'
+
+        for ballkid in ballkids:
+            ballkid.cut_status = "self_cut"
             ballkid.save()
 
         logger.info(

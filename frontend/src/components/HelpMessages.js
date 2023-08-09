@@ -50,20 +50,35 @@ export const cut = (
     This page allows you to categorize ballkids into various cut categories.
     <br /> <br />
     The Active Ballkids section only includes ballkids that are active this year
-    and not yet cut. The list is organized with rookies at the top of the list,
-    captains at the bottom of the list, and ascending order of years of
-    experience.
+    and not yet cut. The list is organized with captains at the top of the list,
+    rookies at the bottom of the list, and descending order of years of
+    experience. Supervets (&gt; 3 years of experience) are indicated by a blue
+    square and out-of-town rookies are indicated by a red circle.
     <br /> <br />
     The cut sections (Definitely Keep, Possibly Keep, Possibly Cut, and
     Definitely Cut) are not publicly visible to ballkids and captains and can be
-    treated as a working space.
+    treated as a working space. The last cut section (Self-Cut) is automatically
+    populated with the list of ballkids who have today indicated as their last
+    day of the tournament.
+    <br /> <br />
+    A ballkid's rank by average calibrated rating is listed in a pink highlight
+    next to their name. If the ballkid received 5 or fewer total ratings, the
+    rank is still listed but grayed out and not highlighted pink. A ballkid's
+    number of years of experience is listed too, with a green highlight.
     <br /> <br />
     In order to actually cut one or more ballkid(s) such that the cut is
     publicly visible by ballkids and captains, move the ballkid to either the
     Possibly Cut or Definitely Cut sections. From there, you can either cut the
     whole cut category (via the "Cut All" button) or cut individual ballkids
-    (via the red octogonal X icon). The gray X icon removes the ballkid from the
+    (via the red octogonal X icon). The blue - icon removes the ballkid from the
     cut section and moves them back into the Active Ballkids section.
+    <br /> <br />
+    The "Copy All Keep Ballkid Names" button copies the list of all ballkids in
+    the Definitely Keep, Possibly Keep, and Active (uncategorized) sections to
+    the clipboard. This list is copied in alphabetical order. The "Copy All
+    Ballkid Emails" button copies the list of all emails for ballkids who are
+    not yet publicly cut (inclusive of ballkids that are in the Definitely Cut
+    and Possibly Cut sections).
     <br /> <br />
     To view cut ballkids, go to the Inactive page (List &gt; Inactive).
   </DialogContentText>

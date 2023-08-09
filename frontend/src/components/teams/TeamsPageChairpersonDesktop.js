@@ -94,7 +94,11 @@ export function UnassignedDesktop({
           setSearchKeyword={setSearchKeyword}
           filterGroup={filterGroup}
           setFilterGroup={setFilterGroup}
-          filters={["rookie", "supervet", "captain", "chairperson"]}
+          filters={
+            isFinalsPage
+              ? ["rookie", "supervet", "captain"]
+              : ["rookie", "supervet", "captain", "chairperson"]
+          }
         />
         {POSITIONS.map((position) => {
           const ballkids = filterBallkids(
@@ -142,7 +146,7 @@ export function UnassignedDesktop({
                             <Grid key={ballkid.id} item sx={{ px: 1 }}>
                               <DraggableBallkidAndIcon
                                 ballkid={ballkid}
-                                type={isFinalsPage ? "rank" : "checkout"}
+                                type={isFinalsPage ? "rank" : "checkout-teams"}
                               />
                             </Grid>
                           ))}

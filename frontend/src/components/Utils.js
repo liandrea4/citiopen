@@ -500,12 +500,13 @@ export function DraggableBallkidAndIcon({ ballkid, type = "" }) {
       return base;
 
     case "checkout":
+    case "checkout-teams":
       return (
         <div className="sxs">
           {base}
           <CommentsText
             comments={ballkid.checkout_comments}
-            commentType={"checkout"}
+            commentType={type}
           />
         </div>
       );
@@ -607,6 +608,19 @@ export function HelpIcon({ page, message }) {
 
 export function CommentsText({ comments, commentType, gridLayout = false }) {
   switch (commentType) {
+    case "checkout-teams":
+      return comments === "End" ? (
+        ""
+      ) : (
+        <Typography
+          sx={{ mx: 0.5, px: 0.5, my: gridLayout ? 1 : 0 }}
+          bgcolor="orange"
+          variant="body2"
+        >
+          {comments}
+        </Typography>
+      );
+
     case "checkout":
       return (
         <Typography

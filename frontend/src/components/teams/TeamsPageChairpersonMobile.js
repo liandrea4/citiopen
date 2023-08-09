@@ -114,7 +114,18 @@ export function UnassignedMobile({
             setSearchKeyword={setSearchKeyword}
             filterGroup={filterGroup}
             setFilterGroup={setFilterGroup}
-            filters={["rookie", "supervet", "captain", "chairperson"]}
+            filters={
+              isFinalsPage
+                ? ["rookie", "supervet", "captain", "back", "net"]
+                : [
+                    "rookie",
+                    "supervet",
+                    "captain",
+                    "chairperson",
+                    "back",
+                    "net",
+                  ]
+            }
           />
 
           <TableContainer component={Paper} elevation={1}>
@@ -133,7 +144,7 @@ export function UnassignedMobile({
                       <TableCell component="th" scope="row">
                         <DraggableBallkidAndIcon
                           ballkid={ballkid}
-                          type={isFinalsPage ? "rank" : "checkout"}
+                          type={isFinalsPage ? "rank" : "checkout-teams"}
                         />
                       </TableCell>
                       <TableCell>{ballkid.preferred_position}</TableCell>

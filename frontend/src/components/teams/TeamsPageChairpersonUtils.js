@@ -113,7 +113,7 @@ function renderBallkidsOnTeam(ballkids, setUpdated) {
     <div>
       {ballkids.map((ballkid) => (
         <div key={`ballkid${ballkid.id}`} className="justify">
-          <DraggableBallkidAndIcon ballkid={ballkid} type={"checkout"} />
+          <DraggableBallkidAndIcon ballkid={ballkid} type={"checkout-teams"} />
 
           <div className="sxs">
             {!ballkid.preferred_position.includes("/")

@@ -247,6 +247,7 @@ function ActiveSection({ active, setUpdated }) {
         setSearchKeyword={setSearchKeyword}
         filterGroup={filterGroup}
         setFilterGroup={setFilterGroup}
+        filters={["rookie", "supervet", "captain", "back", "net"]}
       />
 
       {active.length === 0 ? (

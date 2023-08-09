@@ -191,6 +191,7 @@ export default function CutPageMobile() {
         setSearchKeyword={setSearchKeyword}
         filterGroup={filterGroup}
         setFilterGroup={setFilterGroup}
+        filters={["rookie", "supervet", "captain", "back", "net"]}
       />
 
       <ActiveSection

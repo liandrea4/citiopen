@@ -28,6 +28,8 @@ import Tab from "@mui/material/Tab";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Tooltip from "@mui/material/Tooltip";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 import LoadingButton from "@mui/lab/LoadingButton/LoadingButton";
 
@@ -76,30 +78,27 @@ export function Icons({ ballkid, margin, isTeamsPage = false }) {
   );
 }
 
-export function LayoutButtons({ gridLayout, setGridLayout }) {
+export function LayoutButtons({ layout, setLayout }) {
   return (
-    <div sx={{ mb: 1 }}>
-      {[true, false].map((isGridButton) => (
-        <Tooltip
-          title={isGridButton ? "Grid View" : "List View"}
-          key={isGridButton}
-        >
-          <IconButton
-            size="small"
-            style={{
-              borderRadius: 0,
-              background: isGridButton === gridLayout ? "lightgray" : "",
-            }}
-            onClick={(e) => {
-              setGridLayout(isGridButton);
-              setLocalStorage("gridLayout", isGridButton);
-            }}
-          >
-            {isGridButton ? <GridView /> : <List />}
-          </IconButton>
-        </Tooltip>
+    <ToggleButtonGroup
+      value={layout}
+      size="small"
+      exclusive
+      onChange={(e, newVal) => {
+        if (newVal !== null) {
+          setLayout(newVal);
+          setLocalStorage("layout", newVal);
+        }
+      }}
+    >
+      {["grid", "list"].map((layoutStr) => (
+        <ToggleButton key={layoutStr} value={layoutStr}>
+          <Tooltip title={layoutStr === "grid" ? "Grid View" : "List View"}>
+            {layoutStr === "grid" ? <GridView /> : <List />}
+          </Tooltip>
+        </ToggleButton>
       ))}
-    </div>
+    </ToggleButtonGroup>
   );
 }
 
@@ -552,7 +551,7 @@ export function BallkidAndIcon({ ballkid }) {
 }
 
 export function BallkidCard({ ballkid, renderAdditional }) {
-  const gridLayout = getLocalStorage("gridLayout");
+  const layout = getLocalStorage("layout");
 
   return (
     <Card>
@@ -564,7 +563,7 @@ export function BallkidCard({ ballkid, renderAdditional }) {
             : `/ballkid/${ballkid.id}`
         }
       >
-        {!gridLayout ? (
+        {layout === "list" ? (
           ""
         ) : (
           <AspectRatio ratio="1/1">
@@ -572,8 +571,8 @@ export function BallkidCard({ ballkid, renderAdditional }) {
           </AspectRatio>
         )}
         <CardContent>
-          <div className={gridLayout ? "" : "justify"}>
-            <div className={gridLayout ? "justify" : "sxs"}>
+          <div className={layout === "grid" ? "" : "justify"}>
+            <div className={layout === "grid" ? "justify" : "sxs"}>
               <Typography variant="subtitle1" sx={{ fontWeight: "medium" }}>
                 {ballkid.first_name} {ballkid.last_name}
               </Typography>

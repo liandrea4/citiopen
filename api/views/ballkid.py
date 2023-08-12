@@ -945,7 +945,8 @@ class BannerList(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Banner.objects.order_by("timestamp")
+        banners = Banner.objects.order_by("timestamp")
+        return banners
 
 
 class UpdateBanner(APIView):
@@ -953,7 +954,31 @@ class UpdateBanner(APIView):
     permission_classes = [IsChairperson]
 
     def post(self, request, format=None):
-        pass
+        timestamp = datetime.strptime(
+            request.data["time"],
+            f"{SLASH_MONTH_DAY_YEAR_FORMAT_STR}, {HOUR_MINUTE_SECOND_FORMAT_STR}",
+        )
+
+        banner = Banner.objects.create(
+            message=request.data["message"], timestamp=timestamp
+        )
+        logger.info(
+            f"[UpdateBanner] Created banner {banner} given request {request.data}"
+        )
+        return Response({"Success": f"Created banner"}, status=status.HTTP_200_OK)
 
     def patch(self, request, format=None):
-        pass
+        timestamp = datetime.strptime(
+            request.data["time"],
+            f"{SLASH_MONTH_DAY_YEAR_FORMAT_STR}, {HOUR_MINUTE_SECOND_FORMAT_STR}",
+        )
+
+        banner = Banner.objects.get(id=request.data["id"])
+        banner.message = request.data["message"]
+        banner.timestamp = timestamp
+        banner.save()
+
+        logger.info(
+            f"[UpdateBanner] Banner updated {banner} given request {request.data}"
+        )
+        return Response({"Success": f"Updated banner"}, status=status.HTTP_200_OK)

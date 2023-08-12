@@ -67,56 +67,49 @@ function DownloadButton({ setSuccessMsg, setErrorMsg }) {
 }
 
 function Banner({
-  index,
-  tournament,
+  banner,
   disabled,
   setDisabled,
   bannerInput,
   setSuccessMsg,
   setErrorMsg,
   setUpdated,
+  newBanner = false,
 }) {
-  const startBanner =
-    index === 1
-      ? tournament.banner1
-      : index === 2
-      ? tournament.banner2
-      : tournament.banner3;
+  const [bannerMessage, setBannerMessage] = useState(
+    newBanner ? "" : banner.message
+  );
 
-  const [banner, setBanner] = useState(startBanner);
-
-  return (
+  return disabled ? (
+    <Typography color="gray">{banner.message}</Typography>
+  ) : (
     <Box className="sxs">
       <TextField
         variant="standard"
-        value={banner}
+        value={bannerMessage}
         style={{ width: "90%" }}
         disabled={disabled}
-        inputRef={bannerInput}
+        inputRef={newBanner ? bannerInput : undefined}
         sx={{ mx: 2 }}
         multiline
-        onChange={(e) => setBanner(e.target.value)}
+        onChange={(e) => setBannerMessage(e.target.value)}
       />
       <Button
         size="small"
-        onClick={() => {
-          const bannerDict =
-            index === 1
-              ? { banner1: banner ?? "" }
-              : index === 2
-              ? { banner2: banner ?? "" }
-              : { banner3: banner ?? "" };
-
-          fetch("/api/get-tournament", {
-            method: "PATCH",
+        disabled={banner.message === bannerMessage}
+        onClick={() =>
+          fetch("/api/update-banner", {
+            method: newBanner ? "POST" : "PATCH",
             headers: getAuthHeader(),
             body: JSON.stringify({
+              id: newBanner ? 0 : banner.id,
               time: new Date().toLocaleString(),
-              ...bannerDict,
+              message: bannerMessage,
             }),
           }).then((response) => {
             if (response.ok) {
               setDisabled(true);
+              setBannerMessage("");
               setUpdated(true);
 
               setSuccessMsg(
@@ -125,38 +118,36 @@ function Banner({
             } else {
               setErrorMsg("Error updating banner.");
             }
-          });
-        }}
+          })
+        }
       >
-        Publish
+        {newBanner ? "Publish" : "Update"}
       </Button>
     </Box>
   );
 }
 
 function BannerSection({ setSuccessMsg, setErrorMsg }) {
-  const [tournament, setTournament] = useState();
+  const [banners, setBanners] = useState([]);
   const [disabled, setDisabled] = useState(true);
   const [updated, setUpdated] = useState(false);
 
   const bannerInput = useRef(null);
 
   useEffect(() => {
-    fetch("/api/get-tournament", {
+    fetch("/api/banner-list", {
       method: "GET",
       headers: getAuthHeader(),
     })
       .then((response) => response.json())
-      .then((data) => setTournament(data))
+      .then((data) => setBanners(data))
       .then(() => setUpdated(false));
   }, [updated]);
 
-  return tournament === undefined ? (
-    ""
-  ) : (
+  return (
     <Grid item xs={12} className="justify">
       <div className="sxs">
-        <Typography variant="subtitle1">Site-wide banner</Typography>
+        <Typography variant="subtitle1">Site-wide banner(s)</Typography>
         <Button
           size="small"
           disabled={!disabled}
@@ -171,29 +162,29 @@ function BannerSection({ setSuccessMsg, setErrorMsg }) {
       </div>
 
       <Box style={{ width: "75%" }} sx={{ ml: 2 }}>
-        {[1, 2, 3].map((index) =>
-          disabled ? (
-            <Typography key={`disabled-${index}`} color="gray">
-              {index === 1
-                ? tournament.banner1
-                : index === 2
-                ? tournament.banner2
-                : tournament.banner3}
-            </Typography>
-          ) : (
-            <Banner
-              key={`editable-${index}`}
-              index={index}
-              tournament={tournament}
-              disabled={disabled}
-              setDisabled={setDisabled}
-              bannerInput={bannerInput}
-              setSuccessMsg={setSuccessMsg}
-              setErrorMsg={setErrorMsg}
-              setUpdated={setUpdated}
-            />
-          )
-        )}
+        {banners.map((banner, index) => (
+          <Banner
+            key={index}
+            banner={banner}
+            disabled={disabled}
+            setDisabled={setDisabled}
+            bannerInput={bannerInput}
+            setSuccessMsg={setSuccessMsg}
+            setErrorMsg={setErrorMsg}
+            setUpdated={setUpdated}
+          />
+        ))}
+
+        <Banner
+          banner={{}}
+          disabled={disabled}
+          setDisabled={setDisabled}
+          bannerInput={bannerInput}
+          setSuccessMsg={setSuccessMsg}
+          setErrorMsg={setErrorMsg}
+          setUpdated={setUpdated}
+          newBanner={true}
+        />
       </Box>
       {disabled ? (
         ""

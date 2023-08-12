@@ -229,7 +229,7 @@ function Banner({ banner }) {
         onClose={() => setOpen(false)}
         sx={{ mt: 0.5 }}
       >
-        {`${banner.content} [Last Updated: ${dayHourToStr(
+        {`${banner.message} [Last Updated: ${dayHourToStr(
           banner.timestamp,
           true
         )}]`}

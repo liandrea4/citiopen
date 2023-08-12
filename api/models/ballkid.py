@@ -738,6 +738,9 @@ class CourtAnalytics(models.Model):
 
 class Banner(models.Model):
     timestamp = models.DateTimeField(blank=True, null=True)
-    content = models.TextField(default="", blank=True)
+    message = models.TextField()
     audience = models.CharField(default="all", max_length=20, blank=True, null=True)
     ballkid = models.ForeignKey(Ballkid, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return f"Banner for ({self.audience}, ballkid {self.ballkid}) with message {self.message} at {self.timestamp}"

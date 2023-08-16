@@ -1,5 +1,5 @@
 ARG PYTHON_VERSION=3.10-buster
-ARG ssh_key
+ARG SSH_KEY
 
 FROM python:${PYTHON_VERSION}
 
@@ -24,7 +24,7 @@ RUN set -ex && \
 
 RUN mkdir -p /root/.ssh && \
     chmod 0700 /root/.ssh && \
-    echo "$ssh_key" > /root/.ssh/id_rsa && \
+    echo "$SSH_KEY" > /root/.ssh/id_rsa && \
     chmod 600 /root/.ssh/id_rsa
 RUN eval `ssh-agent` && \
     ssh-add /root/.ssh/id_rsa && \

@@ -21,7 +21,8 @@ RUN set -ex && \
     pip install -r /tmp/requirements.txt && \
     rm -rf /root/.cache/ 
 
-RUN pip install rcal/ 
+COPY rcal/ /tmp/rcal
+RUN pip install /tmp/rcal
 
 COPY . /code/
 

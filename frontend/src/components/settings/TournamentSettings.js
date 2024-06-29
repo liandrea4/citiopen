@@ -380,24 +380,14 @@ function RemoveOutliers({ tournament, setSuccessMsg, setErrorMsg }) {
   );
 }
 
-function CreateTournament({ setUpdated }) {
+function CreateTournament({ setUpdated, setSuccessMsg, setErrorMsg }) {
   const [year, setYear] = useState(new Date().getFullYear());
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
 
-  const [successMsg, setSuccessMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Alerts
-          successMsg={successMsg}
-          errorMsg={errorMsg}
-          setSuccessMsg={setSuccessMsg}
-          setErrorMsg={setErrorMsg}
-        />
-      </Grid>
+      <Grid item xs={12}></Grid>
       <Grid item xs={12}>
         <Typography>No tournament currently exists for this year.</Typography>
       </Grid>
@@ -466,8 +456,10 @@ function CreateTournament({ setUpdated }) {
               }).then((response) => {
                 if (response.ok) {
                   setSuccessMsg("Tournament created!");
+                  setErrorMsg("");
                   setTimeout(() => setUpdated(true), 1000);
                 } else {
+                  setSuccessMsg("");
                   setErrorMsg("Error creating tournament.");
                 }
                 setYear("");
@@ -521,7 +513,11 @@ export default function TournamentSettings(props) {
       </Box>
 
       {tournament.year === null ? (
-        <CreateTournament setUpdated={setUpdated} />
+        <CreateTournament
+          setUpdated={setUpdated}
+          setSuccessMsg={setSuccessMsg}
+          setErrorMsg={setErrorMsg}
+        />
       ) : (
         <Grid container spacing={2} sx={{ pr: 2 }}>
           <BannerSection

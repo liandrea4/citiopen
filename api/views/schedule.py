@@ -271,7 +271,6 @@ class GetTournament(APIView):
     permission_classes = [IsChairpersonOrAuthenticatedReadOnly]
 
     def post(self, request, format=None):
-        print(request.data)
         start = datetime.strptime(
             request.data["start"], T_YEAR_MONTH_DAY_Z_FORMAT_STR
         ).date()

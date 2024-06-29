@@ -76,6 +76,36 @@ function DownloadButton({ setSuccessMsg, setErrorMsg }) {
   );
 }
 
+function ArchiveButton({ setSuccessMsg, setErrorMsg }) {
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <LoadingButton
+      loading={loading}
+      variant="contained"
+      size="small"
+      color="error"
+      onClick={() => {
+        setLoading(true);
+        fetch("/api/archive-all", {
+          method: "PATCH",
+          headers: getAuthHeader(),
+        })
+          .then((response) => {
+            if (response.ok) {
+              setSuccessMsg("Archived all ballkids!");
+            } else {
+              setErrorMsg("Error archiving ballkids.");
+            }
+          })
+          .then(() => setLoading(false));
+      }}
+    >
+      Archive All
+    </LoadingButton>
+  );
+}
+
 function Banner({
   banner,
   bannerInput,
@@ -573,6 +603,14 @@ export default function TournamentSettings(props) {
               Export all data from database
             </Typography>
             <DownloadButton
+              setSuccessMsg={setSuccessMsg}
+              setErrorMsg={setErrorMsg}
+            />
+          </Grid>
+
+          <Grid item xs={12} className="justify">
+            <Typography variant="subtitle1">Archive all ballkids</Typography>
+            <ArchiveButton
               setSuccessMsg={setSuccessMsg}
               setErrorMsg={setErrorMsg}
             />

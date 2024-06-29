@@ -18,11 +18,14 @@ ballkid_urls = [
     path("create-ballkid", CreateBallkid.as_view(), name="create-ballkid"),
     path("get-ballkid/<int:pk>", GetBallkid.as_view(), name="get-ballkid"),
     path(
-        "get-ballkid/<int:pk>/<int:me>", GetBallkid.as_view(), name="get-ballkid-ratings"
+        "get-ballkid/<int:pk>/<int:me>",
+        GetBallkid.as_view(),
+        name="get-ballkid-ratings",
     ),
     path("update-ballkid", UpdateBallkid.as_view(), name="update-ballkid"),
     path("checkout-all", CheckoutAll.as_view(), name="checkout-all"),
     path("cut-all", CutAll.as_view(), name="cut-all"),
+    path("archive-all", ArchiveAll.as_view(), name="archive-all"),
     path("calc-num-teams", CalcNumTeams.as_view(), name="calc-num-teams"),
     path("clear-team", ClearTeam.as_view(), name="clear-team"),
 ]
@@ -145,7 +148,9 @@ debug_urls = [
         CreateCheckinHistory.as_view(),
         name="create-checkin-history",
     ),
-    path("create-team-history", CreateTeamHistory.as_view(), name="create-team-history"),
+    path(
+        "create-team-history", CreateTeamHistory.as_view(), name="create-team-history"
+    ),
     path(
         "create-captain-history",
         CreateCaptainHistory.as_view(),
@@ -163,10 +168,16 @@ debug_urls = [
     ),
     path("bulk-create-users", BulkCreateUsers.as_view(), name="bulk-create-users"),
     path(
-        "bulk-create-ballkids", BulkCreateBallkids.as_view(), name="bulk-create-ballkids"
+        "bulk-create-ballkids",
+        BulkCreateBallkids.as_view(),
+        name="bulk-create-ballkids",
     ),
-    path("bulk-create-signups", BulkCreateSignups.as_view(), name="bulk-create-signups"),
-    path("bulk-create-ratings", BulkCreateRatings.as_view(), name="bulk-create-ratings"),
+    path(
+        "bulk-create-signups", BulkCreateSignups.as_view(), name="bulk-create-signups"
+    ),
+    path(
+        "bulk-create-ratings", BulkCreateRatings.as_view(), name="bulk-create-ratings"
+    ),
     path("bulk-create-finals", BulkCreateFinals.as_view(), name="bulk-create-finals"),
     path("bulk-create-cuts", BulkCreateCuts.as_view(), name="bulk-create-cuts"),
 ]

@@ -167,7 +167,9 @@ def recalc_court_analytics(ballkid=None, now=None):
 
     CourtAnalytics.objects.bulk_create(
         [
-            CourtAnalytics(ballkid_id=key[0], court=key[1], count=val[0], duration=val[1])
+            CourtAnalytics(
+                ballkid_id=key[0], court=key[1], count=val[0], duration=val[1]
+            )
             for key, val in analytics.items()
         ],
         update_conflicts=True,
@@ -257,7 +259,10 @@ def recalc_captain_analytics(ballkid, now=None):
                 analytic, created = CaptainAnalytics.objects.update_or_create(
                     ballkid_id=other_id,
                     captain=ballkid,
-                    defaults={"duration": durations[other_id], "count": counts[other_id]},
+                    defaults={
+                        "duration": durations[other_id],
+                        "count": counts[other_id],
+                    },
                 )
                 logger.info(
                     f"[recalc-captain-analytics] For (ballkid {other_id}, captain {ballkid.id}), created {created} analytic {analytic}"
@@ -266,7 +271,10 @@ def recalc_captain_analytics(ballkid, now=None):
                 analytic, created = CaptainAnalytics.objects.update_or_create(
                     ballkid=ballkid,
                     captain_id=other_id,
-                    defaults={"duration": durations[other_id], "count": counts[other_id]},
+                    defaults={
+                        "duration": durations[other_id],
+                        "count": counts[other_id],
+                    },
                 )
                 logger.info(
                     f"[recalc-captain-analytics] For (ballkid {ballkid.id}, captain {other_id}), created {created} analytic {analytic}"
@@ -627,6 +635,24 @@ class CutAll(APIView):
         )
 
 
+class ArchiveAll(APIView):
+    permission_classes = [IsChairperson]
+
+    def patch(self, request, format=None):
+        queryset = Ballkid.objects.filter(is_active=True)
+        logger.info(f"[ArchiveAll] archiving all active ballkids: {queryset}")
+
+        for ballkid in queryset:
+            ballkid.set_field("is_active", False)
+            ballkid.validate()
+            ballkid.save()
+
+        return Response(
+            {"Success": "All ballkids archived"},
+            status=status.HTTP_200_OK,
+        )
+
+
 class CalcNumTeams(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -870,7 +896,8 @@ class GetRatingsCaptainLeaderboard(generics.ListAPIView):
                     Avg("rater__rating", filter=Q(rater__date__year=current_year)), 0.0
                 ),
                 raw_stdev=Coalesce(
-                    StdDev("rater__rating", filter=Q(rater__date__year=current_year)), 0.0
+                    StdDev("rater__rating", filter=Q(rater__date__year=current_year)),
+                    0.0,
                 ),
                 scale=F("calibrationparams__rater_scale"),
                 offset=F("calibrationparams__rater_offset"),
@@ -894,7 +921,8 @@ class GetRatingsBallkidLeaderboard(generics.ListAPIView):
                     Avg("ratee__rating", filter=Q(ratee__date__year=current_year)), 0.0
                 ),
                 raw_stdev=Coalesce(
-                    StdDev("ratee__rating", filter=Q(ratee__date__year=current_year)), 0.0
+                    StdDev("ratee__rating", filter=Q(ratee__date__year=current_year)),
+                    0.0,
                 ),
                 calibrated_avg=Coalesce(
                     F("calibrationparams__ratee_calibrated_avg"), 0.0
@@ -947,7 +975,9 @@ class BannerList(generics.ListAPIView):
 
     def get_queryset(self):
         banners = Banner.objects.annotate(
-            ballkid_name=Concat("ballkid__first_name", Value(" "), "ballkid__last_name"),
+            ballkid_name=Concat(
+                "ballkid__first_name", Value(" "), "ballkid__last_name"
+            ),
         ).order_by("timestamp")
         return banners
 

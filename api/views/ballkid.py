@@ -46,6 +46,7 @@ def recalc_checkin_analytics(ballkid=None, now=None):
 
     if now is None:
         now = datetime.now()
+    current_year = now.year
 
     # If not updating a specific ballkid, get all histories and create analytics for
     # all active ballkids
@@ -90,11 +91,13 @@ def recalc_checkin_analytics(ballkid=None, now=None):
 
     CheckinAnalytics.objects.bulk_create(
         [
-            CheckinAnalytics(ballkid_id=key, count=len(val[0]), duration=val[1])
+            CheckinAnalytics(
+                ballkid_id=key, count=len(val[0]), duration=val[1], year=current_year
+            )
             for key, val in analytics.items()
         ],
         update_conflicts=True,
-        unique_fields=["ballkid_id"],
+        unique_fields=["ballkid_id", "year"],
         update_fields=["count", "duration"],
     )
     logger.info(f"[recalc-checkin-analytics] Completed bulk create")
@@ -105,6 +108,7 @@ def recalc_court_analytics(ballkid=None, now=None):
 
     if now is None:
         now = datetime.now()
+    current_year = now.year
 
     # If not updating a specific ballkid, get all histories and create analytics for
     # all active ballkids
@@ -168,12 +172,16 @@ def recalc_court_analytics(ballkid=None, now=None):
     CourtAnalytics.objects.bulk_create(
         [
             CourtAnalytics(
-                ballkid_id=key[0], court=key[1], count=val[0], duration=val[1]
+                ballkid_id=key[0],
+                court=key[1],
+                count=val[0],
+                duration=val[1],
+                year=current_year,
             )
             for key, val in analytics.items()
         ],
         update_conflicts=True,
-        unique_fields=["ballkid_id", "court"],
+        unique_fields=["ballkid_id", "court", "year"],
         update_fields=["count", "duration"],
     )
     logger.info(f"[recalc-court-analytics] Completed bulk create")
@@ -192,6 +200,7 @@ def recalc_captain_analytics(ballkid, now=None):
 
     if now is None:
         now = datetime.now()
+    current_year = now.year
 
     for updateAsCaptain in [True, False]:
         # If ballkid is not a captain, then don't update as captain
@@ -259,6 +268,7 @@ def recalc_captain_analytics(ballkid, now=None):
                 analytic, created = CaptainAnalytics.objects.update_or_create(
                     ballkid_id=other_id,
                     captain=ballkid,
+                    year=current_year,
                     defaults={
                         "duration": durations[other_id],
                         "count": counts[other_id],
@@ -271,6 +281,7 @@ def recalc_captain_analytics(ballkid, now=None):
                 analytic, created = CaptainAnalytics.objects.update_or_create(
                     ballkid=ballkid,
                     captain_id=other_id,
+                    year=current_year,
                     defaults={
                         "duration": durations[other_id],
                         "count": counts[other_id],
@@ -840,11 +851,11 @@ class GetCheckinLeaderboard(generics.ListAPIView):
             .annotate(
                 checkin_duration=F(
                     "checkinanalytics__duration",
-                    filter=Q(checkinanalytics__year=current_year),
+                    # filter=Q(checkinanalytics__year=current_year),
                 ),
                 checkin_days=F(
                     "checkinanalytics__count",
-                    filter=Q(checkinanalytics__year=current_year),
+                    # filter=Q(checkinanalytics__year=current_year),
                 ),
                 avg_checkin_time=Avg(
                     Case(

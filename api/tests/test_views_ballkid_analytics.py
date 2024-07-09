@@ -42,7 +42,9 @@ class TestBallkidViewAnalytics(TestCase):
             start=datetime(2022, 1, 1, 10, 30),
             end=datetime(2022, 1, 1, 14, 29),
         )
-        CheckinAnalytics.objects.create(ballkid=self.ballkid, duration=timedelta())
+        CheckinAnalytics.objects.create(
+            ballkid=self.ballkid, duration=timedelta(), year=datetime.now().year
+        )
         recalc_checkin_analytics(ballkid=self.ballkid)
 
         analytics = CheckinAnalytics.objects.all()
@@ -117,13 +119,17 @@ class TestBallkidViewAnalytics(TestCase):
         analytics = CheckinAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
         analytic = analytics.first()
-        self.assertEqual(timedelta(hours=8, seconds=1, microseconds=1), analytic.duration)
+        self.assertEqual(
+            timedelta(hours=8, seconds=1, microseconds=1), analytic.duration
+        )
 
     def test_recalc_checkin_analytics_empty_end(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid, start=datetime(2022, 1, 1, 16, 30, 2)
         )
-        recalc_checkin_analytics(ballkid=self.ballkid, now=datetime(2022, 1, 2, 0, 30, 3))
+        recalc_checkin_analytics(
+            ballkid=self.ballkid, now=datetime(2022, 1, 2, 0, 30, 3)
+        )
 
         analytics = CheckinAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -178,7 +184,8 @@ class TestBallkidViewAnalytics(TestCase):
         self.assertEqual(self.captain, analytic.captain)
         self.assertEqual(1, analytic.count)
         self.assertEqual(
-            timedelta(hours=3, minutes=59, seconds=1, microseconds=10), analytic.duration
+            timedelta(hours=3, minutes=59, seconds=1, microseconds=10),
+            analytic.duration,
         )
 
     def test_recalc_captain_analytics_doesnt_exist(self):
@@ -253,7 +260,7 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(team=1, court=COURT.STADIUM, start=start, end=end)
 
         analytic = CaptainAnalytics.objects.create(
-            ballkid=self.ballkid, captain=self.captain
+            ballkid=self.ballkid, captain=self.captain, year=datetime.now().year
         )
         self.assertEqual(1, len(CaptainAnalytics.objects.all()))
 
@@ -278,8 +285,12 @@ class TestBallkidViewAnalytics(TestCase):
         start = datetime(2022, 1, 1, 10, 30)
         end = datetime(2022, 1, 1, 14, 29)
 
-        CaptainAnalytics.objects.create(ballkid=self.captain, captain=self.captain2)
-        CaptainAnalytics.objects.create(ballkid=self.captain2, captain=self.captain)
+        CaptainAnalytics.objects.create(
+            ballkid=self.captain, captain=self.captain2, year=datetime.now().year
+        )
+        CaptainAnalytics.objects.create(
+            ballkid=self.captain2, captain=self.captain, year=datetime.now().year
+        )
         self.assertEqual(2, len(CaptainAnalytics.objects.all()))
 
         CaptainHistory.objects.create(

@@ -638,10 +638,7 @@ class FinalsHistory(models.Model):
     years = ArrayField(models.IntegerField(), blank=True, null=True)
 
     class Meta:
-        unique_together = (
-            "ballkid",
-            "match_type",
-        )
+        unique_together = ("ballkid", "match_type")
 
     def __str__(self):
         return f"{self.ballkid.get_name()} worked {self.match_type} {self.count} times in years {self.years}"
@@ -655,10 +652,7 @@ class CutHistory(models.Model):
     self_cut = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = (
-            "ballkid",
-            "year",
-        )
+        unique_together = ("ballkid", "year")
 
     def __str__(self):
         return f"{self.ballkid.get_name()} cut after {self.furthest_day} in {self.year} (self-cut: {self.self_cut})"
@@ -676,7 +670,7 @@ class CheckinHistory(models.Model):
 
 
 class CheckinAnalytics(models.Model):
-    ballkid = models.OneToOneField(Ballkid, on_delete=models.CASCADE)
+    ballkid = models.ForeignKey(Ballkid, on_delete=models.CASCADE)
     year = models.IntegerField()
     duration = models.DurationField(default=timedelta)
     count = models.IntegerField(default=0)

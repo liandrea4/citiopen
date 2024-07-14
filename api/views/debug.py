@@ -276,6 +276,7 @@ class BulkCreateSignups(APIView):
             first_day = datetime.strptime("07/27/2024", SLASH_MONTH_DAY_YEAR_FORMAT_STR)
             age = (first_day - dob) // timedelta(days=365.2425)
             image = f"static/img/{first_name.lower()}_{last_name.lower()}.jpg"
+            image = image if os.path.isfile(image) else DEFAULT_IMAGE_FILE
             email = line["Email Address"].strip()
 
             # If user does not yet exist, then create one
@@ -315,6 +316,7 @@ class BulkCreateSignups(APIView):
                 ballkid.is_out_of_town = False
                 ballkid.emergency_name = emergency_name
                 ballkid.emergency_phone = emergency_phone
+                ballkid.image = image
                 ballkid.save()
                 continue
 
@@ -332,7 +334,7 @@ class BulkCreateSignups(APIView):
                     preferred_position=preferred_position_map[
                         line["What position are you?"].strip() or "Back"
                     ],
-                    image=image if os.path.isfile(image) else DEFAULT_IMAGE_FILE,
+                    image=image,
                     phone=phone,
                     emergency_name=emergency_name,
                     emergency_phone=emergency_phone,

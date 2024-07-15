@@ -1,6 +1,12 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+
+from api.views.ballkid import (
+    recalc_captain_analytics,
+    recalc_checkin_analytics,
+    recalc_court_analytics,
+)
 from api.models.ballkid import Ballkid
 from api.serializers import *
 from api.tests.utils import *
@@ -18,7 +24,10 @@ class TestGetCheckinLeaderboard(APITestCase):
             first_name="Joseph", last_name="Iosue", is_active=False
         )
 
+        self.year = get_current_year()
+
     def test_no_histories(self):
+        recalc_checkin_analytics()
         response = self.client.get(
             reverse("get-checkin-leaderboard"),
             format="json",
@@ -33,23 +42,23 @@ class TestGetCheckinLeaderboard(APITestCase):
     def test_one_history_each(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
-
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-checkin-leaderboard"),
             format="json",
@@ -76,29 +85,30 @@ class TestGetCheckinLeaderboard(APITestCase):
     def test_filter_inactive(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid4,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
 
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-checkin-leaderboard"),
             format="json",
@@ -125,31 +135,32 @@ class TestGetCheckinLeaderboard(APITestCase):
     def test_mult_histories_same_day(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
             is_first_checkin=True,
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 17, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 17, 30, 0),
             duration=timedelta(hours=8),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 18, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 18, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=4),
             is_first_checkin=False,
         )
 
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-checkin-leaderboard"),
             format="json",
@@ -177,29 +188,30 @@ class TestGetCheckinLeaderboard(APITestCase):
     def test_mult_histories_diff_days(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 20, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 20, 30, 0),
             duration=timedelta(hours=11),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 4, 18, 30, 0),
-            end=datetime(2023, 5, 4, 22, 30, 0),
+            start=datetime(self.year, 5, 4, 18, 30, 0),
+            end=datetime(self.year, 5, 4, 22, 30, 0),
             duration=timedelta(hours=4),
         )
 
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-checkin-leaderboard"),
             format="json",
@@ -226,29 +238,30 @@ class TestGetCheckinLeaderboard(APITestCase):
     def test_mult_histories_span_midnight(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
             duration=timedelta(hours=9),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 18, 30, 0),
-            end=datetime(2023, 5, 4, 2, 30, 0),
+            start=datetime(self.year, 5, 3, 18, 30, 0),
+            end=datetime(self.year, 5, 4, 2, 30, 0),
             duration=timedelta(hours=8),
         )
 
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-checkin-leaderboard"),
             format="json",
@@ -272,6 +285,56 @@ class TestGetCheckinLeaderboard(APITestCase):
         self.assertEqual("02:00:00", leaderboard3["checkin_duration"])
         self.assertEqual(1, leaderboard3["checkin_days"])
 
+    def test_one_history_each_mult_year(self):
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid1,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
+            duration=timedelta(hours=5),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid2,
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
+            duration=timedelta(hours=13),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid3,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
+            duration=timedelta(hours=2),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid3,
+            start=datetime(self.year - 1, 5, 3, 10, 30, 0),
+            end=datetime(self.year - 1, 5, 3, 12, 30, 0),
+            duration=timedelta(hours=2),
+        )
+        recalc_checkin_analytics(year=self.year)
+        recalc_checkin_analytics(year=self.year - 1)
+        response = self.client.get(
+            reverse("get-checkin-leaderboard"),
+            format="json",
+        )
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(3, len(response.data))
+
+        leaderboard1 = response.data[0]
+        self.assertEqual(self.ballkid2.first_name, leaderboard1["first_name"])
+        self.assertEqual("13:00:00", leaderboard1["checkin_duration"])
+        self.assertEqual(1, leaderboard1["checkin_days"])
+
+        leaderboard2 = response.data[1]
+        self.assertEqual(self.ballkid1.first_name, leaderboard2["first_name"])
+        self.assertEqual("05:00:00", leaderboard2["checkin_duration"])
+        self.assertEqual(1, leaderboard2["checkin_days"])
+
+        leaderboard3 = response.data[2]
+        self.assertEqual(self.ballkid3.first_name, leaderboard3["first_name"])
+        self.assertEqual("02:00:00", leaderboard3["checkin_duration"])
+        self.assertEqual(1, leaderboard3["checkin_days"])
+
 
 class TestGetAverageCheckinLeaderboard(APITestCase):
     def setUp(self):
@@ -284,7 +347,10 @@ class TestGetAverageCheckinLeaderboard(APITestCase):
             first_name="Joseph", last_name="Iosue", is_active=False
         )
 
+        self.year = get_current_year()
+
     def test_no_histories(self):
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-average-checkin-leaderboard"),
             format="json",
@@ -297,23 +363,24 @@ class TestGetAverageCheckinLeaderboard(APITestCase):
     def test_one_history_each(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 16, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
             duration=timedelta(hours=7),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 13, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 13, 30, 0),
             duration=timedelta(hours=3),
         )
 
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-average-checkin-leaderboard"),
             format="json",
@@ -326,29 +393,30 @@ class TestGetAverageCheckinLeaderboard(APITestCase):
     def test_filter_inactive(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 16, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
             duration=timedelta(hours=7),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 13, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 13, 30, 0),
             duration=timedelta(hours=3),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid4,
-            start=datetime(2023, 5, 3, 3, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 3, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
             duration=timedelta(hours=15),
         )
 
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-average-checkin-leaderboard"),
             format="json",
@@ -361,31 +429,32 @@ class TestGetAverageCheckinLeaderboard(APITestCase):
     def test_mult_histories_same_day(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 16, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
             duration=timedelta(hours=7),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 11, 30, 0),
-            end=datetime(2023, 5, 3, 13, 30, 0),
+            start=datetime(self.year, 5, 3, 11, 30, 0),
+            end=datetime(self.year, 5, 3, 13, 30, 0),
             duration=timedelta(hours=2),
             is_first_checkin=True,
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 16, 30, 0),
-            end=datetime(2023, 5, 3, 20, 30, 0),
+            start=datetime(self.year, 5, 3, 16, 30, 0),
+            end=datetime(self.year, 5, 3, 20, 30, 0),
             duration=timedelta(hours=4),
             is_first_checkin=False,
         )
 
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-average-checkin-leaderboard"),
             format="json",
@@ -399,29 +468,30 @@ class TestGetAverageCheckinLeaderboard(APITestCase):
     def test_mult_histories_diff_days(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 16, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
             duration=timedelta(hours=7),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 11, 30, 0),
-            end=datetime(2023, 5, 3, 13, 30, 0),
+            start=datetime(self.year, 5, 3, 11, 30, 0),
+            end=datetime(self.year, 5, 3, 13, 30, 0),
             duration=timedelta(hours=2),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 4, 16, 30, 0),
-            end=datetime(2023, 5, 4, 20, 30, 0),
+            start=datetime(self.year, 5, 4, 16, 30, 0),
+            end=datetime(self.year, 5, 4, 20, 30, 0),
             duration=timedelta(hours=4),
         )
 
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-average-checkin-leaderboard"),
             format="json",
@@ -434,29 +504,30 @@ class TestGetAverageCheckinLeaderboard(APITestCase):
     def test_mult_histories_span_midnight(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=6),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 16, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
             duration=timedelta(hours=7),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 11, 30, 0),
-            end=datetime(2023, 5, 3, 13, 30, 0),
+            start=datetime(self.year, 5, 3, 11, 30, 0),
+            end=datetime(self.year, 5, 3, 13, 30, 0),
             duration=timedelta(hours=2),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 20, 30, 0),
-            end=datetime(2023, 5, 4, 2, 30, 0),
+            start=datetime(self.year, 5, 3, 20, 30, 0),
+            end=datetime(self.year, 5, 4, 2, 30, 0),
             duration=timedelta(hours=6),
         )
 
+        recalc_checkin_analytics(year=self.year)
         response = self.client.get(
             reverse("get-average-checkin-leaderboard"),
             format="json",
@@ -464,6 +535,43 @@ class TestGetAverageCheckinLeaderboard(APITestCase):
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(timedelta(hours=7), response.data["checkin_avg"])
+        self.assertEqual(1, response.data["days_avg"])
+
+    def test_one_history_each_mult_years(self):
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid1,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
+            duration=timedelta(hours=5),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid2,
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
+            duration=timedelta(hours=7),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid3,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 13, 30, 0),
+            duration=timedelta(hours=3),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid3,
+            start=datetime(self.year - 1, 5, 3, 10, 30, 0),
+            end=datetime(self.year - 1, 5, 3, 13, 30, 0),
+            duration=timedelta(hours=3),
+        )
+
+        recalc_checkin_analytics(year=self.year)
+        recalc_checkin_analytics(year=self.year - 1)
+        response = self.client.get(
+            reverse("get-average-checkin-leaderboard"),
+            format="json",
+        )
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(timedelta(hours=5), response.data["checkin_avg"])
         self.assertEqual(1, response.data["days_avg"])
 
 
@@ -860,11 +968,12 @@ class TestGetCourtLeaderboard(APITestCase):
             first_name="Joseph", last_name="Iosue", is_active=False
         )
 
+        self.year = get_current_year()
+
     def test_no_histories(self):
-        response = self.client.get(
-            reverse("get-court-leaderboard"),
-            format="json",
-        )
+
+        recalc_court_analytics(year=self.year)
+        response = self.client.get(reverse("get-court-leaderboard"), format="json")
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(
@@ -874,54 +983,52 @@ class TestGetCourtLeaderboard(APITestCase):
     def test_one_history_each_one_court(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 16, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
             duration=timedelta(hours=6),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
             duration=timedelta(hours=4),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid1,
             team=1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid2,
             team=1,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid3,
             team=2,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.STADIUM,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
         )
 
-        response = self.client.get(
-            reverse("get-court-leaderboard"),
-            format="json",
-        )
+        recalc_court_analytics(year=self.year)
+        response = self.client.get(reverse("get-court-leaderboard"), format="json")
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(3, len(response.data))
@@ -948,67 +1055,65 @@ class TestGetCourtLeaderboard(APITestCase):
     def test_filter_inactive(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 16, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
             duration=timedelta(hours=6),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
             duration=timedelta(hours=4),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid4,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid1,
             team=1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid2,
             team=1,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid3,
             team=2,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid4,
             team=1,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.STADIUM,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
         )
 
-        response = self.client.get(
-            reverse("get-court-leaderboard"),
-            format="json",
-        )
+        recalc_court_analytics(year=self.year)
+        response = self.client.get(reverse("get-court-leaderboard"), format="json")
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(3, len(response.data))
@@ -1036,41 +1141,39 @@ class TestGetCourtLeaderboard(APITestCase):
         TeamHistory.objects.create(
             ballkid=self.ballkid1,
             team=1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid2,
             team=1,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid3,
             team=2,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.STADIUM,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.HARRIS,
-            start=datetime(2023, 5, 3, 14, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 14, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
         )
 
-        response = self.client.get(
-            reverse("get-court-leaderboard"),
-            format="json",
-        )
+        recalc_court_analytics(year=self.year)
+        response = self.client.get(reverse("get-court-leaderboard"), format="json")
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(3, len(response.data))
@@ -1095,41 +1198,39 @@ class TestGetCourtLeaderboard(APITestCase):
         TeamHistory.objects.create(
             ballkid=self.ballkid1,
             team=1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid2,
             team=1,
-            start=datetime(2023, 5, 3, 12, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 12, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid3,
             team=2,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.STADIUM,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
         )
         Schedule.objects.create(
             team=2,
             court=COURT.HARRIS,
-            start=datetime(2023, 5, 3, 11, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 11, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
         )
 
-        response = self.client.get(
-            reverse("get-court-leaderboard"),
-            format="json",
-        )
+        recalc_court_analytics(year=self.year)
+        response = self.client.get(reverse("get-court-leaderboard"), format="json")
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(3, len(response.data))
@@ -1152,6 +1253,98 @@ class TestGetCourtLeaderboard(APITestCase):
         self.assertEqual("00:00:00", leaderboard3["stadium_duration"])
         self.assertEqual("01:00:00", leaderboard3["harris_duration"])
 
+    def test_one_history_each_mult_years(self):
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid1,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
+            duration=timedelta(hours=6),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid2,
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
+            duration=timedelta(hours=13),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid3,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
+            duration=timedelta(hours=4),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid3,
+            start=datetime(self.year - 1, 5, 3, 10, 30, 0),
+            end=datetime(self.year - 1, 5, 3, 14, 30, 0),
+            duration=timedelta(hours=4),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid1,
+            team=1,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
+            duration=timedelta(hours=5),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid2,
+            team=1,
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
+            duration=timedelta(hours=13),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid3,
+            team=2,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
+            duration=timedelta(hours=2),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid3,
+            team=1,
+            start=datetime(self.year - 1, 5, 3, 10, 30, 0),
+            end=datetime(self.year - 1, 5, 3, 12, 30, 0),
+            duration=timedelta(hours=2),
+        )
+        Schedule.objects.create(
+            team=1,
+            court=COURT.STADIUM,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
+        )
+        Schedule.objects.create(
+            team=1,
+            court=COURT.STADIUM,
+            start=datetime(self.year - 1, 5, 3, 10, 30, 0),
+            end=datetime(self.year - 1, 5, 3, 18, 30, 0),
+        )
+
+        recalc_court_analytics(year=self.year)
+        recalc_court_analytics(year=self.year - 1)
+        response = self.client.get(reverse("get-court-leaderboard"), format="json")
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(3, len(response.data))
+
+        leaderboard1 = response.data[0]
+        self.assertEqual(self.ballkid2.first_name, leaderboard1["first_name"])
+        self.assertEqual("13:00:00", leaderboard1["checkin_duration"])
+        self.assertEqual("08:00:00", leaderboard1["court_duration"])
+        self.assertEqual("08:00:00", leaderboard1["stadium_duration"])
+        self.assertEqual("00:00:00", leaderboard1["harris_duration"])
+
+        leaderboard2 = response.data[1]
+        self.assertEqual(self.ballkid1.first_name, leaderboard2["first_name"])
+        self.assertEqual("06:00:00", leaderboard2["checkin_duration"])
+        self.assertEqual("05:00:00", leaderboard2["court_duration"])
+        self.assertEqual("05:00:00", leaderboard2["stadium_duration"])
+        self.assertEqual("00:00:00", leaderboard1["harris_duration"])
+
+        leaderboard3 = response.data[2]
+        self.assertEqual(self.ballkid3.first_name, leaderboard3["first_name"])
+        self.assertEqual("04:00:00", leaderboard3["checkin_duration"])
+        self.assertEqual("00:00:00", leaderboard3["court_duration"])
+
 
 class TestGetAverageCourtLeaderboard(APITestCase):
     def setUp(self):
@@ -1163,6 +1356,8 @@ class TestGetAverageCourtLeaderboard(APITestCase):
         self.ballkid4 = Ballkid.objects.create(
             first_name="Joseph", last_name="Iosue", is_active=False
         )
+
+        self.year = get_current_year()
 
     def test_no_histories(self):
         response = self.client.get(
@@ -1178,48 +1373,48 @@ class TestGetAverageCourtLeaderboard(APITestCase):
     def test_one_history_each_one_court(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 16, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
             duration=timedelta(hours=6),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 17, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 17, 30, 0),
             duration=timedelta(hours=8),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
             duration=timedelta(hours=4),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid1,
             team=1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
             duration=timedelta(hours=4),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid2,
             team=1,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 20, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 20, 30, 0),
             duration=timedelta(hours=11),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid3,
             team=2,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.STADIUM,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
         )
 
         response = self.client.get(
@@ -1236,61 +1431,61 @@ class TestGetAverageCourtLeaderboard(APITestCase):
     def test_filter_inactive(self):
         CheckinHistory.objects.create(
             ballkid=self.ballkid1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 16, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
             duration=timedelta(hours=6),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid2,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 17, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 17, 30, 0),
             duration=timedelta(hours=8),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid3,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
             duration=timedelta(hours=4),
         )
         CheckinHistory.objects.create(
             ballkid=self.ballkid4,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 17, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 17, 30, 0),
             duration=timedelta(hours=8),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid1,
             team=1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
             duration=timedelta(hours=4),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid2,
             team=1,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 20, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 20, 30, 0),
             duration=timedelta(hours=11),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid3,
             team=2,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid4,
             team=1,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 20, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 20, 30, 0),
             duration=timedelta(hours=11),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.STADIUM,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
         )
 
         response = self.client.get(
@@ -1308,35 +1503,35 @@ class TestGetAverageCourtLeaderboard(APITestCase):
         TeamHistory.objects.create(
             ballkid=self.ballkid1,
             team=1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid2,
             team=1,
-            start=datetime(2023, 5, 3, 9, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid3,
             team=2,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.STADIUM,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.HARRIS,
-            start=datetime(2023, 5, 3, 14, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 14, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
         )
 
         response = self.client.get(
@@ -1356,35 +1551,35 @@ class TestGetAverageCourtLeaderboard(APITestCase):
         TeamHistory.objects.create(
             ballkid=self.ballkid1,
             team=1,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 15, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 15, 30, 0),
             duration=timedelta(hours=5),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid2,
             team=1,
-            start=datetime(2023, 5, 3, 12, 30, 0),
-            end=datetime(2023, 5, 3, 22, 30, 0),
+            start=datetime(self.year, 5, 3, 12, 30, 0),
+            end=datetime(self.year, 5, 3, 22, 30, 0),
             duration=timedelta(hours=13),
         )
         TeamHistory.objects.create(
             ballkid=self.ballkid3,
             team=2,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 12, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
             duration=timedelta(hours=2),
         )
         Schedule.objects.create(
             team=1,
             court=COURT.STADIUM,
-            start=datetime(2023, 5, 3, 10, 30, 0),
-            end=datetime(2023, 5, 3, 14, 30, 0),
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
         )
         Schedule.objects.create(
             team=2,
             court=COURT.HARRIS,
-            start=datetime(2023, 5, 3, 11, 30, 0),
-            end=datetime(2023, 5, 3, 18, 30, 0),
+            start=datetime(self.year, 5, 3, 11, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
         )
 
         response = self.client.get(
@@ -1399,3 +1594,80 @@ class TestGetAverageCourtLeaderboard(APITestCase):
         self.assertEqual(timedelta(), response.data["grandstand_avg"])
         self.assertEqual(timedelta(), response.data["four_avg"])
         self.assertEqual(timedelta(), response.data["five_avg"])
+
+    def test_one_history_each_mult_years(self):
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid1,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 16, 30, 0),
+            duration=timedelta(hours=6),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid2,
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 17, 30, 0),
+            duration=timedelta(hours=8),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid3,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
+            duration=timedelta(hours=4),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid3,
+            start=datetime(self.year - 1, 5, 3, 10, 30, 0),
+            end=datetime(self.year - 1, 5, 3, 14, 30, 0),
+            duration=timedelta(hours=4),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid1,
+            team=1,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 14, 30, 0),
+            duration=timedelta(hours=4),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid2,
+            team=1,
+            start=datetime(self.year, 5, 3, 9, 30, 0),
+            end=datetime(self.year, 5, 3, 20, 30, 0),
+            duration=timedelta(hours=11),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid3,
+            team=2,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 12, 30, 0),
+            duration=timedelta(hours=2),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid3,
+            team=1,
+            start=datetime(self.year - 1, 5, 3, 10, 30, 0),
+            end=datetime(self.year - 1, 5, 3, 12, 30, 0),
+            duration=timedelta(hours=2),
+        )
+        Schedule.objects.create(
+            team=1,
+            court=COURT.STADIUM,
+            start=datetime(self.year, 5, 3, 10, 30, 0),
+            end=datetime(self.year, 5, 3, 18, 30, 0),
+        )
+        Schedule.objects.create(
+            team=1,
+            court=COURT.STADIUM,
+            start=datetime(self.year - 1, 5, 3, 10, 30, 0),
+            end=datetime(self.year - 1, 5, 3, 18, 30, 0),
+        )
+
+        response = self.client.get(
+            reverse("get-average-court-leaderboard"),
+            format="json",
+        )
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(timedelta(hours=6), response.data["checkin_avg"])
+        self.assertEqual(timedelta(hours=4), response.data["court_avg"])
+        self.assertEqual(timedelta(hours=4), response.data["stadium_avg"])
+        self.assertEqual(timedelta(hours=0), response.data["harris_avg"])

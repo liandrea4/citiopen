@@ -949,7 +949,6 @@ class GetAverageCheckinLeaderboard(APIView):
                 days_avg=Avg(
                     "checkinanalytics__count",
                     filter=Q(checkinanalytics__year=current_year),
-                    output_field=IntegerField(),
                 ),
                 avg_checkin_time=Avg("checkin_time"),
             )

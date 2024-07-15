@@ -163,6 +163,24 @@ class TestBallkidViewAnalytics(TestCase):
         analytic2 = analytics.get(ballkid=self.ballkid2)
         self.assertEqual(timedelta(hours=10, minutes=15), analytic2.duration)
 
+    def test_recalc_checkin_analytics_mult_years(self):
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            start=datetime(2022, 1, 1, 16, 30),
+            end=datetime(2022, 1, 2, 0, 30),
+        )
+        CheckinHistory.objects.create(
+            ballkid=self.ballkid,
+            start=datetime(2023, 1, 2, 8, 15),
+            end=datetime(2023, 1, 2, 18, 30),
+        )
+        recalc_checkin_analytics(ballkid=self.ballkid, year=2022)
+        recalc_checkin_analytics(ballkid=self.ballkid, year=2023)
+
+        analytics = CheckinAnalytics.objects.all().order_by("-duration")
+        self.assertEqual(2, len(analytics))
+        self.assertEqual(timedelta(hours=10, minutes=15), analytics.first().duration)
+
     def test_recalc_captain_analytics_milliseconds(self):
         start = datetime(2022, 1, 1, 10, 30)
         end = datetime(2022, 1, 1, 14, 29, 1, 10)
@@ -708,6 +726,52 @@ class TestBallkidViewAnalytics(TestCase):
         self.assertEqual(1, analytic.count)
         self.assertEqual(timedelta(hours=2), analytic.duration)
 
+    def test_recalc_captain_analytics_mult_years(self):
+        Schedule.objects.create(
+            team=1,
+            court=COURT.STADIUM,
+            start=datetime(2022, 1, 1, 10, 30),
+            end=datetime(2022, 1, 2, 14, 45),
+        )
+        Schedule.objects.create(
+            team=1,
+            court=COURT.STADIUM,
+            start=datetime(2023, 1, 1, 13, 30),
+            end=datetime(2023, 1, 2, 14, 45),
+        )
+
+        CaptainHistory.objects.create(
+            ballkid=self.ballkid,
+            captain=self.captain,
+            start=datetime(2022, 1, 1, 10, 30),
+            end=datetime(2022, 1, 1, 14, 29),
+            team=1,
+        )
+        CaptainHistory.objects.create(
+            ballkid=self.ballkid,
+            captain=self.captain,
+            start=datetime(2022, 1, 2, 13, 00),
+            end=datetime(2022, 1, 2, 14, 45),
+            team=1,
+        )
+        CaptainHistory.objects.create(
+            ballkid=self.ballkid,
+            captain=self.captain,
+            start=datetime(2023, 1, 2, 13, 00),
+            end=datetime(2023, 1, 2, 14, 45),
+            team=1,
+        )
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2023)
+
+        analytics = CaptainAnalytics.objects.all().order_by("year")
+        self.assertEqual(2, len(analytics))
+        analytic = analytics.first()
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(self.captain, analytic.captain)
+        self.assertEqual(2, analytic.count)
+        self.assertEqual(timedelta(hours=5, minutes=44), analytic.duration)
+
     def test_recalc_court_analytics_one_team_one_shift(self):
         TeamHistory.objects.create(
             ballkid=self.ballkid,
@@ -931,3 +995,47 @@ class TestBallkidViewAnalytics(TestCase):
         self.assertEqual(1, analytic.count)
         self.assertEqual(COURT.STADIUM, analytic.court)
         self.assertEqual(timedelta(minutes=15), analytic.duration)
+
+    def test_recalc_court_analytics_mult_years(self):
+        TeamHistory.objects.create(
+            ballkid=self.ballkid,
+            team=1,
+            start=datetime(2022, 1, 1, 10, 30),
+            end=datetime(2022, 1, 1, 15, 30),
+        )
+        TeamHistory.objects.create(
+            ballkid=self.ballkid,
+            team=1,
+            start=datetime(2023, 1, 1, 10, 30),
+            end=datetime(2023, 1, 1, 15, 30),
+        )
+        Schedule.objects.create(
+            team=1, court=COURT.STADIUM, start=datetime(2022, 1, 1, 10, 00)
+        )
+        Schedule.objects.create(
+            team=1, court=COURT.HARRIS, start=datetime(2022, 1, 1, 12, 00)
+        )
+        Schedule.objects.create(
+            team=2, court=COURT.GRANDSTAND, start=datetime(2022, 1, 1, 11, 00)
+        )
+        Schedule.objects.create(
+            team=1, court=COURT.GRANDSTAND, start=datetime(2023, 1, 1, 11, 00)
+        )
+        recalc_court_analytics(ballkid=self.ballkid, year=2022)
+        recalc_court_analytics(ballkid=self.ballkid, year=2023)
+
+        analytics = CourtAnalytics.objects.filter(duration__gt=timedelta()).order_by(
+            "year"
+        )
+        self.assertEqual(3, len(analytics))
+        analytic, created = analytics.get_or_create(court=COURT.STADIUM, year=2022)
+        self.assertFalse(created)
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(minutes=30), analytic.duration)
+
+        analytic, created = analytics.get_or_create(court=COURT.HARRIS)
+        self.assertFalse(created)
+        self.assertEqual(self.ballkid, analytic.ballkid)
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(minutes=60), analytic.duration)

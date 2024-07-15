@@ -35,7 +35,7 @@ import logging
 logger = logging.getLogger("api.ballkid")
 
 
-def recalc_checkin_analytics(ballkid=None, now=None):
+def recalc_checkin_analytics(ballkid=None, now=None, current_year=None):
     """
     Recalculates total checkin duration for the ballkid and saves to the
     CheckinAnalytics table
@@ -47,8 +47,8 @@ def recalc_checkin_analytics(ballkid=None, now=None):
 
     if now is None:
         now = datetime.now()
-
-    current_year = get_current_year()
+    if current_year is None:
+        current_year = get_current_year()
 
     # If not updating a specific ballkid, get all histories and create analytics for
     # all active ballkids
@@ -109,12 +109,13 @@ def recalc_checkin_analytics(ballkid=None, now=None):
     logger.info(f"[recalc-checkin-analytics] Completed bulk create")
 
 
-def recalc_court_analytics(ballkid=None, now=None):
+def recalc_court_analytics(ballkid=None, now=None, current_year=None):
     logger.info(f"[recalc-court-analytics] for ballkid {ballkid}")
 
     if now is None:
         now = datetime.now()
-    current_year = get_current_year()
+    if current_year is None:
+        current_year = get_current_year()
 
     # If not updating a specific ballkid, get all histories and create analytics for
     # all active ballkids
@@ -196,7 +197,7 @@ def recalc_court_analytics(ballkid=None, now=None):
     logger.info(f"[recalc-court-analytics] Completed bulk create")
 
 
-def recalc_captain_analytics(ballkid, now=None):
+def recalc_captain_analytics(ballkid, now=None, current_year=None):
     """
     Recalculates captain counts and durations BIDIRECTIONALLY. This means that
     - for a ballkid, CaptainAnalytics is updated to account for all captains that
@@ -209,7 +210,8 @@ def recalc_captain_analytics(ballkid, now=None):
 
     if now is None:
         now = datetime.now()
-    current_year = get_current_year()
+    if current_year is None:
+        current_year = get_current_year()
 
     for updateAsCaptain in [True, False]:
         # If ballkid is not a captain, then don't update as captain

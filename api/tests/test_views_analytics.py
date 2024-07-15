@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api.models.ballkid import Ballkid, MATCH_TYPE
+from api.views.ballkid import recalc_captain_analytics
 from api.serializers import *
 from api.tests.utils import *
 from api.consts import *
@@ -663,6 +664,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
+        recalc_captain_analytics(self.ballkid1, current_year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
             format="json",
@@ -670,10 +672,76 @@ class TestGetCaptainAnalytics(APITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 
         analytic = CaptainAnalytics.objects.get(
-            ballkid=self.ballkid1, captain=self.captain1
+            ballkid=self.ballkid1, captain=self.captain1, year=2023
         )
         self.assertEqual(2, analytic.count)
         self.assertEqual(timedelta(hours=15), analytic.duration)
+
+    def test_mult_ballkids_mult_histories_mult_years(self):
+        CaptainHistory.objects.create(
+            ballkid=self.ballkid1,
+            captain=self.captain1,
+            start=datetime(2023, 5, 3, 10, 25, 0),
+            end=datetime(2023, 5, 3, 19, 25, 0),
+            duration=timedelta(hours=9),
+            team=1,
+        )
+        CaptainHistory.objects.create(
+            ballkid=self.ballkid1,
+            captain=self.captain1,
+            start=datetime(2024, 5, 4, 13, 25, 0),
+            end=datetime(2024, 5, 4, 19, 25, 0),
+            duration=timedelta(hours=6),
+            team=1,
+        )
+        CaptainHistory.objects.create(
+            ballkid=self.captain2,
+            captain=self.captain1,
+            start=datetime(2023, 5, 3, 10, 25, 0),
+            end=datetime(2023, 5, 3, 19, 25, 0),
+            duration=timedelta(hours=9),
+            team=1,
+        )
+        CaptainHistory.objects.create(
+            ballkid=self.captain1,
+            captain=self.captain2,
+            start=datetime(2023, 5, 3, 10, 25, 0),
+            end=datetime(2023, 5, 3, 19, 25, 0),
+            duration=timedelta(hours=9),
+            team=1,
+        )
+        Schedule.objects.create(
+            team=1,
+            start=datetime(2023, 5, 3, 10, 25, 0),
+            end=datetime(2023, 5, 4, 19, 25, 0),
+            court=COURT.STADIUM,
+        )
+        Schedule.objects.create(
+            team=1,
+            start=datetime(2024, 5, 4, 13, 25, 0),
+            end=datetime(2024, 5, 4, 18, 25, 0),
+            court=COURT.FOUR,
+        )
+
+        recalc_captain_analytics(self.ballkid1, current_year=2023)
+        recalc_captain_analytics(self.ballkid1, current_year=2024)
+        response = self.client.get(
+            reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
+            format="json",
+        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+
+        analytic = CaptainAnalytics.objects.get(
+            ballkid=self.ballkid1, captain=self.captain1, year=2023
+        )
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(hours=9), analytic.duration)
+
+        analytic = CaptainAnalytics.objects.get(
+            ballkid=self.ballkid1, captain=self.captain1, year=2024
+        )
+        self.assertEqual(1, analytic.count)
+        self.assertEqual(timedelta(hours=5), analytic.duration)
 
     def test_mult_ballkids_mult_histories_past_midnight_more_than_24_hrs(self):
         CaptainHistory.objects.create(
@@ -715,6 +783,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
+        recalc_captain_analytics(self.ballkid1, current_year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
             format="json",
@@ -722,7 +791,7 @@ class TestGetCaptainAnalytics(APITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 
         analytic = CaptainAnalytics.objects.get(
-            ballkid=self.ballkid1, captain=self.captain1
+            ballkid=self.ballkid1, captain=self.captain1, year=2023
         )
         self.assertEqual(2, analytic.count)
         self.assertEqual(timedelta(hours=25), analytic.duration)
@@ -767,6 +836,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
+        recalc_captain_analytics(self.captain1, current_year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.captain1.id}),
             format="json",
@@ -774,13 +844,13 @@ class TestGetCaptainAnalytics(APITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 
         analytic = CaptainAnalytics.objects.get(
-            ballkid=self.captain1, captain=self.captain2
+            ballkid=self.captain1, captain=self.captain2, year=2023
         )
         self.assertEqual(1, analytic.count)
         self.assertEqual(timedelta(hours=9), analytic.duration)
 
         analytic = CaptainAnalytics.objects.get(
-            ballkid=self.captain2, captain=self.captain1
+            ballkid=self.captain2, captain=self.captain1, year=2023
         )
         self.assertEqual(1, analytic.count)
         self.assertEqual(timedelta(hours=9), analytic.duration)
@@ -817,6 +887,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
+        recalc_captain_analytics(self.ballkid1, current_year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
             format="json",
@@ -824,13 +895,13 @@ class TestGetCaptainAnalytics(APITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 
         analytic1 = CaptainAnalytics.objects.get(
-            ballkid=self.ballkid1, captain=self.captain1
+            ballkid=self.ballkid1, captain=self.captain1, year=2023
         )
         self.assertEqual(2, analytic1.count)
         self.assertEqual(timedelta(hours=15), analytic1.duration)
 
         analytic2 = CaptainAnalytics.objects.get(
-            ballkid=self.ballkid1, captain=self.captain2
+            ballkid=self.ballkid1, captain=self.captain2, year=2023
         )
         self.assertEqual(1, analytic2.count)
         self.assertEqual(timedelta(hours=9), analytic2.duration)
@@ -867,6 +938,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
+        recalc_captain_analytics(self.ballkid1, current_year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
             format="json",
@@ -874,10 +946,10 @@ class TestGetCaptainAnalytics(APITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 
         analytic1 = CaptainAnalytics.objects.get(
-            ballkid=self.ballkid1, captain=self.captain2
+            ballkid=self.ballkid1, captain=self.captain2, year=2023
         )
         analytic2 = CaptainAnalytics.objects.get(
-            ballkid=self.ballkid1, captain=self.captain1
+            ballkid=self.ballkid1, captain=self.captain1, year=2023
         )
         serializer = CaptainAnalyticsSerializer([analytic1, analytic2], many=True)
         self.assertEqual(serializer.data, response.data)

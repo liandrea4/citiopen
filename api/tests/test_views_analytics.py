@@ -664,7 +664,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
-        recalc_captain_analytics(self.ballkid1, current_year=2023)
+        recalc_captain_analytics(self.ballkid1, year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
             format="json",
@@ -723,8 +723,8 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.FOUR,
         )
 
-        recalc_captain_analytics(self.ballkid1, current_year=2023)
-        recalc_captain_analytics(self.ballkid1, current_year=2024)
+        recalc_captain_analytics(self.ballkid1, year=2023)
+        recalc_captain_analytics(self.ballkid1, year=2024)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
             format="json",
@@ -783,7 +783,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
-        recalc_captain_analytics(self.ballkid1, current_year=2023)
+        recalc_captain_analytics(self.ballkid1, year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
             format="json",
@@ -836,7 +836,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
-        recalc_captain_analytics(self.captain1, current_year=2023)
+        recalc_captain_analytics(self.captain1, year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.captain1.id}),
             format="json",
@@ -887,7 +887,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
-        recalc_captain_analytics(self.ballkid1, current_year=2023)
+        recalc_captain_analytics(self.ballkid1, year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
             format="json",
@@ -938,7 +938,7 @@ class TestGetCaptainAnalytics(APITestCase):
             court=COURT.STADIUM,
         )
 
-        recalc_captain_analytics(self.ballkid1, current_year=2023)
+        recalc_captain_analytics(self.ballkid1, year=2023)
         response = self.client.get(
             reverse("get-captains", kwargs={"pk": self.ballkid1.id}),
             format="json",

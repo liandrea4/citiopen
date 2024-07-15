@@ -35,7 +35,7 @@ import logging
 logger = logging.getLogger("api.ballkid")
 
 
-def recalc_checkin_analytics(ballkid=None, now=None, current_year=None):
+def recalc_checkin_analytics(ballkid=None, now=None, year=None):
     """
     Recalculates total checkin duration for the ballkid and saves to the
     CheckinAnalytics table
@@ -47,14 +47,14 @@ def recalc_checkin_analytics(ballkid=None, now=None, current_year=None):
 
     if now is None:
         now = datetime.now()
-    if current_year is None:
-        current_year = get_current_year()
+    if year is None:
+        year = get_current_year()
 
     # If not updating a specific ballkid, get all histories and create analytics for
     # all active ballkids
     if ballkid is None:
         histories = CheckinHistory.objects.filter(
-            ballkid__is_active=True, start__year=current_year
+            ballkid__is_active=True, start__year=year
         )
 
         # Dict mapping ballkid_id to [set of days, duration]
@@ -67,7 +67,7 @@ def recalc_checkin_analytics(ballkid=None, now=None, current_year=None):
     # create 1 analytic
     else:
         histories = CheckinHistory.objects.filter(
-            ballkid_id=ballkid.id, start__year=current_year
+            ballkid_id=ballkid.id, start__year=year
         )
         analytics = {ballkid.id: [set(), timedelta()]}
 
@@ -98,7 +98,7 @@ def recalc_checkin_analytics(ballkid=None, now=None, current_year=None):
     CheckinAnalytics.objects.bulk_create(
         [
             CheckinAnalytics(
-                ballkid_id=key, count=len(val[0]), duration=val[1], year=current_year
+                ballkid_id=key, count=len(val[0]), duration=val[1], year=year
             )
             for key, val in analytics.items()
         ],
@@ -109,18 +109,18 @@ def recalc_checkin_analytics(ballkid=None, now=None, current_year=None):
     logger.info(f"[recalc-checkin-analytics] Completed bulk create")
 
 
-def recalc_court_analytics(ballkid=None, now=None, current_year=None):
+def recalc_court_analytics(ballkid=None, now=None, year=None):
     logger.info(f"[recalc-court-analytics] for ballkid {ballkid}")
 
     if now is None:
         now = datetime.now()
-    if current_year is None:
-        current_year = get_current_year()
+    if year is None:
+        year = get_current_year()
 
     # If not updating a specific ballkid, get all histories and create analytics for
     # all active ballkids
     if ballkid is None:
-        histories = TeamHistory.objects.filter(start__year=current_year)
+        histories = TeamHistory.objects.filter(start__year=year)
 
         # Dict mapping ballkid_id to [count, duration]
         analytics = {
@@ -132,9 +132,7 @@ def recalc_court_analytics(ballkid=None, now=None, current_year=None):
     # If updating a specific ballkid, only get that ballkid's histories and only
     # create 1 analytic
     else:
-        histories = TeamHistory.objects.filter(
-            ballkid_id=ballkid.id, start__year=current_year
-        )
+        histories = TeamHistory.objects.filter(ballkid_id=ballkid.id, start__year=year)
         analytics = {
             (ballkid.id, court): [0, timedelta()] for court in NUM_COURTS_TO_COURTS[5]
         }
@@ -149,7 +147,7 @@ def recalc_court_analytics(ballkid=None, now=None, current_year=None):
         # for some reason does not so extra filters are commented out.
         shifts = Schedule.objects.filter(
             team=history.team,
-            start__year=current_year,
+            start__year=year,
             # start__gte=history.start - timedelta(hours=1),
             # start__lte=history.end if history.end else now,
         )
@@ -186,7 +184,7 @@ def recalc_court_analytics(ballkid=None, now=None, current_year=None):
                 court=key[1],
                 count=val[0],
                 duration=val[1],
-                year=current_year,
+                year=year,
             )
             for key, val in analytics.items()
         ],
@@ -197,7 +195,7 @@ def recalc_court_analytics(ballkid=None, now=None, current_year=None):
     logger.info(f"[recalc-court-analytics] Completed bulk create")
 
 
-def recalc_captain_analytics(ballkid, now=None, current_year=None):
+def recalc_captain_analytics(ballkid, now=None, year=None):
     """
     Recalculates captain counts and durations BIDIRECTIONALLY. This means that
     - for a ballkid, CaptainAnalytics is updated to account for all captains that
@@ -210,8 +208,8 @@ def recalc_captain_analytics(ballkid, now=None, current_year=None):
 
     if now is None:
         now = datetime.now()
-    if current_year is None:
-        current_year = get_current_year()
+    if year is None:
+        year = get_current_year()
 
     for updateAsCaptain in [True, False]:
         # If ballkid is not a captain, then don't update as captain
@@ -223,14 +221,10 @@ def recalc_captain_analytics(ballkid, now=None, current_year=None):
 
         # If updating as captain, then treat self as the captain
         if updateAsCaptain:
-            histories = CaptainHistory.objects.filter(
-                captain=ballkid, start__year=current_year
-            )
+            histories = CaptainHistory.objects.filter(captain=ballkid, start__year=year)
         # If not updating as captain, then treat self as the ballkid
         else:
-            histories = CaptainHistory.objects.filter(
-                ballkid=ballkid, start__year=current_year
-            )
+            histories = CaptainHistory.objects.filter(ballkid=ballkid, start__year=year)
 
         logger.info(
             f"[recalc-captain-analytics] # histories: {len(histories)}, first 10: {histories[:10]}"
@@ -283,7 +277,7 @@ def recalc_captain_analytics(ballkid, now=None, current_year=None):
                 analytic, created = CaptainAnalytics.objects.update_or_create(
                     ballkid_id=other_id,
                     captain=ballkid,
-                    year=current_year,
+                    year=year,
                     defaults={
                         "duration": durations[other_id],
                         "count": counts[other_id],
@@ -296,7 +290,7 @@ def recalc_captain_analytics(ballkid, now=None, current_year=None):
                 analytic, created = CaptainAnalytics.objects.update_or_create(
                     ballkid=ballkid,
                     captain_id=other_id,
-                    year=current_year,
+                    year=year,
                     defaults={
                         "duration": durations[other_id],
                         "count": counts[other_id],

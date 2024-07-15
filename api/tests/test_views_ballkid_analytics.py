@@ -28,7 +28,7 @@ class TestBallkidViewAnalytics(TestCase):
             start=datetime(2022, 1, 1, 10, 30),
             end=datetime(2022, 1, 1, 14, 29),
         )
-        recalc_checkin_analytics(ballkid=self.ballkid)
+        recalc_checkin_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CheckinAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -43,9 +43,9 @@ class TestBallkidViewAnalytics(TestCase):
             end=datetime(2022, 1, 1, 14, 29),
         )
         CheckinAnalytics.objects.create(
-            ballkid=self.ballkid, duration=timedelta(), year=datetime.now().year
+            ballkid=self.ballkid, duration=timedelta(), year=2022
         )
-        recalc_checkin_analytics(ballkid=self.ballkid)
+        recalc_checkin_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CheckinAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -57,7 +57,7 @@ class TestBallkidViewAnalytics(TestCase):
             start=datetime(2022, 1, 1, 16, 30),
             end=datetime(2022, 1, 2, 0, 30),
         )
-        recalc_checkin_analytics(ballkid=self.ballkid)
+        recalc_checkin_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CheckinAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -74,7 +74,7 @@ class TestBallkidViewAnalytics(TestCase):
             start=datetime(2022, 1, 2, 8, 15),
             end=datetime(2022, 1, 2, 18, 30),
         )
-        recalc_checkin_analytics(ballkid=self.ballkid)
+        recalc_checkin_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CheckinAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -96,8 +96,8 @@ class TestBallkidViewAnalytics(TestCase):
             start=datetime(2022, 1, 2, 8, 15),
             end=datetime(2022, 1, 2, 18, 30),
         )
-        recalc_checkin_analytics(ballkid=self.ballkid)
-        recalc_checkin_analytics(ballkid=self.ballkid2)
+        recalc_checkin_analytics(ballkid=self.ballkid, year=2022)
+        recalc_checkin_analytics(ballkid=self.ballkid2, year=2022)
 
         analytics = CheckinAnalytics.objects.all()
         self.assertEqual(2, len(analytics))
@@ -114,7 +114,7 @@ class TestBallkidViewAnalytics(TestCase):
             start=datetime(2022, 1, 1, 16, 30, 2, 10),
             end=datetime(2022, 1, 2, 0, 30, 3, 11),
         )
-        recalc_checkin_analytics(ballkid=self.ballkid)
+        recalc_checkin_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CheckinAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -128,7 +128,7 @@ class TestBallkidViewAnalytics(TestCase):
             ballkid=self.ballkid, start=datetime(2022, 1, 1, 16, 30, 2)
         )
         recalc_checkin_analytics(
-            ballkid=self.ballkid, now=datetime(2022, 1, 2, 0, 30, 3)
+            ballkid=self.ballkid, now=datetime(2022, 1, 2, 0, 30, 3), year=2022
         )
 
         analytics = CheckinAnalytics.objects.all()
@@ -152,7 +152,7 @@ class TestBallkidViewAnalytics(TestCase):
             start=datetime(2022, 1, 2, 8, 15),
             end=datetime(2022, 1, 2, 18, 30),
         )
-        recalc_checkin_analytics()
+        recalc_checkin_analytics(year=2022)
 
         analytics = CheckinAnalytics.objects.all()
         self.assertEqual(4, len(analytics))
@@ -175,7 +175,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=end,
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -201,7 +201,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=end,
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -230,8 +230,8 @@ class TestBallkidViewAnalytics(TestCase):
             end=end,
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.captain)
-        recalc_captain_analytics(ballkid=self.captain2)
+        recalc_captain_analytics(ballkid=self.captain, year=2022)
+        recalc_captain_analytics(ballkid=self.captain2, year=2022)
 
         self.assertFalse(
             CaptainAnalytics.objects.all().filter(
@@ -260,7 +260,7 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(team=1, court=COURT.STADIUM, start=start, end=end)
 
         analytic = CaptainAnalytics.objects.create(
-            ballkid=self.ballkid, captain=self.captain, year=datetime.now().year
+            ballkid=self.ballkid, captain=self.captain, year=2022
         )
         self.assertEqual(1, len(CaptainAnalytics.objects.all()))
 
@@ -271,7 +271,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=end,
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -286,10 +286,10 @@ class TestBallkidViewAnalytics(TestCase):
         end = datetime(2022, 1, 1, 14, 29)
 
         CaptainAnalytics.objects.create(
-            ballkid=self.captain, captain=self.captain2, year=datetime.now().year
+            ballkid=self.captain, captain=self.captain2, year=2022
         )
         CaptainAnalytics.objects.create(
-            ballkid=self.captain2, captain=self.captain, year=datetime.now().year
+            ballkid=self.captain2, captain=self.captain, year=2022
         )
         self.assertEqual(2, len(CaptainAnalytics.objects.all()))
 
@@ -309,8 +309,8 @@ class TestBallkidViewAnalytics(TestCase):
         )
         Schedule.objects.create(team=1, court=COURT.STADIUM, start=start, end=end)
 
-        recalc_captain_analytics(ballkid=self.captain)
-        recalc_captain_analytics(ballkid=self.captain2)
+        recalc_captain_analytics(ballkid=self.captain, year=2022)
+        recalc_captain_analytics(ballkid=self.captain2, year=2022)
 
         analytics = CaptainAnalytics.objects.all().order_by("ballkid_id")
         self.assertEqual(2, len(analytics))
@@ -332,7 +332,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=end,
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -364,7 +364,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=datetime(2022, 1, 2, 14, 45),
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -396,7 +396,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=datetime(2022, 1, 2, 14, 45),
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all().order_by("captain_id")
         self.assertEqual(2, len(analytics))
@@ -449,7 +449,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=datetime(2022, 1, 4, 19, 00),
             team=1,
         )  # overlapping time is 00:30
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all().order_by("captain_id")
         self.assertEqual(2, len(analytics))
@@ -487,7 +487,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=datetime(2022, 1, 2, 18, 30),
             team=1,
         )  # overlapping time is 10:30
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -509,7 +509,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=end,
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -531,7 +531,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=end,
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.captain)
+        recalc_captain_analytics(ballkid=self.captain, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -560,7 +560,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=end,
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.captain2)
+        recalc_captain_analytics(ballkid=self.captain2, year=2022)
 
         analytics = CaptainAnalytics.objects.all().order_by("ballkid_id")
         self.assertEqual(2, len(analytics))
@@ -599,7 +599,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=datetime(2022, 1, 2, 12, 31),
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.captain)
+        recalc_captain_analytics(ballkid=self.captain, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -636,7 +636,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=datetime(2022, 1, 1, 14, 29),
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -667,7 +667,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=datetime(2022, 1, 1, 14, 29),
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         self.assertEqual(0, len(CaptainAnalytics.objects.all()))
 
@@ -698,7 +698,7 @@ class TestBallkidViewAnalytics(TestCase):
             end=datetime(2022, 1, 1, 14, 29),
             team=1,
         )
-        recalc_captain_analytics(ballkid=self.ballkid)
+        recalc_captain_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CaptainAnalytics.objects.all()
         self.assertEqual(1, len(analytics))
@@ -718,7 +718,7 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(
             team=1, court=COURT.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
-        recalc_court_analytics(ballkid=self.ballkid)
+        recalc_court_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CourtAnalytics.objects.filter(duration__gt=timedelta())
         self.assertEqual(1, len(analytics))
@@ -738,7 +738,7 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(
             team=1, court=COURT.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
-        recalc_court_analytics()
+        recalc_court_analytics(year=2022)
 
         analytics = CourtAnalytics.objects.all()
         self.assertEqual(20, len(analytics))
@@ -754,7 +754,9 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(
             team=1, court=COURT.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
-        recalc_court_analytics(ballkid=self.ballkid, now=datetime(2022, 1, 1, 15, 00))
+        recalc_court_analytics(
+            ballkid=self.ballkid, now=datetime(2022, 1, 1, 15, 00), year=2022
+        )
 
         analytics = CourtAnalytics.objects.filter(duration__gt=timedelta())
         self.assertEqual(1, len(analytics))
@@ -780,7 +782,7 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(
             team=2, court=COURT.GRANDSTAND, start=datetime(2022, 1, 1, 11, 00)
         )
-        recalc_court_analytics(ballkid=self.ballkid)
+        recalc_court_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CourtAnalytics.objects.filter(duration__gt=timedelta())
         self.assertEqual(2, len(analytics))
@@ -809,7 +811,7 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(
             team=1, court=COURT.STADIUM, start=datetime(2022, 1, 1, 15, 00)
         )
-        recalc_court_analytics(ballkid=self.ballkid)
+        recalc_court_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CourtAnalytics.objects.filter(duration__gt=timedelta())
         self.assertEqual(1, len(analytics))
@@ -847,7 +849,7 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(
             team=2, court=COURT.FIVE, start=datetime(2022, 1, 1, 19, 00)
         )
-        recalc_court_analytics(ballkid=self.ballkid)
+        recalc_court_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CourtAnalytics.objects.filter(duration__gt=timedelta())
         self.assertEqual(4, len(analytics))
@@ -886,7 +888,7 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(
             team=1, court=COURT.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
-        recalc_court_analytics(ballkid=self.ballkid)
+        recalc_court_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CourtAnalytics.objects.filter(duration__gt=timedelta())
         self.assertEqual(0, len(analytics))
@@ -900,7 +902,9 @@ class TestBallkidViewAnalytics(TestCase):
         Schedule.objects.create(
             team=1, court=COURT.STADIUM, start=datetime(2022, 1, 1, 10, 00)
         )
-        recalc_court_analytics(ballkid=self.ballkid, now=datetime(2022, 1, 1, 9, 30))
+        recalc_court_analytics(
+            ballkid=self.ballkid, now=datetime(2022, 1, 1, 9, 30), year=2022
+        )
 
         analytics = CourtAnalytics.objects.filter(duration__gt=timedelta())
         self.assertEqual(0, len(analytics))
@@ -918,7 +922,7 @@ class TestBallkidViewAnalytics(TestCase):
             start=datetime(2022, 1, 1, 10, 00),
             end=datetime(2022, 1, 1, 10, 45),
         )
-        recalc_court_analytics(ballkid=self.ballkid)
+        recalc_court_analytics(ballkid=self.ballkid, year=2022)
 
         analytics = CourtAnalytics.objects.filter(duration__gt=timedelta())
         self.assertEqual(1, len(analytics))

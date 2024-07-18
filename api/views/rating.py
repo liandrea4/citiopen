@@ -125,17 +125,16 @@ def remove_nonoverlapping_reviewers(data):
     return new_data, excluded
 
 
-def calibrate(ratings, rating_name="overall", year=get_current_year()):
+def calibrate(ratings, year_ratings, rating_name="overall"):
     logger.info(
-        f"[calibrate] starting calibration for {len(ratings)} ratings and rating_name {rating_name}. First 10: {ratings[:10]}"
+        f"[calibrate] starting calibration for {len(ratings)} ratings and {len(year_ratings)} year_ratings and rating_name {rating_name}. First 10: {ratings[:10]}"
     )
-    year_ratings = ratings.filter(date__year=year)
 
-    # train = queryset_to_rcal(ratings, rating_name, returnAveraged=True)
-    # test = queryset_to_rcal(year_ratings, rating_name, returnAveraged=False)
-
+    train = queryset_to_rcal(ratings, rating_name, returnAveraged=True)
     test = queryset_to_rcal(year_ratings, rating_name, returnAveraged=False)
-    train = {key: sum(val) / len(val) for key, val in test.items()}
+
+    # test = queryset_to_rcal(year_ratings, rating_name, returnAveraged=False)
+    # train = {key: sum(val) / len(val) for key, val in test.items()}
 
     train, excluded = remove_nonoverlapping_reviewers(train)
 
@@ -146,7 +145,9 @@ def calibrate(ratings, rating_name="overall", year=get_current_year()):
     test = {k: v for k, v in test.items() if k[0] not in excluded}
 
     try:
-        ignore_outliers = Tournament.objects.get(year=2023).rcal_ignore_outliers
+        ignore_outliers = Tournament.objects.get(
+            year=get_current_year()
+        ).rcal_ignore_outliers
 
         cp = calibrate_parameters(train, rating_delta=(MAX_RATING - MIN_RATING))
         cp.rescale_parameters(
@@ -166,7 +167,7 @@ def calibrate(ratings, rating_name="overall", year=get_current_year()):
     return cp, excluded, None
 
 
-def save_calibration_parameters(cp, calibrated=None):
+def save_calibration_parameters(cp, calibrated=None, year=get_current_year()):
     """
     Save calibration params as a CalibrationParams object.
 
@@ -177,11 +178,9 @@ def save_calibration_parameters(cp, calibrated=None):
     """
     logger.info(f"[save_calibration_parameters] saving calibration params")
 
-    current_year = get_current_year()
-
     # Update all non-calibration related parameters
     ratings = Rating.objects.all()
-    year_ratings = Rating.objects.filter(date__year=current_year)
+    year_ratings = Rating.objects.filter(date__year=year)
 
     # raters = ratings.values_list("rater", flat=True).distinct()
     # ratees = ratings.values_list("ratee", flat=True).distinct()
@@ -219,7 +218,7 @@ def save_calibration_parameters(cp, calibrated=None):
 
         params, _ = CalibrationParams.objects.update_or_create(
             ballkid=ballkid,
-            year=current_year,
+            year=year,
             defaults={
                 "num_ratee_ratings": num_ratee_ratings,
                 "num_rater_ratings": num_rater_ratings,
@@ -249,7 +248,7 @@ def save_calibration_parameters(cp, calibrated=None):
 
             params, _ = CalibrationParams.objects.update_or_create(
                 ballkid=ballkid,
-                year=current_year,
+                year=year,
                 defaults={
                     "ratee_calibrated_avg": calibrated_avg,
                     "ratee_calibrated_stdev": calibrated_stdev,
@@ -262,7 +261,7 @@ def save_calibration_parameters(cp, calibrated=None):
         if cp is not None:
             params, _ = CalibrationParams.objects.update_or_create(
                 ballkid=ballkid,
-                year=current_year,
+                year=year,
                 defaults={
                     "ratee_improvement": cp.improvement_rates().get(name),
                     "ratee_offset": cp.person_offsets().get(name),
@@ -400,7 +399,7 @@ class CalibratedRatings(APIView):
             cp_dict["overall"],
             excluded["overall"],
             failed_categories["overall"],
-        ) = calibrate(ratings, "overall", year=year)
+        ) = calibrate(ratings, year_ratings, "overall")
 
         logger.warning(
             f"[CalibratedRatings] rating categories with failed rating categories {failed_categories}"
@@ -420,7 +419,7 @@ class CalibratedRatings(APIView):
         )
 
         # Save calibration parameters for overall ratings only
-        save_calibration_parameters(cp_dict["overall"], calibrated)
+        save_calibration_parameters(cp_dict["overall"], calibrated, year)
 
         # Calibrate each rating to put together a list of calibrated ratings
         # to return

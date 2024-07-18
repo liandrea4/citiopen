@@ -506,6 +506,36 @@ function CreateTournament({ setUpdated, setSuccessMsg, setErrorMsg }) {
   );
 }
 
+function ResetDataButton({ setSuccessMsg, setErrorMsg }) {
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <LoadingButton
+      loading={loading}
+      variant="contained"
+      size="small"
+      color="warning"
+      onClick={() => {
+        setLoading(true);
+        fetch("/api/reset-data", {
+          method: "PATCH",
+          headers: getAuthHeader(),
+        })
+          .then((response) => {
+            if (response.ok) {
+              setSuccessMsg("Reset all data for this year!");
+            } else {
+              setErrorMsg("Error resetting data.");
+            }
+          })
+          .then(() => setLoading(false));
+      }}
+    >
+      Reset Data
+    </LoadingButton>
+  );
+}
+
 export default function TournamentSettings(props) {
   const [tournament, setTournament] = useState();
 
@@ -589,6 +619,16 @@ export default function TournamentSettings(props) {
 
           <Grid item xs={12} className="justify">
             <Typography variant="subtitle1">
+              Reset all data for this year
+            </Typography>
+            <ResetDataButton
+              setSuccessMsg={setSuccessMsg}
+              setErrorMsg={setErrorMsg}
+            />
+          </Grid>
+
+          <Grid item xs={12} className="justify">
+            <Typography variant="subtitle1">
               Change calibration ignore_outliers parameter
             </Typography>
             <RemoveOutliers
@@ -600,7 +640,7 @@ export default function TournamentSettings(props) {
 
           <Grid item xs={12} className="justify">
             <Typography variant="subtitle1">
-              Export all data from database
+              Export and download all data from database
             </Typography>
             <DownloadButton
               setSuccessMsg={setSuccessMsg}

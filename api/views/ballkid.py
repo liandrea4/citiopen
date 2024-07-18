@@ -720,6 +720,87 @@ class ArchiveAll(APIView):
         )
 
 
+class ResetData(APIView):
+    permission_classes = [IsChairperson]
+
+    def patch(self, request, format=None):
+        year = get_current_year()
+
+        # Delete ratings from this year
+        ratings = Rating.objects.filter(date__year=year)
+        logger.info(f"[ResetData] Deleting {len(ratings)} ratings: {ratings}")
+        ratings.delete()
+
+        # Delete checkin histories from this year
+        histories = CheckinHistory.objects.filter(start__year=year)
+        logger.info(
+            f"[ResetData] Deleting {len(histories)} checkin histories: {histories}"
+        )
+        histories.delete()
+
+        # Delete checkin analytics from this year
+        analytics = CheckinAnalytics.objects.filter(year=year)
+        logger.info(
+            f"[ResetData] Deleting {len(analytics)} checkin analytics: {analytics}"
+        )
+        analytics.delete()
+
+        # Delete team histories from this year
+        histories = TeamHistory.objects.filter(start__year=year)
+        logger.info(
+            f"[ResetData] Deleting {len(histories)} team histories: {histories}"
+        )
+        histories.delete()
+
+        # Delete captain histories from this year
+        histories = CaptainHistory.objects.filter(start__year=year)
+        logger.info(
+            f"[ResetData] Deleting {len(histories)} captain histories: {histories}"
+        )
+        histories.delete()
+
+        # Delete captain analytics from this year
+        analytics = CaptainAnalytics.objects.filter(year=year)
+        logger.info(
+            f"[ResetData] Deleting {len(analytics)} captain analytics: {analytics}"
+        )
+        analytics.delete()
+
+        # Delete court analytics from this year
+        analytics = CourtAnalytics.objects.filter(year=year)
+        logger.info(
+            f"[ResetData] Deleting {len(analytics)} court analytics: {analytics}"
+        )
+        analytics.delete()
+
+        # Delete schedules from this year
+        schedules = Schedule.objects.filter(start__year=year)
+        logger.info(f"[ResetData] Deleting {len(schedules)} schedules: {schedules}")
+        schedules.delete()
+
+        # Delete calibrationparams from this year
+        cps = CalibrationParams.objects.filter(year=year)
+        logger.info(f"[ResetData] Deleting {len(cps)} calibration params: {cps}")
+        cps.delete()
+
+        # Delete cut histories from this year
+        histories = CutHistory.objects.filter(year=year)
+        logger.info(f"[ResetData] Deleting {len(histories)} cut histories: {histories}")
+        histories.delete()
+
+        # Delete finals histories from this year
+        histories = FinalsHistory.objects.filter(year=year)
+        logger.info(
+            f"[ResetData] Deleting {len(histories)} finals histories: {histories}"
+        )
+        histories.delete()
+
+        return Response(
+            {"Success": f"Data for {year} successfully reset"},
+            status=status.HTTP_200_OK,
+        )
+
+
 class CalcNumTeams(APIView):
     permission_classes = [IsAuthenticated]
 

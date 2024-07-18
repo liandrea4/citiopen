@@ -211,7 +211,7 @@ class TeamsGenerator:
     def get_smallest_team(self, position=None):
         smallest_team = self.teams[0]
         for team in self.teams:
-            if team.size() < smallest_team.size(position):
+            if team.size(position) < smallest_team.size(position):
                 smallest_team = team
 
         return smallest_team

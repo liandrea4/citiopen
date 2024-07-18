@@ -785,7 +785,6 @@ class CreateTeams(APIView):
 
         for team in teams:
             for ballkid in team.get_ballkids():
-
                 ballkid.set_field("current_team", team.get_number())
                 ballkid.validate()
                 ballkid.save()

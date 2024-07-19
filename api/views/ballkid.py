@@ -15,6 +15,7 @@ from django.db.models import (
     Case,
     Value,
     When,
+    Subquery,
     IntegerField,
 )
 from django.db.models.functions import TruncDay, Coalesce, DenseRank, Concat
@@ -1117,36 +1118,55 @@ class GetRatingsBallkidLeaderboard(generics.ListAPIView):
     permission_classes = [IsChairperson]
     serializer_class = BallkidSerializer
 
+    # def get_queryset(self):
+    #     year = get_current_year()
+    #     subq = CalibrationParams.objects.filter(ballkid_id=OuterRef("pk"), year=year)
+
+    #     return (
+    #         Ballkid.objects.filter(is_active=True)
+    #         .annotate(
+    #             num_ratings=Count("ratee", filter=Q(ratee__date__year=year)),
+    #             raw_avg=Coalesce(
+    #                 Avg("ratee__rating", filter=Q(ratee__date__year=year)), 0.0
+    #             ),
+    #             raw_stdev=Coalesce(
+    #                 StdDev("ratee__rating", filter=Q(ratee__date__year=year)),
+    #                 0.0,
+    #             ),
+    #             calibrated_avg=Subquery(subq.values("ratee_calibrated_avg")),
+    #             calibrated_stdev=Subquery(subq.values("ratee_calibrated_stdev")),
+    #         )
+    #         .order_by("-num_ratings")
+    #     )
+
     def get_queryset(self):
         year = get_current_year()
 
         return (
             Ballkid.objects.filter(is_active=True)
             .annotate(
-                num_ratings=Count("ratee", filter=Q(ratee__date__year=year)),
-                raw_avg=Coalesce(
-                    Avg("ratee__rating", filter=Q(ratee__date__year=year)), 0.0
+                num_ratings=Avg(
+                    "calibrationparams__num_ratee_ratings",
+                    filter=Q(calibrationparams__year=year),
                 ),
-                raw_stdev=Coalesce(
-                    StdDev("ratee__rating", filter=Q(ratee__date__year=year)),
-                    0.0,
+                raw_avg=Avg(
+                    "calibrationparams__ratee_raw_avg",
+                    filter=Q(calibrationparams__year=year),
                 ),
-                calibrated_avg=Coalesce(
-                    Avg(
-                        "calibrationparams__ratee_calibrated_avg",
-                        filter=Q(calibrationparams__year=year),
-                    ),
-                    0.0,
+                raw_stdev=Avg(
+                    "calibrationparams__ratee_raw_stdev",
+                    filter=Q(calibrationparams__year=year),
                 ),
-                calibrated_stdev=Coalesce(
-                    Avg(
-                        "calibrationparams__ratee_calibrated_stdev",
-                        filter=Q(calibrationparams__year=year),
-                    ),
-                    0.0,
+                calibrated_avg=Avg(
+                    "calibrationparams__ratee_calibrated_avg",
+                    filter=Q(calibrationparams__year=year),
+                ),
+                calibrated_stdev=Avg(
+                    "calibrationparams__ratee_calibrated_stdev",
+                    filter=Q(calibrationparams__year=year),
                 ),
             )
-            .order_by("-calibrated_avg", "-raw_avg")
+            .order_by("-num_ratings")
         )
 
 

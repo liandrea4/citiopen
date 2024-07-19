@@ -167,7 +167,7 @@ def calibrate(ratings, year_ratings, rating_name="overall"):
     return cp, excluded, None
 
 
-def save_calibration_parameters(cp, calibrated=None, year=get_current_year()):
+def save_calibration_parameters(cp=None, calibrated=None, year=get_current_year()):
     """
     Save calibration params as a CalibrationParams object.
 
@@ -178,44 +178,27 @@ def save_calibration_parameters(cp, calibrated=None, year=get_current_year()):
     """
     logger.info(f"[save_calibration_parameters] saving calibration params")
 
-    # Update all non-calibration related parameters
-    ratings = Rating.objects.all()
+    # Filter to this year's ratings only
     year_ratings = Rating.objects.filter(date__year=year)
 
-    # raters = ratings.values_list("rater", flat=True).distinct()
-    # ratees = ratings.values_list("ratee", flat=True).distinct()
-    # keys = raters.union(ratees)
-    # logger.info(
-    #     f"[save_calibration_parameters] union of raters {raters} and ratees {ratees}: {keys}"
-    # )
-
+    # Filter to active ballkids only
     ballkids = Ballkid.objects.filter(is_active=True)
-
-    # for ballkid_id in keys:
-    #     try:
-    #         ballkid = Ballkid.objects.get(id=ballkid_id)
-    #         name = ballkid.get_name()
-    #     except ObjectDoesNotExist:
-    #         logger.warning(
-    #             f"[save_calibration_params] Could not find ballkid {name}"
-    #         )
-    #         continue
 
     for ballkid in ballkids:
         name = ballkid.get_name()
 
         ratee_ratings = year_ratings.filter(ratee=ballkid)
-        rater_ratings = ratings.filter(rater=ballkid)
-        rater_year_ratings = year_ratings.filter(rater=ballkid)
+        rater_ratings = year_ratings.filter(rater=ballkid)
 
         num_ratee_ratings = ratee_ratings.count()
-        num_rater_ratings = rater_year_ratings.count()
+        num_rater_ratings = rater_ratings.count()
         num_raters = ratee_ratings.values_list("rater").distinct().count()
         ratee_raw_avg = ratee_ratings.aggregate(val=Avg("rating"))["val"]
         ratee_raw_stdev = ratee_ratings.aggregate(val=StdDev("rating"))["val"]
         rater_raw_avg = rater_ratings.aggregate(val=Avg("rating"))["val"]
         rater_raw_stdev = rater_ratings.aggregate(val=StdDev("rating"))["val"]
 
+        # Update all non-calibration related parameters
         params, _ = CalibrationParams.objects.update_or_create(
             ballkid=ballkid,
             year=year,

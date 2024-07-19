@@ -29,6 +29,7 @@ from api.utils.utils import *
 from api.utils.consts import *
 from api.permissions import *
 from api.utils.teams_generator import TeamsGenerator
+from api.views.rating import save_calibration_parameters
 from accounts.views import UpdateCaptainStatus
 
 from datetime import timedelta
@@ -1083,6 +1084,7 @@ class GetRatingsCaptainLeaderboard(generics.ListAPIView):
 
     def get_queryset(self):
         year = get_current_year()
+        save_calibration_parameters()
 
         return (
             Ballkid.objects.filter(is_active=True)
@@ -1119,6 +1121,7 @@ class GetRatingsBallkidLeaderboard(generics.ListAPIView):
 
     def get_queryset(self):
         year = get_current_year()
+        save_calibration_parameters()
 
         return (
             Ballkid.objects.filter(is_active=True)

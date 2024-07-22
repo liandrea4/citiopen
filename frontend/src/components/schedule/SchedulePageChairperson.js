@@ -51,7 +51,7 @@ function CreateSchedule({ date, setUpdated }) {
             variant="standard"
             type="time"
             required={true}
-            defaultValue="12:00"
+            defaultValue="11:00"
             style={{ minWidth: minWidth }}
             onChange={(e) => setStartHour(e.target.value)}
           />

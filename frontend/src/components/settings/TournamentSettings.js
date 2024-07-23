@@ -27,6 +27,7 @@ import {
   HideShowToggle,
   getAuthHeader,
   Banners,
+  ConfirmDialog,
 } from "../Utils";
 import { tournamentSettings } from "../HelpMessages";
 
@@ -76,33 +77,32 @@ function DownloadButton({ setSuccessMsg, setErrorMsg }) {
   );
 }
 
-function ArchiveButton({ setSuccessMsg, setErrorMsg }) {
-  const [loading, setLoading] = useState(false);
+function ArchiveButton() {
+  const [open, setOpen] = useState(false);
+
+  // Underscore to indicate that variable is not used to ignore for estlint
+  const [_updated, setUpdated] = useState();
 
   return (
-    <LoadingButton
-      loading={loading}
-      variant="contained"
-      size="small"
-      color="error"
-      onClick={() => {
-        setLoading(true);
-        fetch("/api/archive-all", {
-          method: "PATCH",
-          headers: getAuthHeader(),
-        })
-          .then((response) => {
-            if (response.ok) {
-              setSuccessMsg("Archived all ballkids!");
-            } else {
-              setErrorMsg("Error archiving ballkids.");
-            }
-          })
-          .then(() => setLoading(false));
-      }}
-    >
-      Archive All
-    </LoadingButton>
+    <Box>
+      <ConfirmDialog
+        message={"You are about to archive all active ballkids."}
+        url={"/api/archive-all"}
+        body={{}}
+        open={open}
+        setOpen={setOpen}
+        setUpdated={setUpdated}
+      />
+
+      <Button
+        variant="contained"
+        size="small"
+        color="error"
+        onClick={() => setOpen(true)}
+      >
+        Archive All
+      </Button>
+    </Box>
   );
 }
 
@@ -506,33 +506,34 @@ function CreateTournament({ setUpdated, setSuccessMsg, setErrorMsg }) {
   );
 }
 
-function ResetDataButton({ setSuccessMsg, setErrorMsg }) {
-  const [loading, setLoading] = useState(false);
+function ResetDataButton() {
+  const [open, setOpen] = useState(false);
+
+  // Underscore to indicate that variable is not used to ignore for estlint
+  const [_updated, setUpdated] = useState();
 
   return (
-    <LoadingButton
-      loading={loading}
-      variant="contained"
-      size="small"
-      color="warning"
-      onClick={() => {
-        setLoading(true);
-        fetch("/api/reset-data", {
-          method: "PATCH",
-          headers: getAuthHeader(),
-        })
-          .then((response) => {
-            if (response.ok) {
-              setSuccessMsg("Reset all data for this year!");
-            } else {
-              setErrorMsg("Error resetting data.");
-            }
-          })
-          .then(() => setLoading(false));
-      }}
-    >
-      Reset Data
-    </LoadingButton>
+    <Box>
+      <ConfirmDialog
+        message={
+          "You are about to reset ALL data for this year, including check-in history and analytics, team history, captain analytics, court analytics, schedules, ratings, and calibration parameters."
+        }
+        url={"/api/reset-data"}
+        body={{}}
+        open={open}
+        setOpen={setOpen}
+        setUpdated={setUpdated}
+      />
+
+      <Button
+        variant="contained"
+        size="small"
+        color="warning"
+        onClick={() => setOpen(true)}
+      >
+        Reset Data
+      </Button>
+    </Box>
   );
 }
 

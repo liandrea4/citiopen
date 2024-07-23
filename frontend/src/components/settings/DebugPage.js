@@ -1263,7 +1263,7 @@ function BulkCheckin() {
       </Grid>
       <Grid item xs={12}>
         <Typography component="h4" variant="h4">
-          Bulk Check In Ballkids
+          Bulk Ballkid Check-In
         </Typography>
       </Grid>
       <Grid item xs={12}>
@@ -1291,11 +1291,7 @@ function BulkCheckin() {
               body: JSON.stringify({ num: numBallkids }),
             }).then((response) => {
               if (response.ok) {
-                setSuccessMsg(
-                  `Checked in ${numBallkids} ballkid${
-                    numBallkids === 0 ? "" : "s"
-                  }!`
-                );
+                setSuccessMsg("Ballkids checked in!");
               } else {
                 setErrorMsg("Error checking in ballkids.");
               }
@@ -1368,7 +1364,7 @@ export default function DebugPage(props) {
     "Bulk Create Finals": <BulkCreation type="finals" />,
     "Bulk Create Cuts": <BulkCreation type="cuts" />,
     "Bulk Create Check-in Histories": <BulkCreation type="checkins" />,
-    "Bulk Check-in Ballkids": <BulkCheckin />,
+    "Bulk Ballkid Check-In": <BulkCheckin />,
   };
 
   return (

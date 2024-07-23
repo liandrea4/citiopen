@@ -1,9 +1,13 @@
+import random
+
 DEFAULT_IMAGE_FILE = "static/img/none.jpg"
 MIN_CAPTAIN_DURATION = 30
 CHECKIN_START_HOUR = 8
 MATCHES_START_HOUR = 10
 
 SUPERVET_THRESHOLD = 3
+
+TEAMS_STRENGTH_ORDER = [9, 5, 10, 1] + random.sample([4, 6, 8], 3) + [3, 7, 2]
 
 NUM_COURTS_TO_COURTS = {
     5: ["Stadium", "Court 4", "Harris", "Court 5", "Grandstand"],

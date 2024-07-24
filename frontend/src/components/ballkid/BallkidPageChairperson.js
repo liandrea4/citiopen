@@ -418,7 +418,6 @@ function renderRatingsCaptainSection(ballkid, ballkidGroup, params) {
 }
 
 function renderRatingsBallkidSection(ballkid, params) {
-  console.log(ballkid);
   return (
     <Grid item xs={12} lg={5.5} sx={{ mx: 1 }}>
       <Button

@@ -7,6 +7,7 @@ from django.db.models import (
     Count,
     Sum,
     Q,
+    F,
     Avg,
     OuterRef,
     Case,
@@ -1301,7 +1302,7 @@ class TicketList(generics.ListAPIView):
             ballkid_name=Concat(
                 "ballkid__first_name", Value(" "), "ballkid__last_name"
             ),
-            num_tickets="ballkid__num_tickets",
+            num_tickets=F("ballkid__num_tickets"),
         ).order_by("session", "order")
 
         return tickets

@@ -488,17 +488,10 @@ export function DraggableBallkidAndIcon({ ballkid, type = "" }) {
       }}
     >
       <div className="sxs">
-        <Link
-          variant="body2"
-          component={RouterLink}
-          to={
-            ballkid.id === getLocalStorage("ballkid_id")
-              ? "/me"
-              : `/ballkid/${ballkid.id}`
-          }
-        >
-          {ballkid.first_name} {ballkid.last_name}
-        </Link>
+        <BallkidLink
+          id={ballkid.id}
+          name={`${ballkid.first_name} ${ballkid.last_name}`}
+        />
         &thinsp;
         <Icons ballkid={ballkid} margin={0} isTeamsPage={true} />
       </div>
@@ -543,20 +536,25 @@ export function DraggableBallkidAndIcon({ ballkid, type = "" }) {
 export function BallkidAndIcon({ ballkid }) {
   return (
     <div className="sxs">
-      <Link
-        variant="body2"
-        component={RouterLink}
-        to={
-          ballkid.id === getLocalStorage("ballkid_id")
-            ? "/me"
-            : `/ballkid/${ballkid.id}`
-        }
-      >
-        {ballkid.first_name} {ballkid.last_name}
-      </Link>
+      <BallkidLink
+        id={ballkid.id}
+        name={`${ballkid.first_name} ${ballkid.last_name}`}
+      />
       &thinsp;
       <Icons ballkid={ballkid} margin={0} />
     </div>
+  );
+}
+
+export function BallkidLink({ id, name }) {
+  return (
+    <Link
+      variant="body2"
+      component={RouterLink}
+      to={id === getLocalStorage("ballkid_id") ? "/me" : `/ballkid/${id}`}
+    >
+      {name}
+    </Link>
   );
 }
 

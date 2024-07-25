@@ -162,10 +162,60 @@ function AddTicketRequest({ session, ballkidsList, setUpdated }) {
   );
 }
 
+function Session({ session, tickets, ballkidsList, setUpdated }) {
+  const isMobile = useIsMobile();
+
+  const alreadyRequested = tickets.map((ticket) => ticket.ballkid);
+
+  return (
+    <Grid item xs={12} sm={isMobile ? 6 : 12} md={6} lg={4} xl={3}>
+      <Card sx={{ mb: 1 }} elevation={1}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            {session}
+          </Typography>
+          {tickets.map((ticket) => (
+            <Box key={`${session}_${ticket.ballkid}`} className="justify">
+              <Box className="sxs">
+                <Typography variant="subtitle2" sx={{ mr: 2 }}>
+                  {ticket.order}
+                </Typography>
+                <BallkidLink id={ticket.ballkid} name={ticket.ballkid_name} />
+                <Typography
+                  sx={{ mx: 1, px: 0.5, my: 0.1 }}
+                  bgcolor={ticket.num_tickets < TICKET_LIMIT ? "" : "pink"}
+                  variant="body2"
+                >
+                  {ticket.num_tickets}
+                </Typography>
+              </Box>
+              <Box className="sxs">
+                {toTicketRepr(ticket).map((ticketRepr, i) => (
+                  <Ticket
+                    key={`${ticket.session}_${ticket.ballkid}_${i}`}
+                    ticket={ticket}
+                    ticketRepr={ticketRepr}
+                    setUpdated={setUpdated}
+                  />
+                ))}
+              </Box>
+            </Box>
+          ))}
+          <AddTicketRequest
+            session={session}
+            ballkidsList={ballkidsList.filter(
+              (ballkid) => !alreadyRequested.includes(ballkid.id)
+            )}
+            setUpdated={setUpdated}
+          />
+        </CardContent>
+      </Card>
+    </Grid>
+  );
+}
+
 function Sessions({ tickets, setUpdated }) {
   const [ballkidsList, setBallkidsList] = useState([]);
-
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetch("/api/list", { headers: getAuthHeader() })
@@ -183,68 +233,13 @@ function Sessions({ tickets, setUpdated }) {
   return (
     <Grid container spacing={2}>
       {TICKET_SESSIONS.map((session) => (
-        <Grid
-          item
+        <Session
           key={session}
-          xs={12}
-          sm={isMobile ? 6 : 12}
-          md={6}
-          lg={4}
-          xl={3}
-        >
-          <Card
-            sx={{
-              mb: 1,
-              borderWidth: 0,
-            }}
-            elevation={1}
-          >
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                {session}
-              </Typography>
-              {tickets
-                .filter((ticket) => ticket.session === session)
-                .map((ticket) => (
-                  <Box key={`${session}_${ticket.ballkid}`} className="justify">
-                    <Box className="sxs">
-                      <Typography variant="subtitle2" sx={{ mr: 2 }}>
-                        {ticket.order}
-                      </Typography>
-                      <BallkidLink
-                        id={ticket.ballkid}
-                        name={ticket.ballkid_name}
-                      />
-                      <Typography
-                        sx={{ mx: 1, px: 0.5, my: 0.1 }}
-                        bgcolor={
-                          ticket.num_tickets < TICKET_LIMIT ? "" : "pink"
-                        }
-                        variant="body2"
-                      >
-                        {ticket.num_tickets}
-                      </Typography>
-                    </Box>
-                    <Box className="sxs">
-                      {toTicketRepr(ticket).map((ticketRepr, i) => (
-                        <Ticket
-                          key={`${ticket.session}_${ticket.ballkid}_${i}`}
-                          ticket={ticket}
-                          ticketRepr={ticketRepr}
-                          setUpdated={setUpdated}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-                ))}
-              <AddTicketRequest
-                session={session}
-                ballkidsList={ballkidsList}
-                setUpdated={setUpdated}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
+          session={session}
+          tickets={tickets.filter((ticket) => ticket.session === session)}
+          ballkidsList={ballkidsList}
+          setUpdated={setUpdated}
+        />
       ))}
     </Grid>
   );

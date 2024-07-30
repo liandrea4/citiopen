@@ -473,14 +473,108 @@ export function ConfirmDialog({
   );
 }
 
-export function DraggableBallkidAndIcon({ ballkid, type = "" }) {
+// export function DraggableBallkidAndIcon({ ballkid, type = "" }) {
+//   const [{ isDragging }, drag] = useDrag(() => ({
+//     type: "ballkid",
+//     item: { ...ballkid },
+//     collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+//   }));
+
+//   const base = (
+//     <div
+//       ref={drag}
+//       style={{
+//         opacity: isDragging ? 0.5 : 1,
+//       }}
+//     >
+//       <div className="sxs">
+//         <BallkidLink
+//           id={ballkid.id}
+//           name={`${ballkid.first_name} ${ballkid.last_name}`}
+//         />
+//         &thinsp;
+//         <Icons ballkid={ballkid} margin={0} isTeamsPage={true} />
+//       </div>
+//     </div>
+//   );
+//   switch (type) {
+//     case "":
+//       return base;
+
+//     // When rendering a draggable ballkid on the teams page, show the checkout
+//     // comments for today
+//     case "checkout":
+//     case "checkout-teams":
+//       return (
+//         <div className="sxs">
+//           {base}
+//           <CommentsText
+//             comments={ballkid.checkout_comments}
+//             commentType={type}
+//           />
+//         </div>
+//       );
+
+//     // When rendering a draggable ballkid on the cut and finals pages, show the
+//     // ratings rank and number of years of experience
+//     case "rank":
+//       return (
+//         <div className="sxs">
+//           {base}
+//           <CommentsText
+//             comments={[ballkid.rank, ballkid.num_ratings]}
+//             commentType={"rank"}
+//           />
+//           <CommentsText
+//             comments={ballkid.num_years_experience}
+//             commentType={"num_years_experience"}
+//           />
+//         </div>
+//       );
+
+//     default:
+//       return base;
+//   }
+// }
+
+export function DraggableBallkidAndIcon({ ballkid, commentTypes = [] }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "ballkid",
     item: { ...ballkid },
     collect: (monitor) => ({ isDragging: monitor.isDragging() }),
   }));
 
-  const base = (
+  const commentTypeToComment = {
+    checkout: (
+      <CommentsText
+        comments={ballkid.checkout_comments}
+        commentType="checkout"
+      />
+    ),
+    "checkout-teams": (
+      <CommentsText
+        comments={ballkid.checkout_comments}
+        commentType="checkout-teams"
+      />
+    ),
+    rank: (
+      <CommentsText
+        comments={[ballkid.rank, ballkid.num_ratings]}
+        commentType="rank"
+      />
+    ),
+    experience: (
+      <CommentsText
+        comments={ballkid.num_years_experience}
+        commentType="num_years_experience"
+      />
+    ),
+    lastDay: (
+      <CommentsText comments={ballkid.last_day} commentType="last_day" />
+    ),
+  };
+
+  return (
     <div
       ref={drag}
       style={{
@@ -494,43 +588,10 @@ export function DraggableBallkidAndIcon({ ballkid, type = "" }) {
         />
         &thinsp;
         <Icons ballkid={ballkid} margin={0} isTeamsPage={true} />
+        {commentTypes.map((commentType) => commentTypeToComment[commentType])}
       </div>
     </div>
   );
-  switch (type) {
-    case "":
-      return base;
-
-    case "checkout":
-    case "checkout-teams":
-      return (
-        <div className="sxs">
-          {base}
-          <CommentsText
-            comments={ballkid.checkout_comments}
-            commentType={type}
-          />
-        </div>
-      );
-
-    case "rank":
-      return (
-        <div className="sxs">
-          {base}
-          <CommentsText
-            comments={[ballkid.rank, ballkid.num_ratings]}
-            commentType={"rank"}
-          />
-          <CommentsText
-            comments={ballkid.num_years_experience}
-            commentType={"num_years_experience"}
-          />
-        </div>
-      );
-
-    default:
-      return base;
-  }
 }
 
 export function BallkidAndIcon({ ballkid }) {

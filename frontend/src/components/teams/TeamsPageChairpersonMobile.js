@@ -145,7 +145,11 @@ export function UnassignedMobile({
                       <TableCell component="th" scope="row">
                         <DraggableBallkidAndIcon
                           ballkid={ballkid}
-                          type={isFinalsPage ? "rank" : "checkout-teams"}
+                          commentTypes={
+                            isFinalsPage
+                              ? ["rank", "experience"]
+                              : ["checkout-teams"]
+                          }
                         />
                       </TableCell>
                       <TableCell>{ballkid.preferred_position}</TableCell>

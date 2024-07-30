@@ -147,7 +147,11 @@ export function UnassignedDesktop({
                             <Grid key={ballkid.id} item sx={{ px: 1 }}>
                               <DraggableBallkidAndIcon
                                 ballkid={ballkid}
-                                type={isFinalsPage ? "rank" : "checkout-teams"}
+                                commentTypes={
+                                  isFinalsPage
+                                    ? ["rank", "experience"]
+                                    : ["checkout-teams"]
+                                }
                               />
                             </Grid>
                           ))}

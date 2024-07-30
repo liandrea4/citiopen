@@ -139,7 +139,9 @@ export function renderBallkidsInSection(active, section, position, setUpdated) {
           <div key={`ballkid${ballkid.id}`} className="justify">
             <DraggableBallkidAndIcon
               ballkid={ballkid}
-              type={section === "Self-Cut" ? "" : "rank"}
+              commentTypes={
+                section === "Self-Cut" ? "" : ["rank", "experience"]
+              }
             />
 
             <div className="sxs">
@@ -291,7 +293,7 @@ function ActiveSection({ active, setUpdated }) {
                         <Grid key={ballkid.id} item sx={{ px: 1 }}>
                           <DraggableBallkidAndIcon
                             ballkid={ballkid}
-                            type="rank"
+                            commentTypes={["rank", "experience"]}
                           />
                         </Grid>
                       ))}

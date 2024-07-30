@@ -107,7 +107,10 @@ function ActiveSection({ active, sections, setUpdated }) {
                 ) : (
                   <TableRow key={ballkid.id}>
                     <TableCell component="th" scope="row">
-                      <DraggableBallkidAndIcon ballkid={ballkid} type="rank" />
+                      <DraggableBallkidAndIcon
+                        ballkid={ballkid}
+                        commentTypes={["rank", "experience"]}
+                      />
                     </TableCell>
                     <TableCell>{ballkid.preferred_position}</TableCell>
                     <TableCell align="right">

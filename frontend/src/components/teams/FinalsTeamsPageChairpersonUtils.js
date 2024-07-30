@@ -112,7 +112,10 @@ function renderBallkidsOnTeam(assigned, setUpdated) {
     <div>
       {assigned.map((ballkid) => (
         <div key={`ballkid${ballkid.id}`} className="justify">
-          <DraggableBallkidAndIcon ballkid={ballkid} type="rank" />
+          <DraggableBallkidAndIcon
+            ballkid={ballkid}
+            commentTypes={["rank", "experience"]}
+          />
 
           <div className="sxs">
             {!ballkid.preferred_position.includes("/") ? (

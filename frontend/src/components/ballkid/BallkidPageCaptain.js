@@ -16,6 +16,7 @@ import {
   getLocalStorage,
   useIsMobile,
   Banners,
+  DraftRatingButton,
 } from "../Utils";
 
 export default function BallkidPageCaptain(props) {
@@ -60,6 +61,8 @@ export default function BallkidPageCaptain(props) {
 
         {ballkid.id === getLocalStorage("ballkid_id") ? (
           ""
+        ) : ballkid.have_draft ? (
+          <DraftRatingButton ballkid={ballkid} setUpdated={setUpdated} />
         ) : (
           <RatingButton
             ballkid={ballkid}

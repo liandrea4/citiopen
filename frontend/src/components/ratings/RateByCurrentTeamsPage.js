@@ -15,6 +15,7 @@ import {
   BallkidAndIcon,
   HelpIcon,
   Banners,
+  DraftRatingButton,
 } from "../Utils";
 import { ON_COURT_GREEN, POSITIONS } from "../Consts";
 import { Box } from "@mui/material";
@@ -65,6 +66,11 @@ function Team({ team, assigned, nextShifts, setUpdated }) {
 
                     {ballkid.id === getLocalStorage("ballkid_id") ? (
                       ""
+                    ) : ballkid.have_draft ? (
+                      <DraftRatingButton
+                        ballkid={ballkid}
+                        setUpdated={setUpdated}
+                      />
                     ) : (
                       <RatingButton ballkid={ballkid} setUpdated={setUpdated} />
                     )}

@@ -15,6 +15,7 @@ import {
   HelpIcon,
   Banners,
   getDay,
+  DraftRatingButton,
 } from "../Utils";
 import { MARGINS } from "../Consts";
 import { rateByPastTeam } from "../HelpMessages";
@@ -37,11 +38,15 @@ function renderBallkid(ballkid, layout, setUpdated, date = null) {
         ballkid={ballkid}
         renderAdditional={
           <Box textAlign="center" sx={{ mt: layout === "grid" ? 1 : 0 }}>
-            <RatingButton
-              ballkid={ballkid}
-              setUpdated={setUpdated}
-              date={date}
-            />
+            {ballkid.have_draft ? (
+              <DraftRatingButton ballkid={ballkid} setUpdated={setUpdated} />
+            ) : (
+              <RatingButton
+                ballkid={ballkid}
+                setUpdated={setUpdated}
+                date={date}
+              />
+            )}
             <Typography variant="subtitle2" sx={{ mt: 0.5 }}>
               My total ratings:{" "}
               <Box fontWeight="fontWeightRegular" display="inline">

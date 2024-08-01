@@ -173,6 +173,7 @@ export function DraftRatingButton({ ballkid, setUpdated }) {
   const [draft, setDraft] = useState();
 
   const pk = getLocalStorage("ballkid_id");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetch(`/api/get-draft-rating/${pk}/${ballkid.id}`, {
@@ -206,6 +207,7 @@ export function DraftRatingButton({ ballkid, setUpdated }) {
           e.preventDefault();
           setOpen(true);
         }}
+        sx={{ my: isMobile ? 1 : 0.2 }}
       >
         View Draft
       </Button>

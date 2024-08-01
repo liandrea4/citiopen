@@ -14,7 +14,6 @@ import {
   SearchAndFilter,
   filterBallkids,
   BallkidCard,
-  setLocalStorage,
   HelpIcon,
   Banners,
   DraftRatingButton,
@@ -54,17 +53,11 @@ function getBallkidsToRender(
   return ballkidsToRender;
 }
 
-function renderSwitch(param, setParam, offStr, onStr, switchName) {
+function renderSwitch(param, setParam, offStr, onStr) {
   return (
     <Grid item className="sxs" xs={12} md={6} lg={5} xl={4}>
       <Typography variant="body1">{offStr}</Typography>
-      <Switch
-        checked={param}
-        onClick={(e) => {
-          setParam(e.target.checked);
-          setLocalStorage(switchName, e.target.checked);
-        }}
-      />
+      <Switch checked={param} onClick={(e) => setParam(e.target.checked)} />
       <Typography variant="body1">{onStr}</Typography>
     </Grid>
   );
@@ -146,12 +139,9 @@ export default function RateByNamePage(props) {
 
   const isChairperson = getLocalStorage("group") === "chairperson";
 
-  const [showUnrated, setShowUnrated] = useState(
-    getLocalStorage("showUnrated") ?? false
-  );
-  const [showTeam, setShowTeam] = useState(
-    getLocalStorage("showTeam") ?? (isChairperson ? false : true)
-  );
+  const [showUnrated, setShowUnrated] = useState(false);
+  const [showTeam, setShowTeam] = useState(isChairperson ? false : true);
+  const [showOnlyDrafts, setShowOnlyDrafts] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterGroup, setFilterGroup] = useState();
   const [layout, setLayout] = useState(getLocalStorage("layout") ?? "list");
@@ -214,16 +204,22 @@ export default function RateByNamePage(props) {
           showUnrated,
           setShowUnrated,
           "Show All Ballkids",
-          "Show Ballkids to Rate",
-          "showUnrated"
+          "Show Ballkids to Rate"
         )}
 
         {renderSwitch(
           showTeam,
           setShowTeam,
           "Show All Teams",
-          "Show My Team Only",
-          "showTeam"
+          "Show My Team Only"
+        )}
+
+        {renderSwitch(
+          showOnlyDrafts,
+          setShowOnlyDrafts,
+          "Show All Ballkids",
+          "Show Draft Ratings Only",
+          "showUnrated"
         )}
       </Grid>
 

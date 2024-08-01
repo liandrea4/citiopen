@@ -8,11 +8,14 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Popper from "@mui/material/Popper";
 import Rating from "@mui/material/Rating";
+import Tooltip from "@mui/material/Tooltip";
 
 import Delete from "@mui/icons-material/Delete";
+import HighlightOff from "@mui/icons-material/HighlightOff";
+import Cancel from "@mui/icons-material/Cancel";
 
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { getLocalStorage, ConfirmDialog } from "../Utils";
+import { getLocalStorage, ConfirmDialog, getAuthHeader } from "../Utils";
 import { DATA_GRID_HEIGHT } from "../Consts";
 
 export default function RatingsGrid({ ratings, setUpdated }) {
@@ -95,30 +98,53 @@ export default function RatingsGrid({ ratings, setUpdated }) {
   const ratingColWidth = 125;
   const commentsColWidth = 350;
 
-  var columns =
-    group !== "chairperson"
-      ? []
-      : [
-          {
-            field: "delete",
-            headerName: "Delete",
-            sortable: false,
-            width: 70,
-            renderCell: (rowData) => (
-              <IconButton
-                onClick={() => {
-                  setDeleteRatingId(rowData.id);
-                  setOpen(true);
-                }}
-              >
-                <Delete />
-              </IconButton>
-            ),
-          },
-        ];
+  const chairpersonColumns = [
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      width: 100,
+      renderCell: (rowData) => (
+        <Box className="sxs">
+          <Tooltip title="Delete">
+            <IconButton
+              size="small"
+              onClick={() => {
+                setDeleteRatingId(rowData.id);
+                setOpen(true);
+              }}
+            >
+              <Delete />
+            </IconButton>
+          </Tooltip>
 
-  columns = [
-    ...columns,
+          <Tooltip
+            title={rowData.row.status === "Exclude" ? "Un-Exclude" : "Exclude"}
+          >
+            <IconButton
+              size="small"
+              color={rowData.row.status === "Exclude" ? "error" : ""}
+              onClick={() =>
+                fetch(`/api/exclude-rating/${rowData.id}`, {
+                  method: "PATCH",
+                  headers: getAuthHeader(),
+                  body: JSON.stringify({}),
+                }).then((response) => {
+                  if (response.ok) {
+                    setUpdated(true);
+                  }
+                })
+              }
+            >
+              {rowData.row.status === "Exclude" ? <Cancel /> : <HighlightOff />}
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
+
+  const captainColumns = [
     {
       field: "date",
       headerName: "Date",
@@ -288,6 +314,11 @@ export default function RatingsGrid({ ratings, setUpdated }) {
     },
   ];
 
+  const columns =
+    group === "chairperson"
+      ? [...chairpersonColumns, ...captainColumns]
+      : captainColumns;
+
   const rows = ratings.map((rating) => ({
     id: rating.id,
     date: rating.date,
@@ -305,6 +336,7 @@ export default function RatingsGrid({ ratings, setUpdated }) {
     year: rating.year,
     month: rating.month,
     day: rating.day,
+    status: rating.status,
   }));
 
   return (
@@ -318,7 +350,7 @@ export default function RatingsGrid({ ratings, setUpdated }) {
         open={open}
         setOpen={setOpen}
         setUpdated={setUpdated}
-        method="DELETE"
+        method="PATCH"
       />
 
       <div style={{ height: DATA_GRID_HEIGHT }}>

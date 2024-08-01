@@ -28,8 +28,11 @@ export default function RatingsPage(props) {
   useEffect(() => {
     fetch(`/api/ratings/${year}`, { headers: getAuthHeader() })
       .then((response) => response.json())
-      .then((data) => setRatings(data));
+      .then((data) => setRatings(data))
+      .then(() => setUpdated(false));
+  }, [year, updated]);
 
+  useEffect(() => {
     fetch(`/api/calibrated-ratings/${year}`, { headers: getAuthHeader() })
       .then((response) => {
         setLoading(false);
@@ -46,9 +49,8 @@ export default function RatingsPage(props) {
         }
         return response.json();
       })
-      .then((data) => setCalibrated(data))
-      .then(() => setUpdated(false));
-  }, [year, updated]);
+      .then((data) => setCalibrated(data));
+  }, [year]);
 
   return (
     <div className="page">

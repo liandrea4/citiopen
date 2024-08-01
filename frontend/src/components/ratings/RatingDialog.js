@@ -258,7 +258,7 @@ export default function RatingDialog({
             })
           }
         >
-          Save as Draft
+          Save Draft
         </Button>
         <LoadingButton
           loading={loading}

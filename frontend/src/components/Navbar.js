@@ -80,6 +80,7 @@ const chairpersonTabs = [
     subtabs: [
       { label: "Teams", url: "/teams" },
       { label: "Finals Teams", url: "/finals-teams" },
+      { label: "Past Finals Teams", url: "/past-finals" },
     ],
   },
   { label: "Schedule", url: "/schedule" },

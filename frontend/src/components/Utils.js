@@ -618,7 +618,7 @@ export function BallkidPopover({
               {ballkid.first_name} {ballkid.last_name}
             </Typography>
             {hoverCommentTypes.map((hoverCommentType) => (
-              <Box className="sxs">
+              <Box className="sxs" key={`${ballkid.id}_${hoverCommentType}`}>
                 <CommentsText
                   ballkid={ballkid}
                   commentType={hoverCommentType}
@@ -755,17 +755,14 @@ export function CommentsText({
           ) : (
             ""
           )}
-          {ballkid.checkout_comments === "End" ? (
-            ""
-          ) : (
-            <Typography
-              sx={{ mx: 0.5, px: 0.5, my: layout === "grid" ? 1 : 0 }}
-              bgcolor={ballkid.checkout_comments === "End" ? "" : "orange"}
-              variant="body2"
-            >
-              {ballkid.checkout_comments}
-            </Typography>
-          )}
+
+          <Typography
+            sx={{ mx: 0.5, px: 0.5, my: layout === "grid" ? 1 : 0 }}
+            bgcolor={ballkid.checkout_comments === "End" ? "" : "orange"}
+            variant="body2"
+          >
+            {ballkid?.checkout_comments ?? ""}
+          </Typography>
         </Box>
       );
 

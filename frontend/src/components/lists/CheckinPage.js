@@ -75,11 +75,7 @@ function CheckoutComments({ ballkid, layout, setUpdated }) {
   return useIsMobile() ? (
     ""
   ) : ballkid.is_checked_in ? (
-    <CommentsText
-      comments={ballkid.checkout_comments}
-      commentType="checkout"
-      layout={layout}
-    />
+    <CommentsText ballkid={ballkid} commentType="checkout" layout={layout} />
   ) : (
     <Box
       className="sxs"

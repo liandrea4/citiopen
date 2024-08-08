@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime
 from api.utils.utils import *
-from api.models.enums import Court
+from api.models.enums import COURT
 
 
 class Schedule(models.Model):

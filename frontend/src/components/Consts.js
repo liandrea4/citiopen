@@ -19,8 +19,8 @@ export const POSITIONS = ["Back", "Net"];
 
 export const MATCH_TYPES = {
   MS: "Men's Singles",
-  MD: "Men's Doubles",
   WS: "Women's Singles",
+  MD: "Men's Doubles",
   WD: "Women's Doubles",
 };
 

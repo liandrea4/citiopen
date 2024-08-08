@@ -297,11 +297,16 @@ function renderTeam(ballkid, teams, setUpdated, isMobile) {
 
 export function FinalsHistoryTable({ pk }) {
   const [finals, setFinals] = useState([]);
+  const [analytics, setAnalytics] = useState([]);
 
   useEffect(() => {
     fetch(`/api/get-finals-history/${pk}`, { headers: getAuthHeader() })
       .then((response) => response.json())
       .then((data) => setFinals(data));
+
+    fetch(`/api/get-finals-analytics/${pk}`, { headers: getAuthHeader() })
+      .then((response) => response.json())
+      .then((data) => setAnalytics(data));
   }, [pk]);
 
   return (
@@ -312,24 +317,71 @@ export function FinalsHistoryTable({ pk }) {
       {finals.length === 0 ? (
         <Typography>No finals history to show.</Typography>
       ) : (
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell align="center">Year</TableCell>
-                <TableCell align="center">Match Type</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {finals.map((final) => (
-                <TableRow key={final.id}>
-                  <TableCell align="center">{final.year}</TableCell>
-                  <TableCell align="center">{final.match_type}</TableCell>
+        <Box>
+          <TableContainer sx={{ mb: 5 }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center"></TableCell>
+                  {analytics.map((analytic) => (
+                    <TableCell key={analytic.match_type} align="center">
+                      {analytic.match_type}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell align="center" sx={{ fontWeight: "medium" }}>
+                    Count
+                  </TableCell>
+                  {analytics.map((analytic) => (
+                    <TableCell
+                      key={`${analytic.match_type}_count`}
+                      align="center"
+                    >
+                      {analytic.count}
+                    </TableCell>
+                  ))}
+                </TableRow>
+                <TableRow>
+                  <TableCell align="center" sx={{ fontWeight: "medium" }}>
+                    Most Recent Year
+                  </TableCell>
+                  {analytics.map((analytic) => (
+                    <TableCell
+                      key={`${analytic.match_type}_last_year`}
+                      align="center"
+                    >
+                      {analytic.last_year}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center">Year</TableCell>
+                  <TableCell align="center">Match Type</TableCell>
+                  <TableCell align="center">Position</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {finals.map((final) => (
+                  <TableRow key={final.id}>
+                    <TableCell align="center">{final.year}</TableCell>
+                    <TableCell align="center">{final.match_type}</TableCell>
+                    <TableCell align="center">{final.position}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
       )}
     </Grid>
   );

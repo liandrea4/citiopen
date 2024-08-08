@@ -2,14 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime
 from api.utils.utils import *
-
-
-class COURT(models.TextChoices):
-    STADIUM = "Stadium"
-    FOUR = "Court 4"
-    HARRIS = "Harris"
-    FIVE = "Court 5"
-    GRANDSTAND = "Grandstand"
+from api.models.enums import Court
 
 
 class Schedule(models.Model):

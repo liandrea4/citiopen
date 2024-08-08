@@ -2,6 +2,14 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+class COURT(models.TextChoices):
+    STADIUM = "Stadium"
+    FOUR = "Court 4"
+    HARRIS = "Harris"
+    FIVE = "Court 5"
+    GRANDSTAND = "Grandstand"
+
+
 class POSITION(models.TextChoices):
     B = "Back", _("Back")
     N = "Net", _("Net")
@@ -11,8 +19,8 @@ class POSITION(models.TextChoices):
 
 class MATCH_TYPE(models.TextChoices):
     MS = "Men's Singles"
-    MD = "Men's Doubles"
     WS = "Women's Singles"
+    MD = "Men's Doubles"
     WD = "Women's Doubles"
 
 

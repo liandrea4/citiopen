@@ -92,8 +92,19 @@ export default function BallkidLeaderboard(props) {
       {loading ? (
         <CircularProgress className="center" size={30} />
       ) : (
-        <div style={{ height: DATA_GRID_HEIGHT }}>
-          <DataGrid columns={columns} rows={rows} density="compact" />
+        <div>
+          <div style={{ height: DATA_GRID_HEIGHT }}>
+            <DataGrid columns={columns} rows={rows} density="compact" />
+          </div>
+          <Typography variant="body1" mt={2}>
+            Note: Calibrated average and calibrated standard deviation now ONLY
+            include ratings provided by raters who have a reasonable distance to
+            ideal. The threshold for distance to ideal (and therefore the
+            threshold for which raters to include vs. exclude) can be set in
+            Tournament Settings. Average and standard deviation are the raw
+            average and raw standard deviation including all ratings received
+            from all raters.
+          </Typography>
         </div>
       )}
     </div>

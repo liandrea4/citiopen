@@ -438,6 +438,54 @@ def get_postprocessed_rating(cp, rating, name):
     )
 
 
+def run_calibration_and_save_params(year):
+    tournament = Tournament.objects.get(year=year)
+    cp, excluded, failed_categories = None, set(), None
+
+    ## STEP 1: Get all ratings and annotate
+    ratings = (
+        Rating.objects.filter(
+            Q(status=RATING_STATUS.COMPLETE) | Q(status=RATING_STATUS.AUTO_EXCLUDED)
+        )
+        .annotate(
+            ratee_name=Concat("ratee__first_name", Value(" "), "ratee__last_name"),
+            rater_name=Concat("rater__first_name", Value(" "), "rater__last_name"),
+        )
+        .order_by(
+            "ratee__last_name",
+            "ratee__first_name",
+            "-date",
+            "rater__last_name",
+            "rater__first_name",
+        )
+    )
+    year_ratings = ratings.filter(date__year=year)
+
+    logger.info(
+        f"[run_calibration_and_save] Starting rating calibration for {len(ratings)} ratings"
+    )
+
+    ## STEP 2: Train on all ratings with year > year_threshold and calibrate for year_ratings
+    # Ratings with manually excluded status are excluded, otherwise complete and auto-excluded
+    # ratings are included
+    (cp, excluded, failed_categories) = calibrate(ratings, year_ratings, tournament)
+
+    logger.warning(
+        f"[run_calibration_and_save] failed rating categories {failed_categories}"
+    )
+
+    ## STEP 3: Save rater params (based on all non-manually excluded ratings)
+    save_rater_params(cp, year_ratings, year)
+
+    ## STEP 4: Auto-exclude ratings for raters with distance to ideal > threshold
+    autoexclude(year_ratings, tournament.rcal_calibration_threshold)
+
+    ## STEP 5: Save ratee params, filtering to only complete (non auto-excluded) ratings
+    save_ratee_params(cp, year_ratings.filter(status=RATING_STATUS.COMPLETE), year)
+
+    return cp, excluded, failed_categories, year_ratings
+
+
 class RatingsList(generics.ListAPIView):
     serializer_class = RatingSerializer
     permission_classes = [IsChairperson]
@@ -582,51 +630,11 @@ class CalibratedRatings(APIView):
     permission_classes = [IsChairperson]
 
     def get(self, request, year):
-        tournament = Tournament.objects.get(year=year)
-        cp, excluded, failed_categories = None, set(), None
-
-        ## STEP 1: Get all ratings and annotate
-        ratings = (
-            Rating.objects.filter(
-                Q(status=RATING_STATUS.COMPLETE) | Q(status=RATING_STATUS.AUTO_EXCLUDED)
-            )
-            .annotate(
-                ratee_name=Concat("ratee__first_name", Value(" "), "ratee__last_name"),
-                rater_name=Concat("rater__first_name", Value(" "), "rater__last_name"),
-            )
-            .order_by(
-                "ratee__last_name",
-                "ratee__first_name",
-                "-date",
-                "rater__last_name",
-                "rater__first_name",
-            )
-        )
-        year_ratings = ratings.filter(date__year=year)
-
-        logger.info(
-            f"[CalibratedRatings] Starting rating calibration for {len(ratings)} ratings"
+        cp, excluded, failed_categories, year_ratings = run_calibration_and_save_params(
+            year
         )
 
-        ## STEP 2: Train on all ratings with year > year_threshold and calibrate for year_ratings
-        # Ratings with manually excluded status are excluded, otherwise complete and auto-excluded
-        # ratings are included
-        (cp, excluded, failed_categories) = calibrate(ratings, year_ratings, tournament)
-
-        logger.warning(
-            f"[CalibratedRatings] rating categories with failed rating categories {failed_categories}"
-        )
-
-        ## STEP 3: Save rater params (based on all non-manually excluded ratings)
-        save_rater_params(cp, year_ratings, year)
-
-        ## STEP 4: Auto-exclude ratings for raters with distance to ideal > threshold
-        autoexclude(year_ratings, tournament.rcal_calibration_threshold)
-
-        ## STEP 5: Save ratee params, filtering to only complete (non auto-excluded) ratings
-        save_ratee_params(cp, year_ratings.filter(status=RATING_STATUS.COMPLETE), year)
-
-        # STEP 6: Calibrate each rating to put together a list of calibrated ratings to return
+        # Calibrate each rating to put together a list of calibrated ratings to return
         postprocessed = [
             {
                 "id": rating.id,
@@ -670,8 +678,6 @@ class CalibratedRatings(APIView):
         #         k["ratee_name"].split(" ")[0],
         #     ),
         # )
-
-        print("returning", datetime.now())
 
         # If an rcal warning was thrown for the overall rating category
         if failed_categories is not None:

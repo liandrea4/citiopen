@@ -106,8 +106,7 @@ def remove_nonoverlapping_reviewers(data):
     return new_data, excluded
 
 
-def calibrate(ratings, year_ratings):
-    tournament = Tournament.objects.get(year=get_current_year())
+def calibrate(ratings, year_ratings, tournament):
     ignore_outliers = tournament.rcal_ignore_outliers
     year_threshold = tournament.rcal_year_threshold
     bucket_size = tournament.rcal_bucket_size
@@ -158,7 +157,7 @@ def save_rater_params(cp, year_ratings, year):
     cp: rcal cp object to represent calibration
     year_ratings: complete and auto-excluded ratings from this year (excludes manually
         excluded and draft ratings)
-    autoexclude_threshold: threshold above which a rater's ratings should be excluded
+    year: threshold above which a rater's ratings should be excluded
     """
     raters = set(year_ratings.values_list("rater", "rater_name"))
 
@@ -168,22 +167,17 @@ def save_rater_params(cp, year_ratings, year):
 
         # Update all non-calibration related parameters
         rater_ratings = year_ratings.filter(rater__id=rater_id)
-
-        num_rater_ratings = rater_ratings.count()
-        rater_raw_avg = rater_ratings.aggregate(val=Avg("rating"))["val"]
-        rater_raw_stdev = rater_ratings.aggregate(val=StdDev("rating"))["val"]
-
         params, _ = CalibrationParams.objects.update_or_create(
             ballkid_id=rater_id,
             year=year,
             defaults={
-                "num_rater_ratings": num_rater_ratings,
-                "rater_raw_avg": rater_raw_avg,
-                "rater_raw_stdev": rater_raw_stdev,
+                "num_rater_ratings": rater_ratings.count(),
+                "rater_raw_avg": rater_ratings.aggregate(val=Avg("rating"))["val"],
+                "rater_raw_stdev": rater_ratings.aggregate(val=StdDev("rating"))["val"],
             },
         )
         logger.info(
-            f"[save_rater_params_and_autoexclude] Saved non-calibration params for {name} with params {params}"
+            f"[save_rater_params] Saved non-calibration params for {name} with params {params}"
         )
 
         # Update all calibration-related parameters
@@ -208,7 +202,7 @@ def save_rater_params(cp, year_ratings, year):
                 },
             )
             logger.info(
-                f"[save_rater_params_and_autoexclude] Saved calibration params for {name} with params {params}"
+                f"[save_rater_params] Saved calibration params for {name} with params {params}"
             )
 
 
@@ -226,19 +220,85 @@ def autoexclude(year_ratings, autoexclude_threshold):
     ratings_to_autoexclude = year_ratings.filter(rater__in=raters_to_autoexclude)
     num_updated = ratings_to_autoexclude.update(status=RATING_STATUS.AUTO_EXCLUDED)
     logger.info(
-        f"[save_rater_params_and_autoexclude] Auto-excluded {len(ratings_to_autoexclude)} ratings, {num_updated} updated for raters: {raters_to_autoexclude}"
+        f"[autoexclude] Auto-excluded {len(ratings_to_autoexclude)} ratings, {num_updated} updated for raters: {raters_to_autoexclude}"
     )
 
     # Auto-include ratings of raters with dist < threshold
     ratings_to_include = year_ratings.exclude(rater__in=raters_to_autoexclude)
     num_updated = ratings_to_include.update(status=RATING_STATUS.COMPLETE)
     logger.info(
-        f"[save_rater_params_and_autoexclude] Auto-included {len(ratings_to_include)} ratings, {num_updated} updated"
+        f"[autoexclude] Auto-included {len(ratings_to_include)} ratings, {num_updated} updated"
     )
 
 
-def save_ratee_params():
-    pass
+def save_ratee_params(cp, year_ratings_wo_excluded, year):
+    """
+    Save ratee calibration parameters
+
+    Arguments:
+    cp: rcal cp object to represent calibration
+    year_ratings_excluded: ONLY complete ratings from this year (excludes manually excluded,
+        auto-excluded, and draft ratings)
+    year: year
+    """
+    ballkids = Ballkid.objects.filter(is_active=True).values_list(
+        "id", Concat("first_name", Value(" "), "last_name")
+    )
+
+    for ballkid_id, name in ballkids:
+        # ballkid = Ballkid.objects.get(id=rater_id)
+        # name = ballkid.get_name()
+
+        # Update all non-calibration related parameters
+        ratee_ratings = year_ratings_wo_excluded.filter(ratee__id=ballkid_id)
+        unexcluded_raters = set(ratee_ratings.values_list("rater", flat=True))
+
+        params, _ = CalibrationParams.objects.update_or_create(
+            ballkid_id=ballkid_id,
+            year=year,
+            defaults={
+                "num_raters": len(unexcluded_raters),
+                "num_ratee_ratings": ratee_ratings.count(),
+                "ratee_raw_avg": ratee_ratings.aggregate(val=Avg("rating"))["val"],
+                "ratee_raw_stdev": ratee_ratings.aggregate(val=StdDev("rating"))["val"],
+            },
+        )
+        logger.info(
+            f"[save_ratee_params] Saved non-calibration params for {name} with params {params}"
+        )
+
+        # Update all calibration-related parameters
+        if cp is not None:
+            ratee_ratings_calibrated = [
+                get_postprocessed_rating(cp, rating.rating, rating.rater_name)
+                for rating in ratee_ratings
+            ]
+
+            calibrated_avg = (
+                statistics.mean(ratee_ratings_calibrated)
+                if len(ratee_ratings_calibrated) > 0
+                else None
+            )
+            calibrated_stdev = (
+                statistics.stdev(ratee_ratings_calibrated)
+                if len(ratee_ratings_calibrated) > 1
+                else None
+            )
+
+            params, _ = CalibrationParams.objects.update_or_create(
+                ballkid=ballkid_id,
+                year=year,
+                defaults={
+                    "ratee_calibrated_avg": calibrated_avg,
+                    "ratee_calibrated_stdev": calibrated_stdev,
+                    "ratee_improvement": cp.improvement_rates().get(name),
+                    "ratee_offset": cp.person_offsets().get(name),
+                },
+            )
+
+            logger.info(
+                f"[save_ratee_params] Saved calibration params for {name} with params {params}"
+            )
 
 
 def save_calibration_parameters(
@@ -543,29 +603,30 @@ class CalibratedRatings(APIView):
             )
         )
         year_ratings = ratings.filter(date__year=year)
-        year_ratings_excluded = year_ratings.filter(status=RATING_STATUS.COMPLETE)
 
         logger.info(
             f"[CalibratedRatings] Starting rating calibration for {len(ratings)} ratings"
         )
 
         ## STEP 2: Train on all ratings with year > year_threshold and calibrate for year_ratings
-        (cp, excluded, failed_categories) = calibrate(ratings, year_ratings)
+        # Ratings with manually excluded status are excluded, otherwise complete and auto-excluded
+        # ratings are included
+        (cp, excluded, failed_categories) = calibrate(ratings, year_ratings, tournament)
 
         logger.warning(
             f"[CalibratedRatings] rating categories with failed rating categories {failed_categories}"
         )
 
-        ## STEP 3: Save rater params
+        ## STEP 3: Save rater params (based on all non-manually excluded ratings)
         save_rater_params(cp, year_ratings, year)
 
-        ## STEP 4: Auto-exclude ratings
+        ## STEP 4: Auto-exclude ratings for raters with distance to ideal > threshold
         autoexclude(year_ratings, tournament.rcal_calibration_threshold)
 
-        ## STEP 5: Save ratee params
-        save_ratee_params()
+        ## STEP 5: Save ratee params, filtering to only complete (non auto-excluded) ratings
+        save_ratee_params(cp, year_ratings.filter(status=RATING_STATUS.COMPLETE), year)
 
-        # Calibrate each rating to put together a list of calibrated ratings to return
+        # STEP 6: Calibrate each rating to put together a list of calibrated ratings to return
         postprocessed = [
             {
                 "id": rating.id,
@@ -609,6 +670,8 @@ class CalibratedRatings(APIView):
         #         k["ratee_name"].split(" ")[0],
         #     ),
         # )
+
+        print("returning", datetime.now())
 
         # If an rcal warning was thrown for the overall rating category
         if failed_categories is not None:

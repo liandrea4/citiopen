@@ -195,16 +195,14 @@ USE_I18N = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [FRONTEND_DIR / "build/static"]
-# STATIC_ROOT = BASE_DIR / "staticfiles"
-STATIC_ROOT = BASE_DIR / "static"
-# if DEBUG:
-#     STATICFILES_DIRS = [BASE_DIR / "static"]
-# else:
-#     STATIC_ROOT = BASE_DIR / "static"
-# STATICFILES_DIRS = [BASE_DIR / "build/static"]
-# STATICFILES_DIRS = [BASE_DIR / "static"]  # new
-# STATIC_ROOT = BASE_DIR / "staticfiles"  # new
+
+STATICFILES_DIRS = [
+    FRONTEND_DIR / "build/static",
+    BASE_DIR / "static",
+]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 WHITENOISE_ROOT = FRONTEND_DIR / "build/root"
 

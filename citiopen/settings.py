@@ -121,7 +121,7 @@ if DEBUG:
     }
 else:
     DATABASES = {
-        "default": env.dj_db_url("DATABASE_URL", default="sqlite:///db.sqlite3"),
+        "default": env.dj_db_url("DATABASE_URL", default="sqlite:///db.sqlite3", conn_max_age=60),
     }
 
 if os.environ.get("GITHUB_WORKFLOW"):
@@ -188,7 +188,7 @@ TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
-# USE_TZ = True
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)

@@ -211,77 +211,24 @@ WHITENOISE_ROOT = FRONTEND_DIR / "build/root"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOG_DIR = BASE_DIR / "logs"
-if not os.path.exists(LOG_DIR):
-    os.mkdir(LOG_DIR)
-
 LOGGING = {
-    "version": 1,  # The version number of our log
+    "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {
-            "format": "{asctime} [{levelname} | {module}] {message} @ {pathname} : {lineno} : {funcName}",
+        "simple": {
+            "format": "{asctime} [{levelname}] {module}: {message}",
             "style": "{",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        "simple": {
-            "format": "{asctime} {levelname} {module} {message}",
-            "style": "{",
-        },
     },
     "handlers": {
-        "infoFile": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "filename": LOG_DIR / "info.log",
-            "formatter": "simple",
-        },
-        "warningFile": {
-            "level": "WARNING",
-            "class": "logging.FileHandler",
-            "filename": LOG_DIR / "warning.log",
-            "formatter": "verbose",
-        },
-        "djangoFile": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "filename": LOG_DIR / "django.log",
-            "formatter": "verbose",
-        },
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
     },
-    "loggers": {
-        "api.ballkid": {
-            "handlers": ["infoFile", "warningFile"],
-            "level": "INFO",
-            "propagate": True,
-        },
-        "api.rating": {
-            "handlers": ["infoFile", "warningFile"],
-            "level": "INFO",
-            "propagate": True,
-        },
-        "api.utils": {
-            "handlers": ["infoFile", "warningFile"],
-            "level": "INFO",
-            "propagate": True,
-        },
-        "api.schedule": {
-            "handlers": ["infoFile", "warningFile"],
-            "level": "INFO",
-            "propagate": True,
-        },
-        "accounts": {
-            "handlers": ["infoFile", "warningFile"],
-            "level": "INFO",
-            "propagate": True,
-        },
-        "django": {
-            "handlers": ["djangoFile"],
-            "level": "INFO",
-            "propagate": True,
-        },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
     },
 }

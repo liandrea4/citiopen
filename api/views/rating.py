@@ -313,6 +313,12 @@ def get_postprocessed_rating(cp, rating, name):
 
     if cp is None:
         return float(rating)
+        
+    # If rcal gave the reviewer a near-zero scale (degenerate uncalibrated state),
+    # fallback to raw rating so a 2.0 isn't inflated to ~4.93
+    scale = cp.reviewer_scales().get(name) if cp else None
+    if scale is not None and scale < 0.05:
+        return float(rating)
 
     return cp.calibrate_rating(
         name, float(rating), clip_endpoints=(MIN_RATING, MAX_RATING)
@@ -359,10 +365,17 @@ def run_calibration_and_save_params(year):
     save_rater_params(cp, year_ratings, year)
 
     ## STEP 4: Auto-exclude ratings for raters with distance to ideal > threshold
-    autoexclude(year_ratings, tournament.rcal_calibration_threshold)
+    if cp is not None and tournament.rcal_calibration_threshold:
+        autoexclude(year_ratings, tournament.rcal_calibration_threshold)
+    else:
+        year_ratings.update(status=RATING_STATUS.COMPLETE)
 
     ## STEP 5: Save ratee params, filtering to only complete (non auto-excluded) ratings
-    save_ratee_params(cp, year_ratings.filter(status=RATING_STATUS.COMPLETE), year)
+    complete_ratings = year_ratings.filter(status=RATING_STATUS.COMPLETE)
+    if not complete_ratings.exists():
+        complete_ratings = year_ratings
+
+    save_ratee_params(cp, complete_ratings, year)
 
     return cp, excluded, failed_categories, year_ratings
 

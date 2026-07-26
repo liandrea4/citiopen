@@ -430,8 +430,9 @@ class TestCalibratedRatingsView(APITestCase):
         self.assertLess(1, params3.rater_distance_to_ideal)
 
     def test_autoexclude_threshold_impact(self):
-        # 1. Ensure auto-exclusion threshold is active for the first call
-        self.tournament.rcal_calibration_threshold = 0.5  # Or whatever valid numerical threshold you use
+        # 1. Set threshold to 1.0 to specifically exclude Rater 3 (distance ~1.09) 
+        # while keeping Raters 1 & 2 active (distance ~0.2)
+        self.tournament.rcal_calibration_threshold = 1.0
         self.tournament.save()
 
         # Run with auto-exclusion active

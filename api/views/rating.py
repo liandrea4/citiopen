@@ -289,7 +289,7 @@ def save_ratee_params(cp, year_ratings_wo_excluded, year):
             )
 
             params, _ = CalibrationParams.objects.update_or_create(
-                ballkid=ballkid_id,
+                ballkid_id=ballkid_id,
                 year=year,
                 defaults={
                     "ratee_calibrated_avg": calibrated_avg,

@@ -417,9 +417,9 @@ class TestCalibratedRatingsView(APITestCase):
             reverse("calibrated-ratings", kwargs={"year": self.year})
         )
 
-        params1 = CalibrationParams.objects.get(ballkid=self.rater1)
-        params2 = CalibrationParams.objects.get(ballkid=self.rater2)
-        params3 = CalibrationParams.objects.get(ballkid=self.rater3)
+        params1 = CalibrationParams.objects.get(ballkid=self.rater1, year=self.year)
+        params2 = CalibrationParams.objects.get(ballkid=self.rater2, year=self.year)
+        params3 = CalibrationParams.objects.get(ballkid=self.rater3, year=self.year)
 
         self.assertLess(
             params1.rater_distance_to_ideal, params3.rater_distance_to_ideal
@@ -429,18 +429,23 @@ class TestCalibratedRatingsView(APITestCase):
         )
         self.assertLess(1, params3.rater_distance_to_ideal)
 
-    def test_calibrated_rater_distance_to_ideal(self):
+    def test_autoexclude_threshold_impact(self):
+        # 1. Run with standard auto-exclusion active
         self.client.get(reverse("calibrated-ratings", kwargs={"year": self.year}))
         excluding_avg = CalibrationParams.objects.get(
-            ballkid=self.ratee3
+            ballkid=self.ratee3, year=self.year
         ).ratee_calibrated_avg
 
+        # 2. Reset ratings status back to COMPLETE so all ratings are considered again
+        Rating.objects.filter(date__year=self.year).update(status=RATING_STATUS.COMPLETE)
+
+        # 3. Disable auto-exclusion by setting threshold to infinity
         self.tournament.rcal_calibration_threshold = float("inf")
         self.tournament.save()
 
         self.client.get(reverse("calibrated-ratings", kwargs={"year": self.year}))
         including_avg = CalibrationParams.objects.get(
-            ballkid=self.ratee3
+            ballkid=self.ratee3, year=self.year
         ).ratee_calibrated_avg
 
         self.assertGreater(excluding_avg, including_avg)

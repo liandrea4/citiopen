@@ -430,7 +430,11 @@ class TestCalibratedRatingsView(APITestCase):
         self.assertLess(1, params3.rater_distance_to_ideal)
 
     def test_autoexclude_threshold_impact(self):
-        # 1. Run with standard auto-exclusion active
+        # 1. Ensure auto-exclusion threshold is active for the first call
+        self.tournament.rcal_calibration_threshold = 0.5  # Or whatever valid numerical threshold you use
+        self.tournament.save()
+
+        # Run with auto-exclusion active
         self.client.get(reverse("calibrated-ratings", kwargs={"year": self.year}))
         excluding_avg = CalibrationParams.objects.get(
             ballkid=self.ratee3, year=self.year

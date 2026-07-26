@@ -191,9 +191,12 @@ def save_rater_params(cp, year_ratings, year):
             if a is None or b is None:
                 distance = None
             else:
-                distance = (1 / 4) * (
-                    37 * a**2 + a * (22 * b - 74) + 4 * b**2 - 22 * b + 37
-                )
+                #distance = (1 / 4) * (
+                #    37 * a**2 + a * (22 * b - 74) + 4 * b**2 - 22 * b + 37
+                #)
+                distance = (
+                    39.75 * (a**2) + 11 * a * b - 79.5 * a + 2 * (b**2) - 11 * b + 39.75
+                ) / 2
 
             params, _ = CalibrationParams.objects.update_or_create(
                 ballkid_id=rater_id,

@@ -217,7 +217,7 @@ def autoexclude(year_ratings, autoexclude_threshold):
     # Exclude all raters whose distance to ideal is greater than threshold
     raters_to_autoexclude = CalibrationParams.objects.filter(
         rater_distance_to_ideal__gt=autoexclude_threshold
-    ).values_list("ballkid", flat=True)
+    ).values_list("ballkid_id", flat=True)
 
     # Auto-exclude ratings of raters with dist > threshold
     ratings_to_autoexclude = year_ratings.filter(rater__in=raters_to_autoexclude)

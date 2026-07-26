@@ -262,6 +262,7 @@ export default function RatingDialog({
         </Button>
         <LoadingButton
           loading={loading}
+          disabled={loading || Boolean(successMsg)}
           variant="contained"
           color="primary"
           onClick={(e) => {
@@ -282,26 +283,32 @@ export default function RatingDialog({
                 effort_rating: effortRating,
                 comments: comments,
               }),
-            }).then((response) => {
-              if (response.ok) {
-                setUpdated(true);
-                setSuccessMsg("Rating submitted!");
-                setTimeout(() => {
-                  setOpen(false);
-                  setComments("");
-                  setRating(null);
-                  setAthleticismRating(null);
-                  setRollingRating(null);
-                  setAwarenessRating(null);
-                  setDecisionRating(null);
-                  setEffortRating(null);
-                  setSuccessMsg("");
-                }, 2500);
-              } else {
+            })
+              .then((response) => {
+                if (response.ok) {
+                  setUpdated(true);
+                  setSuccessMsg("Rating submitted!");
+                  setTimeout(() => {
+                    setOpen(false);
+                    setComments("");
+                    setRating(null);
+                    setAthleticismRating(null);
+                    setRollingRating(null);
+                    setAwarenessRating(null);
+                    setDecisionRating(null);
+                    setEffortRating(null);
+                    setSuccessMsg("");
+                    setLoading(false); // ✅ Added reset on success dialog unmount
+                  }, 2500);
+                } else {
+                  setErrorMsg("Error submitting rating.");
+                  setLoading(false);
+                }
+              }) // ✅ Corrected closing parenthesis before .catch
+              .catch((error) => {
                 setErrorMsg("Error submitting rating.");
-              }
-              setLoading(false);
-            });
+                setLoading(false);
+              });
           }}
         >
           Submit

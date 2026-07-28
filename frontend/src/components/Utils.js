@@ -524,53 +524,43 @@ export function ConfirmDialog({
   );
 }
 
-export function DraggableBallkidAndIcon({
-  ballkid,
-  commentTypes = [],
-  showHovercard = false,
-  hoverCommentTypes = [],
-}) {
+export function DraggableBallkidAndIcon({ ballkid, hoverCommentTypes }) {
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: "ballkid",
-    item: { ...ballkid },
-    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
-  }));
+  const [{ isDragging }, drag] = useDrag({
+    type: "BALLKID",
+    item: { id: ballkid.id },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const handlePopoverOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
 
   return (
-    <Box
-      ref={drag}
-      style={{
-        opacity: isDragging ? 0.5 : 1,
-      }}
-    >
+    <Box ref={drag} style={{ opacity: isDragging ? 0.5 : 1 }}>
       <Box
         className="sxs"
-        onMouseEnter={(e) => setAnchorEl(e.currentTarget)}
-        onMouseLeave={() => setAnchorEl(null)}
+        onMouseEnter={handlePopoverOpen}
+        onMouseLeave={handlePopoverClose}
       >
-        <BallkidLink
-          id={ballkid.id}
-          name={`${ballkid.first_name} ${ballkid.last_name}`}
-        />
-        &thinsp;
-        <Icons ballkid={ballkid} margin={0} isTeamsPage={true} />
-        {commentTypes.map((commentType) => (
-          <Box key={commentType}>
-            <CommentsText ballkid={ballkid} commentType={commentType} />
-          </Box>
-        ))}
-        {showHovercard ? (
+        <BallkidAndIcon ballkid={ballkid} />
+        {open && !isDragging ? (
           <BallkidPopover
             ballkid={ballkid}
             hoverCommentTypes={hoverCommentTypes}
             anchorEl={anchorEl}
             setAnchorEl={setAnchorEl}
           />
-        ) : (
-          ""
-        )}
+        ) : null}
       </Box>
     </Box>
   );
@@ -584,55 +574,34 @@ export function BallkidPopover({
 }) {
   return (
     <Popover
+      className="hovercard-popover"
       open={Boolean(anchorEl)}
       anchorEl={anchorEl}
       anchorOrigin={{
         vertical: "bottom",
         horizontal: "right",
       }}
+      disableRestoreFocus
+      disableAutoFocus
+      disableEnforceFocus
+      slotProps={{
+        backdrop: { style: { pointerEvents: "none" } },
+        paper: { style: { pointerEvents: "none" } },
+      }}
       sx={{
         pointerEvents: "none",
       }}
-      // onMouseEnter={(e) => setAnchorEl(e.currentTarget)}
-      // onMouseLeave={() => setAnchorEl(null)}
-      // transformOrigin={{
-      //   vertical: "top",
-      //   horizontal: "left",
-      // }}
-      // PaperProps={{
-      //   onMouseEnter: (e) => setAnchorEl(e.currentTarget),
-      //   onMouseLeave: () => setAnchorEl(null),
-      // }}
     >
-      <Card>
-        <CardActionArea
-          component={RouterLink}
-          to={
-            ballkid.id === getLocalStorage("ballkid_id")
-              ? "/me"
-              : `/ballkid/${ballkid.id}`
-          }
-        >
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              {ballkid.first_name} {ballkid.last_name}
-            </Typography>
-            {hoverCommentTypes.map((hoverCommentType) => (
-              <Box className="sxs" key={`${ballkid.id}_${hoverCommentType}`}>
-                <CommentsText
-                  ballkid={ballkid}
-                  commentType={hoverCommentType}
-                  showLabel={true}
-                />
-              </Box>
-            ))}
-
-            <Box style={{ maxWidth: 500 }}>
-              <CheckinHistoryChart pk={ballkid.id} />
-            </Box>
-          </CardContent>
-        </CardActionArea>
-      </Card>
+      <Box sx={{ p: 2 }}>
+        {hoverCommentTypes?.map((commentType) => (
+          <CommentsText
+            key={commentType}
+            ballkid={ballkid}
+            commentType={commentType}
+            showLabel
+          />
+        ))}
+      </Box>
     </Popover>
   );
 }
@@ -896,7 +865,7 @@ export function filterBallkids(ballkids, searchKeyword, filterGroup) {
     (ballkid) =>
       `${ballkid.first_name} ${ballkid.last_name}`
         .toLowerCase()
-        .includes(searchKeyword.toLowerCase()) &
+        .includes(searchKeyword.toLowerCase()) &&
       (!filterGroup ||
         (filterGroup === "rookie" && ballkid.num_years_experience === 0) ||
         (filterGroup === "supervet" &&

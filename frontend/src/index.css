@@ -67,7 +67,8 @@ body {
   display: flex;
 }
 
-/* Prevent MUI Popover overlays from intercepting drag & drop pointer events */
-.MuiPopover-root {
+/* Target ONLY the hovercard popover so dropdown menus retain mouse events */
+.hovercard-popover,
+.hovercard-popover .MuiPaper-root {
   pointer-events: none !important;
 }

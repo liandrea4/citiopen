@@ -532,8 +532,8 @@ export function DraggableBallkidAndIcon({
   const [anchorEl, setAnchorEl] = useState(null);
 
   const [{ isDragging }, drag] = useDrag({
-    type: "BALLKID",
-    item: { id: ballkid.id },
+    type: "ballkid", // Changed from "BALLKID" to "ballkid" to match useDrop accept string
+    item: ballkid,   // Changed from { id: ballkid.id } to full ballkid object
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),

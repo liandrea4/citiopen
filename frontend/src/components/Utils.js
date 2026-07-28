@@ -615,7 +615,7 @@ export function BallkidPopover({
   );
 }
 
-export function BallkidAndIcon({ ballkid, commentTypes = ["last_day"] }) {
+export function BallkidAndIcon({ ballkid, commentTypes = [] }) {
   return (
     <div className="sxs" style={{ alignItems: "center" }}>
       <BallkidLink

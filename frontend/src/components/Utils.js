@@ -524,7 +524,11 @@ export function ConfirmDialog({
   );
 }
 
-export function DraggableBallkidAndIcon({ ballkid, hoverCommentTypes }) {
+export function DraggableBallkidAndIcon({
+  ballkid,
+  commentTypes,
+  hoverCommentTypes,
+}) {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const [{ isDragging }, drag] = useDrag({
@@ -548,9 +552,9 @@ export function DraggableBallkidAndIcon({ ballkid, hoverCommentTypes }) {
   const open = Boolean(anchorEl);
 
   return (
-    <Box
+    <div
       ref={drag}
-      sx={{
+      style={{
         opacity: isDragging ? 0.5 : 1,
         cursor: "grab",
         display: "inline-block",
@@ -558,7 +562,7 @@ export function DraggableBallkidAndIcon({ ballkid, hoverCommentTypes }) {
       onMouseEnter={handlePopoverOpen}
       onMouseLeave={handlePopoverClose}
     >
-      <BallkidAndIcon ballkid={ballkid} />
+      <BallkidAndIcon ballkid={ballkid} commentTypes={commentTypes} />
       {open && !isDragging && (
         <BallkidPopover
           ballkid={ballkid}
@@ -567,7 +571,7 @@ export function DraggableBallkidAndIcon({ ballkid, hoverCommentTypes }) {
           setAnchorEl={setAnchorEl}
         />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -611,15 +615,18 @@ export function BallkidPopover({
   );
 }
 
-export function BallkidAndIcon({ ballkid }) {
+export function BallkidAndIcon({ ballkid, commentTypes = ["last_day"] }) {
   return (
-    <div className="sxs">
+    <div className="sxs" style={{ alignItems: "center" }}>
       <BallkidLink
         id={ballkid.id}
         name={`${ballkid.first_name} ${ballkid.last_name}`}
       />
       &thinsp;
       <Icons ballkid={ballkid} margin={0} />
+      {commentTypes?.map((type) => (
+        <CommentsText key={type} commentType={type} ballkid={ballkid} />
+      ))}
     </div>
   );
 }
@@ -794,7 +801,7 @@ export function CommentsText({
       }
 
       return (
-        <Box className="sxs">
+        <Box className="sxs" component="span">
           {showLabel && (
             <Typography variant="subtitle2">Last Day: </Typography>
           )}

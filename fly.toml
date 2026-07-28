@@ -9,7 +9,7 @@ kill_signal = "SIGINT"
 kill_timeout = "5s"
 
 [[vm]]
-  size = "performance-2x"
+  size = "shared-cpu-2x"
   memory = "2048mb"
 
 [experimental]

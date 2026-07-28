@@ -536,7 +536,9 @@ export function DraggableBallkidAndIcon({ ballkid, hoverCommentTypes }) {
   });
 
   const handlePopoverOpen = (event) => {
-    setAnchorEl(event.currentTarget);
+    if (!isDragging) {
+      setAnchorEl(event.currentTarget);
+    }
   };
 
   const handlePopoverClose = () => {
@@ -546,22 +548,25 @@ export function DraggableBallkidAndIcon({ ballkid, hoverCommentTypes }) {
   const open = Boolean(anchorEl);
 
   return (
-    <Box ref={drag} style={{ opacity: isDragging ? 0.5 : 1 }}>
-      <Box
-        className="sxs"
-        onMouseEnter={handlePopoverOpen}
-        onMouseLeave={handlePopoverClose}
-      >
-        <BallkidAndIcon ballkid={ballkid} />
-        {open && !isDragging ? (
-          <BallkidPopover
-            ballkid={ballkid}
-            hoverCommentTypes={hoverCommentTypes}
-            anchorEl={anchorEl}
-            setAnchorEl={setAnchorEl}
-          />
-        ) : null}
-      </Box>
+    <Box
+      ref={drag}
+      sx={{
+        opacity: isDragging ? 0.5 : 1,
+        cursor: "grab",
+        display: "inline-block",
+      }}
+      onMouseEnter={handlePopoverOpen}
+      onMouseLeave={handlePopoverClose}
+    >
+      <BallkidAndIcon ballkid={ballkid} />
+      {open && !isDragging && (
+        <BallkidPopover
+          ballkid={ballkid}
+          hoverCommentTypes={hoverCommentTypes}
+          anchorEl={anchorEl}
+          setAnchorEl={setAnchorEl}
+        />
+      )}
     </Box>
   );
 }
@@ -784,38 +789,24 @@ export function CommentsText({
       );
 
     case "last_day":
+      if (!ballkid.last_day || ballkid.last_day === "End") {
+        return null;
+      }
+
       return (
         <Box className="sxs">
-          {showLabel ? (
+          {showLabel && (
             <Typography variant="subtitle2">Last Day: </Typography>
-          ) : (
-            ""
           )}
-          {showLabel ? (
-            <Typography
-              sx={{ mx: 0.5, px: 0.5, my: layout === "grid" ? 1 : 0 }}
-              bgcolor={
-                ballkid.last_day === "End" || ballkid.last_day === null
-                  ? ""
-                  : "orange"
-              }
-              variant="body2"
-            >
-              {ballkid.last_day === null ? "End" : ballkid.last_day}
-            </Typography>
-          ) : ballkid.last_day === "End" ? (
-            ""
-          ) : (
-            <Typography
-              sx={{ mx: 0.5, px: 0.5, my: layout === "grid" ? 1 : 0 }}
-              bgcolor="orange"
-              variant="body2"
-            >
-              {ballkid.last_day === null
-                ? ""
-                : ballkid.last_day.substring(0, 3)}
-            </Typography>
-          )}
+          <Typography
+            sx={{ mx: 0.5, px: 0.5, my: layout === "grid" ? 1 : 0 }}
+            bgcolor="orange"
+            variant="body2"
+          >
+            {showLabel
+              ? ballkid.last_day
+              : ballkid.last_day.substring(0, 3)}
+          </Typography>
         </Box>
       );
 
